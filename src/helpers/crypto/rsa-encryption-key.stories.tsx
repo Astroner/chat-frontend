@@ -1,14 +1,14 @@
 import { useRef, useState } from 'react';
-import { Meta } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { RSAEncryptionKey } from './rsa-encryption-key.class';
-import { arrayBufferToHex, hexToArrayBuffer } from '../arraybuffer-utils';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '../arraybuffer-utils';
 
 const meta: Meta = {
     title: 'RSA Encryption Key Class',
 };
 
-export const RSAKeysIssuing = () => {
+export const RSAKeysIssuing: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => {
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [privateKey, setPrivateKey] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +17,16 @@ export const RSAKeysIssuing = () => {
         setIsLoading(true);
         const { privateKey, publicKey } = await RSAEncryptionKey.generatePair();
 
-        const [pr, pub] = await Promise.all([
-            privateKey.toJSON(),
-            publicKey.toJSON(),
-        ]);
+        const [pr, pub] = 
+            format === "JWK" 
+            ? await Promise.all([
+                privateKey.toJSON(),
+                publicKey.toJSON(),
+            ])
+            : await Promise.all([
+                privateKey.toPKCS8().then(arrayBufferToBase64),
+                publicKey.toSPKI().then(arrayBufferToBase64),
+            ])
 
         setPrivateKey(pr);
         setPublicKey(pub);
@@ -51,6 +57,19 @@ export const RSAKeysIssuing = () => {
     );
 };
 
+RSAKeysIssuing.argTypes = {
+    format: {
+        type: {
+            name: "enum",
+            value: ["JWK", "Base64"]
+        },
+    }
+}
+
+RSAKeysIssuing.args = {
+    format: "JWK"
+}
+
 export const RSAEncryptDecrypt = () => {
     const keyRef = useRef<HTMLTextAreaElement>(null);
     const dataRef = useRef<HTMLTextAreaElement>(null);
@@ -68,7 +87,7 @@ export const RSAEncryptDecrypt = () => {
         setResult('LOADING');
 
         setResult(
-            arrayBufferToHex(
+            arrayBufferToBase64(
                 await rsaKey.encrypt(new TextEncoder().encode(data)),
             ),
         );
@@ -86,7 +105,7 @@ export const RSAEncryptDecrypt = () => {
 
         setResult(
             new TextDecoder().decode(
-                await rsaKey.decrypt(hexToArrayBuffer(data)),
+                await rsaKey.decrypt(base64ToArrayBuffer(data)),
             ),
         );
     };

@@ -10,9 +10,9 @@ import {
 } from '@schematic-forms/react';
 import { Str } from '@schematic-forms/core';
 import {
-    arrayBufferToHex,
+    arrayBufferToBase64,
     arrayBufferToString,
-    hexToArrayBuffer,
+    base64ToArrayBuffer,
     stringToArrayBuffer,
 } from '../arraybuffer-utils';
 
@@ -94,7 +94,7 @@ export const EncryptDecrypt: FC = () => {
 
             if (mode === 'E') {
                 setResult(
-                    arrayBufferToHex(
+                    arrayBufferToBase64(
                         await key.encrypt(stringToArrayBuffer(data.input)),
                     ),
                 );
@@ -103,7 +103,7 @@ export const EncryptDecrypt: FC = () => {
 
             setResult(
                 arrayBufferToString(
-                    await key.decrypt(hexToArrayBuffer(data.input)),
+                    await key.decrypt(base64ToArrayBuffer(data.input)),
                 ),
             );
         },

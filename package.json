@@ -7,7 +7,8 @@
     "lint": "next lint",
     "format": "prettier --write ./src/",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@dogonis/hooks": "^1.1.0",
@@ -16,6 +17,7 @@
     "axios": "^1.4.0",
     "next": "14.0.4",
     "normalize.css": "^8.0.1",
+    "qrcode": "^1.5.3",
     "react": "^18",
     "react-dom": "^18"
   },
@@ -29,6 +31,7 @@
     "@storybook/react": "^7.6.12",
     "@storybook/test": "^7.6.12",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

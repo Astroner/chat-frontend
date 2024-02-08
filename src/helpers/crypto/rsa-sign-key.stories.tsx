@@ -2,7 +2,7 @@ import { Meta } from '@storybook/react';
 
 import { RSASignKey } from './rsa-sign-key.class';
 import { useRef, useState } from 'react';
-import { arrayBufferToHex, hexToArrayBuffer } from '../arraybuffer-utils';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '../arraybuffer-utils';
 
 const meta: Meta<typeof RSASignKey> = {
     title: 'RSA Key Sign Class',
@@ -68,7 +68,7 @@ export const GetSignature = () => {
         const key = await RSASignKey.fromJSON(keyRef.current.value);
 
         setSignature(
-            arrayBufferToHex(
+            arrayBufferToBase64(
                 await key.createSignature(
                     new TextEncoder().encode(dataRef.current.value),
                 ),
@@ -118,7 +118,7 @@ export const VerifySignature = () => {
         setSignature(
             (await key.verify(
                 new TextEncoder().encode(dataRef.current.value),
-                hexToArrayBuffer(signatureRef.current.value),
+                base64ToArrayBuffer(signatureRef.current.value),
             ))
                 ? 'TRUE'
                 : 'FALSE',

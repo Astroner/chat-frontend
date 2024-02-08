@@ -26,7 +26,7 @@ export class AesGcmKey implements EncryptionKey {
                 name: 'PBKDF2',
                 hash: 'SHA-256',
                 salt,
-                iterations: 10000,
+                iterations: 100000,
             },
             origin,
             { name: 'AES-GCM', length: 256 },
