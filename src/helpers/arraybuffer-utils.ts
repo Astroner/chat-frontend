@@ -31,3 +31,7 @@ export const arrayBufferToBlob = (src: ArrayBuffer) => {
 
 const encoder = new TextEncoder();
 export const stringToArrayBuffer = (src: string) => encoder.encode(src);
+
+
+const decoder = new TextDecoder();
+export const arrayBufferToString = (src: ArrayBuffer) => decoder.decode(src);
