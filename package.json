@@ -1,24 +1,42 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write ./src/",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@dogonis/hooks": "^1.1.0",
+    "@schematic-forms/core": "^0.7.8",
+    "@schematic-forms/react": "^0.9.6",
+    "axios": "^1.4.0",
+    "next": "14.0.4",
+    "normalize.css": "^8.0.1",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.0.4"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@storybook/addon-essentials": "^7.6.12",
+    "@storybook/addon-interactions": "^7.6.12",
+    "@storybook/addon-links": "^7.6.12",
+    "@storybook/addon-onboarding": "^1.0.11",
+    "@storybook/blocks": "^7.6.12",
+    "@storybook/nextjs": "^7.6.12",
+    "@storybook/react": "^7.6.12",
+    "@storybook/test": "^7.6.12",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.4",
+    "sass": "^1.70.0",
+    "storybook": "^7.6.12",
+    "typescript": "^5"
   }
 }

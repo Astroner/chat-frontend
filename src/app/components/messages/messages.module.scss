@@ -1,0 +1,55 @@
+.root {
+    width: 100%;
+    height: 100%;
+
+
+    background: var(--dark-purple);
+
+    overflow-y: auto;
+}
+
+.list {
+    list-style-type: none;
+
+    padding: 0;
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px;
+}
+
+.message {
+    border-radius: var(--border-radius);
+
+    padding: 10px;
+
+    max-width: 90%;
+
+    font-size: var(--text-font-size);
+
+    &:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    &--client {
+        composes: message;
+
+        align-self: flex-end;
+
+        background: var(--orange);
+
+        color: var(--black)
+    }
+
+    &--server {
+        composes: message;
+
+        align-self: flex-start;
+
+        background: var(--light-purple);
+
+        color: var(--black)
+    }
+}

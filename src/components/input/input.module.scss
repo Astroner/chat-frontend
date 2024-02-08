@@ -1,0 +1,22 @@
+.root {
+    background-color: var(--light-purple);
+
+    border: none;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--light-purple);
+    outline: none;
+
+    padding: 10px;
+
+    transition: border .3s;
+
+    color: var(--black);
+
+    font-size: var(--text-font-size);
+
+    min-width: 0;
+
+    &:focus {
+        border: 2px solid var(--black);
+    }
+}

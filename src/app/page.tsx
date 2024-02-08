@@ -1,95 +1,86 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client"
+
+import { FormEvent, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { env } from "../env";
+
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    const textArea = useRef<HTMLTextAreaElement>(null);
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    const [messages, setMessages] = useState<string[]>([]);
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+    const [ws, setWS] = useState<WebSocket | null>(null);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+    useEffect(() => {
+        const ws = new WebSocket(env.WS_ADDRESS);
+        setWS(ws);
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+        return () => {
+            setWS(null);
+            ws.close();
+        }
+    }, [])
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    useEffect(() => {
+        if(!ws) return;
+        (async () => {
+            const { privateKey, publicKey } = await window.crypto.subtle.generateKey(
+                {
+                  name: "RSA-OAEP",
+                  modulusLength: 4096,
+                  publicExponent: new Uint8Array([1, 0, 1]),
+                  hash: "SHA-256",
+                },
+                true,
+                ["encrypt", "decrypt"],
+            );
+
+            const message = "ssss";
+
+            const encrypted = await window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, new TextEncoder().encode(message));
+
+            const decrypt = await window.crypto.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, encrypted);
+
+
+            console.log(new TextDecoder().decode(decrypt));
+        })()
+
+        const handler = (message: MessageEvent) => {
+            setMessages(p => p.concat([`[SERVER] ${new Date(message.timeStamp).toISOString()} : ${message.data}`]))
+        }
+
+        ws.addEventListener("message", handler);
+
+        return () => {
+            ws.removeEventListener("message", handler)
+        }
+    }, [ws])
+
+    const send = (e: FormEvent) => {
+        e.preventDefault();
+        if(!textArea.current || !ws || textArea.current.value.length === 0) return;
+
+        const message = textArea.current.value;
+        textArea.current.value = "";
+        ws.send(message);
+        setMessages(p => p.concat([`[CLIENT] ${new Date().toISOString()} : ${message}`]))
+    }
+
+    return (
+        <>
+            <form onSubmit={send}>
+                <textarea ref={textArea}>
+                
+                </textarea>
+                <input type="submit" value="Send"></input>
+            </form>
+            <ul>
+                {messages.map((message, i) => (
+                    <li key={i}>
+                        {message}
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
 }
