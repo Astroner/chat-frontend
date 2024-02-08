@@ -1,15 +1,14 @@
-import { Meta } from "@storybook/react";
+import { Meta } from '@storybook/react';
 
-import { RSASignKey } from "./rsa-sign-key.class"
-import { useRef, useState } from "react";
-import { arrayBufferToHex, hexToArrayBuffer } from "../arraybuffer-utils";
+import { RSASignKey } from './rsa-sign-key.class';
+import { useRef, useState } from 'react';
+import { arrayBufferToHex, hexToArrayBuffer } from '../arraybuffer-utils';
 
 const meta: Meta<typeof RSASignKey> = {
-    title: "RSA Key Sign Class",
-}
+    title: 'RSA Key Sign Class',
+};
 
 export default meta;
-
 
 export const RSAKeysIssuing = () => {
     const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -21,28 +20,24 @@ export const RSAKeysIssuing = () => {
         const { privateKey, publicKey } = await RSASignKey.generatePair();
 
         const [pr, pub] = await Promise.all([
-            privateKey.toJSON(), 
-            publicKey.toJSON()
-        ])
+            privateKey.toJSON(),
+            publicKey.toJSON(),
+        ]);
 
-        setPrivateKey(pr)
-        setPublicKey(pub)
+        setPrivateKey(pr);
+        setPublicKey(pub);
         setIsLoading(false);
-    }
+    };
 
     return (
         <div>
-            <button onClick={issue}>
-                Issue keys pair
-            </button>
+            <button onClick={issue}>Issue keys pair</button>
             {isLoading && <div>Loading...</div>}
             <div>
                 {publicKey && (
                     <div>
                         <h3>Public:</h3>
-                        <div>
-                            {publicKey}
-                        </div>
+                        <div>{publicKey}</div>
                     </div>
                 )}
             </div>
@@ -50,18 +45,15 @@ export const RSAKeysIssuing = () => {
                 {privateKey && (
                     <div>
                         <h3>Private:</h3>
-                        <div>
-                            {privateKey}
-                        </div>
+                        <div>{privateKey}</div>
                     </div>
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
 export const GetSignature = () => {
-
     const keyRef = useRef<HTMLTextAreaElement>(null);
     const dataRef = useRef<HTMLTextAreaElement>(null);
 
@@ -69,15 +61,21 @@ export const GetSignature = () => {
     const [signature, setSignature] = useState<string | null>(null);
 
     const getSignature = async () => {
-        if(!keyRef.current?.value || !dataRef.current?.value) return;
+        if (!keyRef.current?.value || !dataRef.current?.value) return;
 
         setIsLoading(true);
 
         const key = await RSASignKey.fromJSON(keyRef.current.value);
 
-        setSignature(arrayBufferToHex(await key.createSignature(new TextEncoder().encode(dataRef.current.value))))
+        setSignature(
+            arrayBufferToHex(
+                await key.createSignature(
+                    new TextEncoder().encode(dataRef.current.value),
+                ),
+            ),
+        );
         setIsLoading(false);
-    }
+    };
 
     return (
         <div>
@@ -86,7 +84,7 @@ export const GetSignature = () => {
                 <textarea ref={dataRef} placeholder="Data" />
             </div>
             <button onClick={getSignature}>Get Signature</button>
-            {isLoading && "Loading..."}
+            {isLoading && 'Loading...'}
             {signature && (
                 <div>
                     <h3>Signature</h3>
@@ -94,11 +92,10 @@ export const GetSignature = () => {
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
 export const VerifySignature = () => {
-
     const keyRef = useRef<HTMLTextAreaElement>(null);
     const dataRef = useRef<HTMLTextAreaElement>(null);
     const signatureRef = useRef<HTMLTextAreaElement>(null);
@@ -107,15 +104,27 @@ export const VerifySignature = () => {
     const [signature, setSignature] = useState<string | null>(null);
 
     const verify = async () => {
-        if(!keyRef.current?.value || !dataRef.current?.value || !signatureRef.current?.value) return;
+        if (
+            !keyRef.current?.value ||
+            !dataRef.current?.value ||
+            !signatureRef.current?.value
+        )
+            return;
 
         setIsLoading(true);
 
         const key = await RSASignKey.fromJSON(keyRef.current.value);
 
-        setSignature(await key.verify(new TextEncoder().encode(dataRef.current.value), hexToArrayBuffer(signatureRef.current.value)) ? "TRUE" : "FALSE")
+        setSignature(
+            (await key.verify(
+                new TextEncoder().encode(dataRef.current.value),
+                hexToArrayBuffer(signatureRef.current.value),
+            ))
+                ? 'TRUE'
+                : 'FALSE',
+        );
         setIsLoading(false);
-    }
+    };
 
     return (
         <div>
@@ -125,7 +134,7 @@ export const VerifySignature = () => {
                 <textarea ref={signatureRef} placeholder="Signature" />
             </div>
             <button onClick={verify}>Verify Signature</button>
-            {isLoading && "Loading..."}
+            {isLoading && 'Loading...'}
             {signature && (
                 <div>
                     <h3>Signature</h3>
@@ -133,5 +142,5 @@ export const VerifySignature = () => {
                 </div>
             )}
         </div>
-    )
-}
+    );
+};

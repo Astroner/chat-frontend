@@ -1,18 +1,18 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from '@storybook/react';
 
-import { Chat } from "./chat.component"
+import { Chat } from './chat.component';
 
 const meta: Meta<typeof Chat> = {
-    title: "Chat",
+    title: 'Chat',
     component: Chat,
     decorators: [
-        Story => (
-            <div style={{ width: "100vw", height: "100vh" }}>
+        (Story) => (
+            <div style={{ width: '100vw', height: '100vh' }}>
                 <Story />
             </div>
-        )
-    ]
-}
+        ),
+    ],
+};
 
 export default meta;
 
@@ -22,9 +22,9 @@ export const Default: Story = {
     args: {
         messages: [
             {
-                text: "message",
-                origin: "CLIENT"
-            }
-        ]
-    }
-}
+                text: 'message',
+                origin: 'CLIENT',
+            },
+        ],
+    },
+};

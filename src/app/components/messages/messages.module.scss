@@ -2,7 +2,6 @@
     width: 100%;
     height: 100%;
 
-
     background: var(--dark-purple);
 
     overflow-y: auto;
@@ -40,7 +39,7 @@
 
         background: var(--orange);
 
-        color: var(--black)
+        color: var(--black);
     }
 
     &--server {
@@ -50,6 +49,6 @@
 
         background: var(--light-purple);
 
-        color: var(--black)
+        color: var(--black);
     }
 }

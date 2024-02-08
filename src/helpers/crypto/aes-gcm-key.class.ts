@@ -1,38 +1,38 @@
-import { stringToArrayBuffer } from "../arraybuffer-utils";
-import { EncryptionKey } from "./crypto.types";
+import { stringToArrayBuffer } from '../arraybuffer-utils';
+import { EncryptionKey } from './crypto.types';
 
 export class AesGcmKey implements EncryptionKey {
     static async generate() {
         const key = await crypto.subtle.generateKey(
-            { name: "AES-GCM", length: 256 },
+            { name: 'AES-GCM', length: 256 },
             true,
-            ["encrypt", "decrypt"]
-        )
+            ['encrypt', 'decrypt'],
+        );
 
         return new AesGcmKey(key);
     }
 
     static async fromPassword(password: string, salt: Uint8Array) {
         const origin = await crypto.subtle.importKey(
-            "raw",
+            'raw',
             stringToArrayBuffer(password),
-            "PBKDF2",
+            'PBKDF2',
             false,
-            ["deriveKey"]
-        )
+            ['deriveKey'],
+        );
 
         const key = await crypto.subtle.deriveKey(
             {
-                name: "PBKDF2",
-                hash: "SHA-256",
+                name: 'PBKDF2',
+                hash: 'SHA-256',
                 salt,
-                iterations: 10000
+                iterations: 10000,
             },
             origin,
-            { name: "AES-GCM", length: 256 },
+            { name: 'AES-GCM', length: 256 },
             true,
-            ["encrypt", "decrypt"]
-        )
+            ['encrypt', 'decrypt'],
+        );
 
         return new AesGcmKey(key);
     }
@@ -40,7 +40,13 @@ export class AesGcmKey implements EncryptionKey {
     static async fromJSON(src: string) {
         const jwk = JSON.parse(src);
 
-        const key = await crypto.subtle.importKey("jwk", jwk, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+        const key = await crypto.subtle.importKey(
+            'jwk',
+            jwk,
+            { name: 'AES-GCM', length: 256 },
+            true,
+            ['encrypt', 'decrypt'],
+        );
 
         return new AesGcmKey(key);
     }
@@ -48,13 +54,13 @@ export class AesGcmKey implements EncryptionKey {
     constructor(private key: CryptoKey) {}
 
     async encrypt(data: ArrayBuffer): Promise<ArrayBuffer> {
-        const iv = crypto.getRandomValues(new Uint8Array(12))
+        const iv = crypto.getRandomValues(new Uint8Array(12));
 
         const cipher = await crypto.subtle.encrypt(
-            { name: "AES-GCM", iv },
+            { name: 'AES-GCM', iv },
             this.key,
-            data
-        )
+            data,
+        );
 
         const result = new Uint8Array(cipher.byteLength + iv.byteLength);
 
@@ -70,16 +76,16 @@ export class AesGcmKey implements EncryptionKey {
         const cipher = src.slice(12);
 
         const data = await crypto.subtle.decrypt(
-            { name: "AES-GCM", iv },
+            { name: 'AES-GCM', iv },
             this.key,
-            cipher
-        )
+            cipher,
+        );
 
         return data;
     }
 
     async toJSON() {
-        const jwk = await crypto.subtle.exportKey("jwk", this.key);
+        const jwk = await crypto.subtle.exportKey('jwk', this.key);
 
         return JSON.stringify(jwk);
     }

@@ -15,12 +15,14 @@
 
     cursor: pointer;
 
-    transition: background-color .3s, opacity .3s;
+    transition:
+        background-color 0.3s,
+        opacity 0.3s;
 
     &:disabled {
         cursor: default;
-        
-        opacity: .4;
+
+        opacity: 0.4;
     }
 
     &--purple {

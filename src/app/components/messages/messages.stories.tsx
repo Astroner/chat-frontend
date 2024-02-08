@@ -1,9 +1,9 @@
-import { StoryObj, Meta } from "@storybook/react";
+import { StoryObj, Meta } from '@storybook/react';
 
-import { Messages } from "./messages.component";
+import { Messages } from './messages.component';
 
 const meta: Meta = {
-    title: "Messages",
+    title: 'Messages',
     component: Messages,
     argTypes: {
         messages: {
@@ -15,27 +15,27 @@ const meta: Meta = {
                     required: true,
                     value: {
                         origin: {
-                    required: true,
-                    name: 'enum',
-                            value: ["CLIENT", "SERVER"]
+                            required: true,
+                            name: 'enum',
+                            value: ['CLIENT', 'SERVER'],
                         },
                         message: {
-                    required: true,
-                    name: 'string'
-                        }
-                    }
-                }
-            }
-        }
+                            required: true,
+                            name: 'string',
+                        },
+                    },
+                },
+            },
+        },
     },
     decorators: [
-        Story => (
+        (Story) => (
             <div style={{ width: '100vw', height: '100vh' }}>
                 <Story />
             </div>
-        )
-    ]
-}
+        ),
+    ],
+};
 
 export default meta;
 
@@ -45,30 +45,30 @@ export const Primary: Story = {
     args: {
         messages: [
             {
-                origin: "CLIENT",
-                text: "message"
+                origin: 'CLIENT',
+                text: 'message',
             },
             {
-                origin: "SERVER",
-                text: "message"
+                origin: 'SERVER',
+                text: 'message',
             },
             {
-                origin: "SERVER",
-                text: "Very long message containing no useful information at all"
+                origin: 'SERVER',
+                text: 'Very long message containing no useful information at all',
             },
             {
-                origin: "CLIENT",
-                text: "message"
+                origin: 'CLIENT',
+                text: 'message',
             },
-        ]
-    }
-}
+        ],
+    },
+};
 
 export const Scroll: Story = {
     args: {
         messages: new Array(50).fill(null).map((_, i) => ({
-            origin: i % 2 ? "CLIENT" : "SERVER",
-            text: "message text"
-        }))
-    }
-}
+            origin: i % 2 ? 'CLIENT' : 'SERVER',
+            text: 'message text',
+        })),
+    },
+};

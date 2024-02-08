@@ -1,17 +1,16 @@
-import { FC, memo } from "react";
+import { FC, memo } from 'react';
 
-import { Messages, Message } from "../messages/messages.component";
-import { ChatInput } from "../chat-input/chat-input.component";
+import { Messages, Message } from '../messages/messages.component';
+import { ChatInput } from '../chat-input/chat-input.component';
 
-import cn from "./chat.module.scss";
+import cn from './chat.module.scss';
 
 export type ChatProps = {
     messages: Message[];
     onSubmit: (text: string) => void;
-}
+};
 
-export const Chat: FC<ChatProps> = memo(props => {
-
+export const Chat: FC<ChatProps> = memo((props) => {
     return (
         <div className={cn.root}>
             <div className={cn['messages-container']}>
@@ -19,5 +18,5 @@ export const Chat: FC<ChatProps> = memo(props => {
             </div>
             <ChatInput className={cn.input} onSubmit={props.onSubmit} />
         </div>
-    )
-})
+    );
+});
