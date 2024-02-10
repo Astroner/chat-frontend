@@ -1,17 +1,18 @@
-import { Meta, StoryFn, StoryObj } from "@storybook/react";
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 
-import { ECDHKey } from "./ecdh-key.class"
-import { useState } from "react";
-import { arrayBufferToBase64 } from "../../arraybuffer-utils";
+import { ECDHKey } from './ecdh-key.class';
+import { useState } from 'react';
+import { arrayBufferToBase64 } from '../../arraybuffer-utils';
 
 const meta: Meta = {
-    title: "Crypto/ECDH Key",
-}
+    title: 'Crypto/ECDH Key',
+};
 
 export default meta;
 
-
-export const IssuePair: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => {
+export const IssuePair: StoryFn<{ format: 'JWK' | 'Base64' }> = ({
+    format,
+}) => {
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [privateKey, setPrivateKey] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -20,16 +21,13 @@ export const IssuePair: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => 
         setIsLoading(true);
         const { privateKey, publicKey } = await ECDHKey.generatePair();
 
-        const [pr, pub] = 
-            format === "JWK" 
-            ? await Promise.all([
-                privateKey.toJSON(),
-                publicKey.toJSON(),
-            ])
-            : await Promise.all([
-                privateKey.toPKCS8().then(arrayBufferToBase64),
-                publicKey.toSPKI().then(arrayBufferToBase64),
-            ])
+        const [pr, pub] =
+            format === 'JWK'
+                ? await Promise.all([privateKey.toJSON(), publicKey.toJSON()])
+                : await Promise.all([
+                      privateKey.toPKCS8().then(arrayBufferToBase64),
+                      publicKey.toSPKI().then(arrayBufferToBase64),
+                  ]);
 
         setPrivateKey(pr);
         setPublicKey(pub);
@@ -58,17 +56,17 @@ export const IssuePair: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => 
             </div>
         </div>
     );
-}
+};
 
 IssuePair.argTypes = {
     format: {
         type: {
-            name: "enum",
-            value: ["JWK", "Base64"]
+            name: 'enum',
+            value: ['JWK', 'Base64'],
         },
-    }
-}
+    },
+};
 
 IssuePair.args = {
-    format: "JWK"
-}
+    format: 'JWK',
+};

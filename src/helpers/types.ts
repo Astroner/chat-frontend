@@ -6,4 +6,4 @@ export type EventListener<E> = (e: E) => void;
 
 export type Subscription = {
     unsubscribe: VoidFunction;
-}
+};

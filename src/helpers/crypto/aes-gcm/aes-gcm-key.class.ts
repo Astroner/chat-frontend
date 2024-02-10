@@ -55,17 +55,17 @@ export class AesGcmKey implements EncryptionKey {
     static async fromECDH(publicKey: ECDHKey, privateKey: ECDHKey) {
         const key = await crypto.subtle.deriveKey(
             {
-                name: "ECDH",
+                name: 'ECDH',
                 public: publicKey.getKey(),
             },
             privateKey.getKey(),
             {
-                name: "AES-GCM",
+                name: 'AES-GCM',
                 length: 256,
             },
             true,
-            ["encrypt", "decrypt"]
-        )
+            ['encrypt', 'decrypt'],
+        );
 
         return new AesGcmKey(key);
     }

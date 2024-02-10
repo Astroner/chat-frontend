@@ -1,15 +1,15 @@
-import { EncryptionKey } from "../crypto.types"
+import { EncryptionKey } from '../crypto.types';
 
 export type KeysIndexConfig = {
-    initialKeys?: Array<{ id: string, key: EncryptionKey }>
-}
+    initialKeys?: Array<{ id: string; key: EncryptionKey }>;
+};
 
 export class KeysIndex {
     private keys = new Map<string, EncryptionKey>();
 
     constructor(private config?: KeysIndexConfig) {
-        if(config?.initialKeys)
-            for(const entry of config.initialKeys) {
+        if (config?.initialKeys)
+            for (const entry of config.initialKeys) {
                 this.keys.set(entry.id, entry.key);
             }
     }
@@ -25,16 +25,14 @@ export class KeysIndex {
     async tryToDecrypt(cipher: ArrayBuffer) {
         try {
             const result = await Promise.any(
-                Array
-                    .from(this.keys.entries())
-                    .map(async ([keyID, key]) => {
-                        const data = await key.decrypt(cipher);
-    
-                        return { keyID, data };
-                    })
-            )
-    
-            return result
+                Array.from(this.keys.entries()).map(async ([keyID, key]) => {
+                    const data = await key.decrypt(cipher);
+
+                    return { keyID, data };
+                }),
+            );
+
+            return result;
         } catch {
             return null;
         }

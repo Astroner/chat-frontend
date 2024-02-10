@@ -2,13 +2,18 @@ import { useRef, useState } from 'react';
 import { Meta, StoryFn } from '@storybook/react';
 
 import { RSAEncryptionKey } from './rsa-encryption-key.class';
-import { arrayBufferToBase64, base64ToArrayBuffer } from '../../arraybuffer-utils';
+import {
+    arrayBufferToBase64,
+    base64ToArrayBuffer,
+} from '../../arraybuffer-utils';
 
 const meta: Meta = {
     title: 'Crypto/RSA Encryption Key Class',
 };
 
-export const RSAKeysIssuing: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => {
+export const RSAKeysIssuing: StoryFn<{ format: 'JWK' | 'Base64' }> = ({
+    format,
+}) => {
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [privateKey, setPrivateKey] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -17,16 +22,13 @@ export const RSAKeysIssuing: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }
         setIsLoading(true);
         const { privateKey, publicKey } = await RSAEncryptionKey.generatePair();
 
-        const [pr, pub] = 
-            format === "JWK" 
-            ? await Promise.all([
-                privateKey.toJSON(),
-                publicKey.toJSON(),
-            ])
-            : await Promise.all([
-                privateKey.toPKCS8().then(arrayBufferToBase64),
-                publicKey.toSPKI().then(arrayBufferToBase64),
-            ])
+        const [pr, pub] =
+            format === 'JWK'
+                ? await Promise.all([privateKey.toJSON(), publicKey.toJSON()])
+                : await Promise.all([
+                      privateKey.toPKCS8().then(arrayBufferToBase64),
+                      publicKey.toSPKI().then(arrayBufferToBase64),
+                  ]);
 
         setPrivateKey(pr);
         setPublicKey(pub);
@@ -60,15 +62,15 @@ export const RSAKeysIssuing: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }
 RSAKeysIssuing.argTypes = {
     format: {
         type: {
-            name: "enum",
-            value: ["JWK", "Base64"]
+            name: 'enum',
+            value: ['JWK', 'Base64'],
         },
-    }
-}
+    },
+};
 
 RSAKeysIssuing.args = {
-    format: "JWK"
-}
+    format: 'JWK',
+};
 
 export const RSAEncryptDecrypt = () => {
     const keyRef = useRef<HTMLTextAreaElement>(null);

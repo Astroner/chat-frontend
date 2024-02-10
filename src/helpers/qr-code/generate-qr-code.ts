@@ -1,9 +1,9 @@
-import { toDataURL } from "qrcode";
+import { toDataURL } from 'qrcode';
 
 export const generateQRCode = async (data: string) => {
     const url = await toDataURL(data, {
-        errorCorrectionLevel: "M",
+        errorCorrectionLevel: 'M',
     });
 
     return url;
-}
+};

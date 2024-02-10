@@ -2,12 +2,11 @@ import { EventTemplate, Subscription } from '../../types';
 import { wait } from '../../wait';
 
 export type ConnectionDataTemplate<T extends string, Data> = {
-    type: T,
-    data: Data
-}
+    type: T;
+    data: Data;
+};
 
-export type ConnectionData = 
-    | ConnectionDataTemplate<"blob", Blob>
+export type ConnectionData = ConnectionDataTemplate<'blob', Blob>;
 
 export type ConnectionEvent =
     | EventTemplate<'CONNECTED'>
@@ -51,13 +50,13 @@ export class Connection {
     private listeners = new Set<ConnectionEventHandler>();
 
     private socket: WebSocket | null = null;
-    
+
     private STARTED = false;
 
     constructor(private address: string) {}
 
     async connect() {
-        if(this.STARTED) return;
+        if (this.STARTED) return;
 
         this.STARTED = true;
 
@@ -115,13 +114,12 @@ export class Connection {
         if (!this.socket) return;
 
         this.socket.addEventListener('message', (message) => {
-
             let data: ConnectionData;
-            if(message.data instanceof Blob) {
+            if (message.data instanceof Blob) {
                 data = {
-                    type: "blob",
-                    data: message.data
-                }
+                    type: 'blob',
+                    data: message.data,
+                };
             } else {
                 return;
             }

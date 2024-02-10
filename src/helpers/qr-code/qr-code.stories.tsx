@@ -1,14 +1,13 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from '@storybook/react';
 
-import { generateQRCode } from "./generate-qr-code"
-import { useEffect, useState } from "react";
+import { generateQRCode } from './generate-qr-code';
+import { useEffect, useState } from 'react';
 
 const meta: Meta = {
-    title: "QR Code",
-}
+    title: 'QR Code',
+};
 
 export default meta;
-
 
 export const TextToQRCode: StoryObj<{ data: string }> = {
     render: ({ data }) => {
@@ -17,43 +16,43 @@ export const TextToQRCode: StoryObj<{ data: string }> = {
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
-            if(!data) return;
+            if (!data) return;
 
             let mounted = true;
 
             generateQRCode(data)
-                .then(url => {
-                    if(mounted) setCodeURL(url);
+                .then((url) => {
+                    if (mounted) setCodeURL(url);
                     else URL.revokeObjectURL(url);
                 })
-                .catch(() => alert("Error"));
+                .catch(() => alert('Error'));
 
             return () => {
-                mounted = false
-            }
-        }, [data])
+                mounted = false;
+            };
+        }, [data]);
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
-            if(!codeURL) return;
+            if (!codeURL) return;
 
             return () => {
                 URL.revokeObjectURL(codeURL);
-            }
-        }, [codeURL])
+            };
+        }, [codeURL]);
 
         return (
             <div>
-                {
-                    codeURL 
+                {codeURL ? (
                     // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-                    ? <img src={codeURL} />
-                    : "Loading..."
-                }
+                    <img src={codeURL} />
+                ) : (
+                    'Loading...'
+                )}
             </div>
-        )
+        );
     },
     args: {
-        data: "https://google.com"
-    }
-}
+        data: 'https://google.com',
+    },
+};

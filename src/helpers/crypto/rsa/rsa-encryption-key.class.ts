@@ -38,8 +38,8 @@ export class RSAEncryptionKey implements EncryptionKey {
 
     static async fromPKCS8(src: ArrayBuffer) {
         const key = await crypto.subtle.importKey(
-            "pkcs8", 
-            src, 
+            'pkcs8',
+            src,
             {
                 name: 'RSA-OAEP',
                 hash: 'SHA-256',
@@ -53,8 +53,8 @@ export class RSAEncryptionKey implements EncryptionKey {
 
     static async fromSPKI(src: ArrayBuffer) {
         const key = await crypto.subtle.importKey(
-            "spki", 
-            src, 
+            'spki',
+            src,
             {
                 name: 'RSA-OAEP',
                 hash: 'SHA-256',
@@ -93,20 +93,20 @@ export class RSAEncryptionKey implements EncryptionKey {
     }
 
     /**
-     * 
+     *
      * @returns array buffer in pkcs8 format
      * @description only for private keys
      */
     async toPKCS8() {
-        return crypto.subtle.exportKey("pkcs8", this.key);
+        return crypto.subtle.exportKey('pkcs8', this.key);
     }
 
     /**
-     * 
+     *
      * @returns array buffer in SPKI format
      * @description only for public keys
      */
     async toSPKI() {
-        return crypto.subtle.exportKey("spki", this.key);
+        return crypto.subtle.exportKey('spki', this.key);
     }
 }

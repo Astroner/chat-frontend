@@ -163,8 +163,8 @@ export const DeriveFromECDH: StoryFn = () => {
             const aes = await AesGcmKey.fromECDH(publicKey, privateKey);
 
             setKey(await aes.toJSON());
-        }
-    })
+        },
+    });
 
     return (
         <div>
@@ -200,5 +200,5 @@ export const DeriveFromECDH: StoryFn = () => {
                 )}
             </FormProvider>
         </div>
-    )
-}
+    );
+};

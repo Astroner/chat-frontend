@@ -1,17 +1,24 @@
-import { Meta, StoryFn } from "@storybook/react";
+import { Meta, StoryFn } from '@storybook/react';
 
-import { KeysIndex } from "./keys-index.class"
-import { useMemo, useState } from "react";
-import { FieldConsumer, FormProvider, useController } from "@schematic-forms/react";
-import { Enum, Str } from "@schematic-forms/core";
-import { EncryptionKey } from "../crypto.types";
-import { AesGcmKey } from "../aes-gcm/aes-gcm-key.class";
-import { RSAEncryptionKey } from "../rsa/rsa-encryption-key.class";
-import { arrayBufferToString, base64ToArrayBuffer,  } from "../../arraybuffer-utils";
+import { KeysIndex } from './keys-index.class';
+import { useMemo, useState } from 'react';
+import {
+    FieldConsumer,
+    FormProvider,
+    useController,
+} from '@schematic-forms/react';
+import { Enum, Str } from '@schematic-forms/core';
+import { EncryptionKey } from '../crypto.types';
+import { AesGcmKey } from '../aes-gcm/aes-gcm-key.class';
+import { RSAEncryptionKey } from '../rsa/rsa-encryption-key.class';
+import {
+    arrayBufferToString,
+    base64ToArrayBuffer,
+} from '../../arraybuffer-utils';
 
 const meta: Meta = {
-    title: "Crypto/Keys Index",
-}
+    title: 'Crypto/Keys Index',
+};
 
 export default meta;
 
@@ -20,54 +27,66 @@ export const Default: StoryFn = () => {
 
     const index = useMemo(() => new KeysIndex(), []);
 
-    const [searchResult, setSearchResult] = useState<{ key: string, data: string } | null>(null);
+    const [searchResult, setSearchResult] = useState<{
+        key: string;
+        data: string;
+    } | null>(null);
 
     const { controller: AddController, submit: AddKey } = useController({
         fields: {
             id: Str(true),
-            keyType: Enum(["RSA-OAEP", "AES-GCM"] as ["RSA-OAEP", "AES-GCM"], true, "RSA-OAEP"),
+            keyType: Enum(
+                ['RSA-OAEP', 'AES-GCM'] as ['RSA-OAEP', 'AES-GCM'],
+                true,
+                'RSA-OAEP',
+            ),
             key: Str(true),
         },
         async submit(data) {
             let key: EncryptionKey;
 
-            switch(data.keyType) {
-                case "AES-GCM":
+            switch (data.keyType) {
+                case 'AES-GCM':
                     key = await AesGcmKey.fromJSON(data.key);
                     break;
-                
-                case "RSA-OAEP":
+
+                case 'RSA-OAEP':
                     key = await RSAEncryptionKey.fromJSON(data.key);
             }
 
             index.addKey(data.id, key);
-            setStoredKeys(p => p.concat([data.id]))
-        }
-    })
-
-    const { controller: IndexController, submit: TryToDecrypt } = useController({
-        fields: {
-            cipher: Str(true),
+            setStoredKeys((p) => p.concat([data.id]));
         },
-        async submit(data) {
-            try {
-                setSearchResult(null)
-                const result = await index.tryToDecrypt(base64ToArrayBuffer(data.cipher));
-                if(!result) return {
-                    cipher: "NOPE"
-                };
+    });
 
-                setSearchResult({
-                    key: result.keyID,
-                    data: arrayBufferToString(result.data)
-                })
-            } catch(e) {
-                return {
-                    cipher: "No Keys found"
+    const { controller: IndexController, submit: TryToDecrypt } = useController(
+        {
+            fields: {
+                cipher: Str(true),
+            },
+            async submit(data) {
+                try {
+                    setSearchResult(null);
+                    const result = await index.tryToDecrypt(
+                        base64ToArrayBuffer(data.cipher),
+                    );
+                    if (!result)
+                        return {
+                            cipher: 'NOPE',
+                        };
+
+                    setSearchResult({
+                        key: result.keyID,
+                        data: arrayBufferToString(result.data),
+                    });
+                } catch (e) {
+                    return {
+                        cipher: 'No Keys found',
+                    };
                 }
-            }
-        }
-    })
+            },
+        },
+    );
 
     return (
         <div>
@@ -76,13 +95,22 @@ export const Default: StoryFn = () => {
                 <FormProvider controller={AddController}>
                     <div>
                         <FieldConsumer field="id">
-                            {({ value, setValue }) => <input placeholder="ID" value={value} onChange={e => setValue(e.target.value)} />}
+                            {({ value, setValue }) => (
+                                <input
+                                    placeholder="ID"
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                />
+                            )}
                         </FieldConsumer>
                     </div>
                     <div>
                         <FieldConsumer field="keyType">
                             {({ value, setValue }) => (
-                                <select value={value} onChange={e => setValue(e.target.value)}>
+                                <select
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                >
                                     <option value="RSA-OAEP">RSA-OAEP</option>
                                     <option value="AES-GCM">AES-GCM</option>
                                 </select>
@@ -91,7 +119,13 @@ export const Default: StoryFn = () => {
                     </div>
                     <div>
                         <FieldConsumer field="key">
-                            {({ value, setValue }) => <textarea placeholder="JWK" value={value} onChange={e => setValue(e.target.value)} />}
+                            {({ value, setValue }) => (
+                                <textarea
+                                    placeholder="JWK"
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                />
+                            )}
                         </FieldConsumer>
                     </div>
                     <div>
@@ -101,13 +135,15 @@ export const Default: StoryFn = () => {
             </div>
             <div>
                 <h3>Stored keys:</h3>
-                {
-                    storedKeys.length === 0
-                    ? "Empty"
-                    : <ul>
-                        {storedKeys.map(item => <li key={item}>{item}</li>)}
+                {storedKeys.length === 0 ? (
+                    'Empty'
+                ) : (
+                    <ul>
+                        {storedKeys.map((item) => (
+                            <li key={item}>{item}</li>
+                        ))}
                     </ul>
-                }
+                )}
             </div>
             <div>
                 <h3>Try to get key</h3>
@@ -115,7 +151,11 @@ export const Default: StoryFn = () => {
                     <FieldConsumer field="cipher">
                         {({ value, setValue, error }) => (
                             <div>
-                                <textarea placeholder="Cipher" value={value} onChange={e => setValue(e.target.value)} />
+                                <textarea
+                                    placeholder="Cipher"
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                />
                                 {error && <div>{error}</div>}
                             </div>
                         )}
@@ -131,5 +171,5 @@ export const Default: StoryFn = () => {
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
