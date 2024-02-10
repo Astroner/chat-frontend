@@ -1,4 +1,4 @@
-import { Meta, StoryFn, StoryObj } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { ProtocolClient } from './protocol-client.class';
 import { useEffect, useMemo, useState } from 'react';

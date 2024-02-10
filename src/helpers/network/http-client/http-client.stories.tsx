@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import {
     ErrorConsumer,
     FieldConsumer,
     FormProvider,
     useController,
-    usePending,
 } from '@schematic-forms/react';
 import { Str } from '@schematic-forms/core';
 

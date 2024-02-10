@@ -1,4 +1,4 @@
-import { EventListener, EventTemplate, Subscription } from '../../types';
+import { EventListener, Subscription } from '../../types';
 import { Connection } from '../connection/connection.class';
 import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { EncryptionKey } from '../../crypto/crypto.types';
