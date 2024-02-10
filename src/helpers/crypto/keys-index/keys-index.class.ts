@@ -1,4 +1,4 @@
-import { EncryptionKey } from "../../crypto/crypto.types"
+import { EncryptionKey } from "../crypto.types"
 
 export type KeysIndexConfig = {
     initialKeys?: Array<{ id: string, key: EncryptionKey }>
@@ -22,15 +22,21 @@ export class KeysIndex {
         this.keys.delete(id);
     }
 
-    tryToDecrypt(cipher: ArrayBuffer) {
-        return Promise.any(
-            Array
-                .from(this.keys.entries())
-                .map(async ([keyID, key]) => {
-                    const data = await key.decrypt(cipher);
-
-                    return { keyID, data };
-                })
-        )
+    async tryToDecrypt(cipher: ArrayBuffer) {
+        try {
+            const result = await Promise.any(
+                Array
+                    .from(this.keys.entries())
+                    .map(async ([keyID, key]) => {
+                        const data = await key.decrypt(cipher);
+    
+                        return { keyID, data };
+                    })
+            )
+    
+            return result
+        } catch {
+            return null;
+        }
     }
 }

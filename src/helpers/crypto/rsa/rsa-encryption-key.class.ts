@@ -1,4 +1,4 @@
-import { CKeyPair, EncryptionKey } from './crypto.types';
+import { CKeyPair, EncryptionKey } from '../crypto.types';
 
 export class RSAEncryptionKey implements EncryptionKey {
     static async generatePair(): Promise<CKeyPair<RSAEncryptionKey>> {

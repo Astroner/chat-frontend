@@ -5,7 +5,7 @@ import { GZip } from "./gzip.class"
 import { arrayBufferToBase64, arrayBufferToString, base64ToArrayBuffer, stringToArrayBuffer } from "../arraybuffer-utils";
 
 const meta: Meta = {
-    title: "GZip Class",
+    title: "Compression/GZip Class",
 }
 
 export default meta;

@@ -2,10 +2,10 @@ import { useRef, useState } from 'react';
 import { Meta, StoryFn } from '@storybook/react';
 
 import { RSAEncryptionKey } from './rsa-encryption-key.class';
-import { arrayBufferToBase64, base64ToArrayBuffer } from '../arraybuffer-utils';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '../../arraybuffer-utils';
 
 const meta: Meta = {
-    title: 'RSA Encryption Key Class',
+    title: 'Crypto/RSA Encryption Key Class',
 };
 
 export const RSAKeysIssuing: StoryFn<{ format: "JWK" | "Base64" }> = ({ format }) => {

@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/react';
 import { Chat } from './chat.component';
 
 const meta: Meta<typeof Chat> = {
-    title: 'Chat',
+    title: 'Components/Chat',
     component: Chat,
     decorators: [
         (Story) => (

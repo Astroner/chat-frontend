@@ -11,14 +11,14 @@ import { Str } from '@schematic-forms/core';
 
 import { HTTPClient } from './http-client.class';
 import { Contact } from './http-client.responses';
-import { RSASignKey } from '../../crypto/rsa-sign-key.class';
+import { RSASignKey } from '../../crypto/rsa/rsa-sign-key.class';
 
 type StoryArgs = {
     apiAddress: string;
 };
 
 const meta: Meta<StoryArgs> = {
-    title: 'HTTP Client',
+    title: 'Network/HTTP Client',
     args: {
         apiAddress: 'http://localhost:4040/',
     },

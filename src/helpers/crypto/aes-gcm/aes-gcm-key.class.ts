@@ -1,5 +1,6 @@
-import { stringToArrayBuffer } from '../arraybuffer-utils';
-import { EncryptionKey } from './crypto.types';
+import { stringToArrayBuffer } from '../../arraybuffer-utils';
+import { EncryptionKey } from '../crypto.types';
+import { ECDHKey } from '../ecdh/ecdh-key.class';
 
 export class AesGcmKey implements EncryptionKey {
     static async generate() {
@@ -47,6 +48,24 @@ export class AesGcmKey implements EncryptionKey {
             true,
             ['encrypt', 'decrypt'],
         );
+
+        return new AesGcmKey(key);
+    }
+
+    static async fromECDH(publicKey: ECDHKey, privateKey: ECDHKey) {
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: "ECDH",
+                public: publicKey.getKey(),
+            },
+            privateKey.getKey(),
+            {
+                name: "AES-GCM",
+                length: 256,
+            },
+            true,
+            ["encrypt", "decrypt"]
+        )
 
         return new AesGcmKey(key);
     }

@@ -1,16 +1,16 @@
-import { Meta, StoryFn, StoryObj } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { KeysIndex } from "./keys-index.class"
 import { useMemo, useState } from "react";
-import { ErrorConsumer, FieldConsumer, FormProvider, useController } from "@schematic-forms/react";
+import { FieldConsumer, FormProvider, useController } from "@schematic-forms/react";
 import { Enum, Str } from "@schematic-forms/core";
-import { EncryptionKey } from "../../crypto/crypto.types";
-import { AesGcmKey } from "../../crypto/aes-gcm-key.class";
-import { RSAEncryptionKey } from "../../crypto/rsa-encryption-key.class";
+import { EncryptionKey } from "../crypto.types";
+import { AesGcmKey } from "../aes-gcm/aes-gcm-key.class";
+import { RSAEncryptionKey } from "../rsa/rsa-encryption-key.class";
 import { arrayBufferToString, base64ToArrayBuffer,  } from "../../arraybuffer-utils";
 
 const meta: Meta = {
-    title: "Keys Index",
+    title: "Crypto/Keys Index",
 }
 
 export default meta;
@@ -53,6 +53,10 @@ export const Default: StoryFn = () => {
             try {
                 setSearchResult(null)
                 const result = await index.tryToDecrypt(base64ToArrayBuffer(data.cipher));
+                if(!result) return {
+                    cipher: "NOPE"
+                };
+
                 setSearchResult({
                     key: result.keyID,
                     data: arrayBufferToString(result.data)

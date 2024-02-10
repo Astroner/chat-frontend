@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 
-import { Meta } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { AesGcmKey } from './aes-gcm-key.class';
 import {
@@ -14,10 +14,11 @@ import {
     arrayBufferToString,
     base64ToArrayBuffer,
     stringToArrayBuffer,
-} from '../arraybuffer-utils';
+} from '../../arraybuffer-utils';
+import { ECDHKey } from '../ecdh/ecdh-key.class';
 
 const meta: Meta = {
-    title: 'AES-GCM Key',
+    title: 'Crypto/AES-GCM Key',
 };
 
 export default meta;
@@ -146,3 +147,58 @@ export const EncryptDecrypt: FC = () => {
         </FormProvider>
     );
 };
+
+export const DeriveFromECDH: StoryFn = () => {
+    const [key, setKey] = useState<string | null>(null);
+
+    const { controller, submit: derive } = useController({
+        fields: {
+            publicKey: Str(true),
+            privateKey: Str(true),
+        },
+        async submit(data) {
+            const publicKey = await ECDHKey.fromJSON(data.publicKey);
+            const privateKey = await ECDHKey.fromJSON(data.privateKey);
+
+            const aes = await AesGcmKey.fromECDH(publicKey, privateKey);
+
+            setKey(await aes.toJSON());
+        }
+    })
+
+    return (
+        <div>
+            <FormProvider controller={controller}>
+                <div>
+                    <FieldConsumer field="publicKey">
+                        {({ value, setValue }) => (
+                            <textarea
+                                placeholder="JWK ECDH Public Key"
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
+                            />
+                        )}
+                    </FieldConsumer>
+                </div>
+                <div>
+                    <FieldConsumer field="privateKey">
+                        {({ value, setValue }) => (
+                            <textarea
+                                placeholder="JWK ECDH Private Key"
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
+                            />
+                        )}
+                    </FieldConsumer>
+                </div>
+                <button onClick={derive}>Derive Key</button>
+                {key && (
+                    <div>
+                        <h3>AES-GCM Key</h3>
+                        {key}
+                    </div>
+                )}
+            </FormProvider>
+        </div>
+    )
+}

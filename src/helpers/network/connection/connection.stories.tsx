@@ -2,9 +2,10 @@ import { Meta } from '@storybook/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Connection, ConnectionEvent } from './connection.class';
+import { arrayBufferToBase64 } from '../../arraybuffer-utils';
 
 const meta: Meta = {
-    title: 'WebSocket connection',
+    title: 'Network/WebSocket connection',
 };
 
 export const SimpleConnection = () => {
@@ -49,14 +50,22 @@ export const SimpleConnection = () => {
         setState('CONNECTING');
         connection.connect();
 
-        const sub = connection.addEventListener((ev) => {
+        const sub = connection.addEventListener(async (ev) => {
             switch (ev.type) {
                 case 'MESSAGE':
+                    let message: string;
+
+                    switch(ev.data.type) {
+                        case "blob":
+                            message = `[BLOB] ${arrayBufferToBase64(await ev.data.data.arrayBuffer())}`
+                            break;
+                    }
+
                     setMessages((p) =>
                         p.concat([
                             {
                                 origin: 'SERVER',
-                                message: ev.data,
+                                message,
                                 timestamp: ev.timestamp,
                             },
                         ]),

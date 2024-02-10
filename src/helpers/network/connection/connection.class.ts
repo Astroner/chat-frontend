@@ -1,16 +1,21 @@
+import { EventTemplate, Subscription } from '../../types';
 import { wait } from '../../wait';
 
-type ConnectionEventTemplate<T extends string, Data = {}> = Data & {
-    type: T;
-};
+export type ConnectionDataTemplate<T extends string, Data> = {
+    type: T,
+    data: Data
+}
+
+export type ConnectionData = 
+    | ConnectionDataTemplate<"blob", Blob>
 
 export type ConnectionEvent =
-    | ConnectionEventTemplate<'CONNECTED'>
-    | ConnectionEventTemplate<'CONNECTING'>
-    | ConnectionEventTemplate<'MESSAGE', { data: string; timestamp: number }>
-    | ConnectionEventTemplate<'ERROR'>
-    | ConnectionEventTemplate<'RECONNECTING'>
-    | ConnectionEventTemplate<'CLOSED'>;
+    | EventTemplate<'CONNECTED'>
+    | EventTemplate<'CONNECTING'>
+    | EventTemplate<'MESSAGE', { data: ConnectionData; timestamp: number }>
+    | EventTemplate<'ERROR'>
+    | EventTemplate<'RECONNECTING'>
+    | EventTemplate<'CLOSED'>;
 
 export type ConnectionEventHandler = (ev: ConnectionEvent) => void;
 
@@ -46,10 +51,16 @@ export class Connection {
     private listeners = new Set<ConnectionEventHandler>();
 
     private socket: WebSocket | null = null;
+    
+    private STARTED = false;
 
     constructor(private address: string) {}
 
     async connect() {
+        if(this.STARTED) return;
+
+        this.STARTED = true;
+
         this.sendEvent({ type: 'CONNECTING' });
         await this.reconnect();
     }
@@ -62,7 +73,7 @@ export class Connection {
         return true;
     }
 
-    addEventListener(handler: ConnectionEventHandler) {
+    addEventListener(handler: ConnectionEventHandler): Subscription {
         this.listeners.add(handler);
 
         return {
@@ -73,6 +84,7 @@ export class Connection {
     }
 
     async destroy() {
+        this.STARTED = false;
         this.socket?.close();
         this.socket = null;
     }
@@ -103,9 +115,20 @@ export class Connection {
         if (!this.socket) return;
 
         this.socket.addEventListener('message', (message) => {
+
+            let data: ConnectionData;
+            if(message.data instanceof Blob) {
+                data = {
+                    type: "blob",
+                    data: message.data
+                }
+            } else {
+                return;
+            }
+
             this.sendEvent({
                 type: 'MESSAGE',
-                data: message.data,
+                data,
                 timestamp: message.timeStamp,
             });
         });

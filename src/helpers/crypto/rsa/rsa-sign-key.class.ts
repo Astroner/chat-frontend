@@ -1,4 +1,4 @@
-import { CKeyPair, SigningKey } from './crypto.types';
+import { CKeyPair, SigningKey } from '../crypto.types';
 
 export class RSASignKey implements SigningKey {
     static async generatePair(): Promise<CKeyPair<RSASignKey>> {

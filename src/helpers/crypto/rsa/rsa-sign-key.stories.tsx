@@ -2,10 +2,10 @@ import { Meta } from '@storybook/react';
 
 import { RSASignKey } from './rsa-sign-key.class';
 import { useRef, useState } from 'react';
-import { arrayBufferToBase64, base64ToArrayBuffer } from '../arraybuffer-utils';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '../../arraybuffer-utils';
 
 const meta: Meta<typeof RSASignKey> = {
-    title: 'RSA Key Sign Class',
+    title: 'Crypto/RSA Key Sign Class',
 };
 
 export default meta;

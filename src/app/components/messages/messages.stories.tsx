@@ -3,7 +3,7 @@ import { StoryObj, Meta } from '@storybook/react';
 import { Messages } from './messages.component';
 
 const meta: Meta = {
-    title: 'Messages',
+    title: 'Components/Messages',
     component: Messages,
     argTypes: {
         messages: {
