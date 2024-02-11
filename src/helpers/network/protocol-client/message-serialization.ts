@@ -1,6 +1,7 @@
 import {
     arrayBufferToString,
     stringToArrayBuffer,
+    writeUint16At,
 } from '../../arraybuffer-utils';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
@@ -37,24 +38,37 @@ const serializer: Serializers = {
         return buffer;
     },
     connectionRequest: async (data) => {
+        if(data.from.length > 30) throw new Error("From is out of range");
+
         const [ecdh, rsa] = await Promise.all([
             data.ecdhPublicKey.toSPKI(),
             data.responseRSA.toSPKI(),
         ]);
 
-        const buffer = new Uint8Array(
-            1 + 2 + ecdh.byteLength + 2 + rsa.byteLength,
-        );
+        let bufferLength = 1 + 1 + data.from.length + 2 + ecdh.byteLength + 2 + rsa.byteLength;
 
-        buffer[0] = PackageType.CONNECT_REQUEST; // Message type
+        const bytes = new Uint8Array(bufferLength);
 
-        buffer.set(Uint16Array.from([ecdh.byteLength]), 1); // ECDH pub key length
-        buffer.set(new Uint8Array(ecdh), 3); // ECDH key;
+        let bufferCursor = 1;
+        bytes[0] = PackageType.CONNECT_REQUEST; // Message type
 
-        buffer.set(Uint16Array.from([rsa.byteLength]), 1 + 2 + ecdh.byteLength); // RSA pub key length
-        buffer.set(new Uint8Array(rsa), 1 + 2 + ecdh.byteLength + 2);
+        bytes[bufferCursor] = data.from.length;
+        bufferCursor += 1;
+        bytes.set(stringToArrayBuffer(data.from), bufferCursor);
+        bufferCursor += data.from.length;
 
-        return buffer;
+        writeUint16At(bytes, ecdh.byteLength, bufferCursor); // ECDH pub key length
+        bufferCursor += 2;
+        bytes.set(new Uint8Array(ecdh), bufferCursor); // ECDH key;
+        bufferCursor += ecdh.byteLength;
+
+        writeUint16At(bytes, rsa.byteLength, bufferCursor); // RSA pub key length
+        bufferCursor += 2;
+
+
+        bytes.set(new Uint8Array(rsa), bufferCursor);
+
+        return bytes.buffer;
     },
     connectionRequestAccept: async (data) => {
         const payload = await data.ecdhPublicKey.toSPKI();
@@ -105,17 +119,32 @@ export const deserializeMessage = async (
             };
 
         case PackageType.CONNECT_REQUEST:
-            const ecdhLength = new Uint16Array(bytes.slice(1))[0];
+            let bufferCursor = 1;
+
+            const fromLength = bytes[bufferCursor];
+            bufferCursor += 1;
+            const from = arrayBufferToString(bytes.slice(bufferCursor, bufferCursor + fromLength));
+            bufferCursor += fromLength;
+
+            const ecdhLength = new Uint16Array(
+                bytes.slice(bufferCursor, bufferCursor + 2).buffer,
+            )[0];
+            bufferCursor += 2;
+
             const ecdh = await ECDHKey.fromSPKI(
-                bytes.slice(1 + 2, 1 + 2 + ecdhLength),
+                bytes.slice(bufferCursor, bufferCursor + ecdhLength).buffer,
             );
+            bufferCursor += ecdhLength;
+
+            bufferCursor += 2;
 
             const rsa = await RSAEncryptionKey.fromSPKI(
-                bytes.slice(1 + 2 + ecdhLength + 2),
+                bytes.slice(bufferCursor).buffer,
             );
 
             return {
                 type: 'connectionRequest',
+                from,
                 ecdhPublicKey: ecdh,
                 responseRSA: rsa,
             };

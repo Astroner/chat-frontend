@@ -1,11 +1,11 @@
 import { CKeyPair, EncryptionKey } from '../crypto.types';
 
 export class RSAEncryptionKey implements EncryptionKey {
-    static async generatePair(): Promise<CKeyPair<RSAEncryptionKey>> {
+    static async generatePair(modulusLength: 2048 | 4096 | 8192 | 16384 = 2048): Promise<CKeyPair<RSAEncryptionKey>> {
         const { privateKey, publicKey } = await crypto.subtle.generateKey(
             {
                 name: 'RSA-OAEP',
-                modulusLength: 2048,
+                modulusLength,
                 publicExponent: new Uint8Array([1, 0, 1]),
                 hash: 'SHA-256',
             },

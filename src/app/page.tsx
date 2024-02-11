@@ -1,11 +1,6 @@
 'use client';
 
-import {
-    FormEvent,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { env } from '../env';
 
 export default function Home() {

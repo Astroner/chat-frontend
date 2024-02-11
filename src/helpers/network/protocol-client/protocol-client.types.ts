@@ -7,6 +7,7 @@ export type ProtocolMessageDict = {
     };
 
     connectionRequest: {
+        from: string;
         ecdhPublicKey: ECDHKey;
         responseRSA: RSAEncryptionKey;
     };
