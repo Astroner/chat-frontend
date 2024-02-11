@@ -38,14 +38,15 @@ const serializer: Serializers = {
         return buffer;
     },
     connectionRequest: async (data) => {
-        if(data.from.length > 30) throw new Error("From is out of range");
+        if (data.from.length > 30) throw new Error('From is out of range');
 
         const [ecdh, rsa] = await Promise.all([
             data.ecdhPublicKey.toSPKI(),
             data.responseRSA.toSPKI(),
         ]);
 
-        let bufferLength = 1 + 1 + data.from.length + 2 + ecdh.byteLength + 2 + rsa.byteLength;
+        let bufferLength =
+            1 + 1 + data.from.length + 2 + ecdh.byteLength + 2 + rsa.byteLength;
 
         const bytes = new Uint8Array(bufferLength);
 
@@ -64,7 +65,6 @@ const serializer: Serializers = {
 
         writeUint16At(bytes, rsa.byteLength, bufferCursor); // RSA pub key length
         bufferCursor += 2;
-
 
         bytes.set(new Uint8Array(rsa), bufferCursor);
 
@@ -123,7 +123,9 @@ export const deserializeMessage = async (
 
             const fromLength = bytes[bufferCursor];
             bufferCursor += 1;
-            const from = arrayBufferToString(bytes.slice(bufferCursor, bufferCursor + fromLength));
+            const from = arrayBufferToString(
+                bytes.slice(bufferCursor, bufferCursor + fromLength),
+            );
             bufferCursor += fromLength;
 
             const ecdhLength = new Uint16Array(

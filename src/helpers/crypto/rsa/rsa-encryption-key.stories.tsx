@@ -11,16 +11,18 @@ const meta: Meta = {
     title: 'Crypto/RSA Encryption Key Class',
 };
 
-export const RSAKeysIssuing: StoryFn<{ format: 'JWK' | 'Base64', size: 2048 | 4096 |8192 | 16384 }> = ({
-    format, size
-}) => {
+export const RSAKeysIssuing: StoryFn<{
+    format: 'JWK' | 'Base64';
+    size: 2048 | 4096 | 8192 | 16384;
+}> = ({ format, size }) => {
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [privateKey, setPrivateKey] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const issue = async () => {
         setIsLoading(true);
-        const { privateKey, publicKey } = await RSAEncryptionKey.generatePair(size);
+        const { privateKey, publicKey } =
+            await RSAEncryptionKey.generatePair(size);
 
         const [pr, pub] =
             format === 'JWK'
@@ -76,7 +78,7 @@ RSAKeysIssuing.argTypes = {
 
 RSAKeysIssuing.args = {
     format: 'JWK',
-    size: 2048
+    size: 2048,
 };
 
 export const RSAEncryptDecrypt = () => {

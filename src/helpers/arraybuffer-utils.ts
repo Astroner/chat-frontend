@@ -109,11 +109,13 @@ export const base64ToArrayBuffer = (src: string) => {
     return bytes.buffer;
 };
 
-
 export const writeUint16At = (buffer: Uint8Array, data: number, offset = 0) => {
-    if(data > 255 * 256) throw new Error("Out of bounds");
-    
+    if (data > 255 * 256) throw new Error('Out of bounds');
+
     const arr = Uint16Array.from([data]);
 
-    buffer.set(new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength), offset);
-}
+    buffer.set(
+        new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength),
+        offset,
+    );
+};
