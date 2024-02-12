@@ -5,7 +5,7 @@ import { EncryptionKey } from '../../crypto/crypto.types';
 import { ProtocolMessage } from './protocol-client.types';
 import { deserializeMessage, serializeMessage } from './message-serialization';
 
-type ProtocolClientEvent = ProtocolMessage & { keyID: string };
+export type ProtocolClientEvent = ProtocolMessage & { keyID: string };
 
 export class ProtocolClient {
     private listeners = new Set<EventListener<ProtocolClientEvent>>();
@@ -50,7 +50,7 @@ export class ProtocolClient {
         this.connection.sendMessage(cipher);
     }
 
-    addEventListener(handler: EventListener<ProtocolMessage>): Subscription {
+    addEventListener(handler: EventListener<ProtocolClientEvent>): Subscription {
         this.listeners.add(handler);
 
         return {

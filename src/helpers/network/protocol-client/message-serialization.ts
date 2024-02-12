@@ -17,6 +17,7 @@ export enum ConnectRequestStatus {
     ACCEPT,
     DECLINE,
     ESTABLISHED,
+    ESTABLISHED_CONFIRM
 }
 
 type Serializers = {
@@ -45,8 +46,7 @@ const serializer: Serializers = {
             data.responseRSA.toSPKI(),
         ]);
 
-        let bufferLength =
-            1 + 1 + data.from.length + 2 + ecdh.byteLength + 2 + rsa.byteLength;
+        let bufferLength = 1 + 1 + data.from.length + 2 + ecdh.byteLength + 2 + rsa.byteLength;
 
         const bytes = new Uint8Array(bufferLength);
 
@@ -96,6 +96,14 @@ const serializer: Serializers = {
 
         return buffer;
     },
+    connectionEstablishedConfirm: async () => {
+        const buffer = new Uint8Array(2);
+
+        buffer[0] = PackageType.CONNECT_REQUEST_STATUS;
+        buffer[1] = ConnectRequestStatus.ESTABLISHED_CONFIRM;
+
+        return buffer;
+    }
 };
 
 export const serializeMessage = async (
@@ -156,6 +164,9 @@ export const deserializeMessage = async (
             switch (status) {
                 case ConnectRequestStatus.ESTABLISHED:
                     return { type: 'connectionEstablished' };
+
+                case ConnectRequestStatus.ESTABLISHED_CONFIRM:
+                    return { type: 'connectionEstablishedConfirm' };
 
                 case ConnectRequestStatus.DECLINE:
                     return { type: 'connectionRequestDecline' };

@@ -15,6 +15,7 @@ export type ProtocolMessageDict = {
         ecdhPublicKey: ECDHKey;
     };
     connectionEstablished: {};
+    connectionEstablishedConfirm: {};
     connectionRequestDecline: {};
 };
 
