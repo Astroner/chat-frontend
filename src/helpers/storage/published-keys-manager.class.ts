@@ -1,24 +1,23 @@
-import { EncryptionKey } from "../crypto/crypto.types"
-import { KeysIndex } from "../crypto/keys-index/keys-index.class";
-import { RSAEncryptionKey } from "../crypto/rsa/rsa-encryption-key.class";
+import { EncryptionKey } from '../crypto/crypto.types';
+import { KeysIndex } from '../crypto/keys-index/keys-index.class';
+import { RSAEncryptionKey } from '../crypto/rsa/rsa-encryption-key.class';
 
 export type PublishedKeyInfo = {
     id: string;
     issuedAt: Date;
-    publicKey: EncryptionKey,
-    privateKey: EncryptionKey,
-    timesUsed: number
-}
+    publicKey: EncryptionKey;
+    privateKey: EncryptionKey;
+    timesUsed: number;
+};
 
 export class PublishedKeysManager {
     private publishedKeys = new Map<string, PublishedKeyInfo>();
 
-    constructor(
-        private keysIndex: KeysIndex
-    ) {}
+    constructor(private keysIndex: KeysIndex) {}
 
     async issueKey() {
-        const { privateKey, publicKey } = await RSAEncryptionKey.generatePair(8192);
+        const { privateKey, publicKey } =
+            await RSAEncryptionKey.generatePair(8192);
 
         const id = crypto.randomUUID();
 
@@ -27,15 +26,15 @@ export class PublishedKeysManager {
             id,
             issuedAt: new Date(),
             privateKey,
-            publicKey
-        })
+            publicKey,
+        });
 
         this.keysIndex.addKey(id, privateKey);
 
         return {
             id,
             publicKey,
-        }
+        };
     }
 
     getKeyInfo(id: string): Readonly<PublishedKeyInfo> | undefined {
@@ -44,8 +43,8 @@ export class PublishedKeysManager {
 
     registerKeyUsage(id: string) {
         const info = this.publishedKeys.get(id);
-        if(!info) return;
-        
+        if (!info) return;
+
         info.timesUsed += 1;
     }
 }

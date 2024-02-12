@@ -50,7 +50,9 @@ export class ProtocolClient {
         this.connection.sendMessage(cipher);
     }
 
-    addEventListener(handler: EventListener<ProtocolClientEvent>): Subscription {
+    addEventListener(
+        handler: EventListener<ProtocolClientEvent>,
+    ): Subscription {
         this.listeners.add(handler);
 
         return {
