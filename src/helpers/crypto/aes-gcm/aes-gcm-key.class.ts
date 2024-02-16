@@ -53,7 +53,13 @@ export class AesGcmKey implements EncryptionKey {
     }
 
     static async fromRawBytes(src: ArrayBuffer) {
-        const key = await crypto.subtle.importKey("raw", src, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const key = await crypto.subtle.importKey(
+            'raw',
+            src,
+            { name: 'AES-GCM', length: 256 },
+            true,
+            ['encrypt', 'decrypt'],
+        );
 
         return new AesGcmKey(key);
     }
@@ -114,9 +120,9 @@ export class AesGcmKey implements EncryptionKey {
 
         return JSON.stringify(jwk);
     }
-    
+
     async toRawBytes() {
-        const data = await crypto.subtle.exportKey("raw", this.key);
+        const data = await crypto.subtle.exportKey('raw', this.key);
 
         return data;
     }

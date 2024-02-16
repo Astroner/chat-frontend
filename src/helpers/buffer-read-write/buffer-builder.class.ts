@@ -1,4 +1,4 @@
-import { stringToArrayBuffer } from "../arraybuffer-utils";
+import { stringToArrayBuffer } from '../arraybuffer-utils';
 
 export class BufferBuilder {
     private buffer: ArrayBuffer;
@@ -12,7 +12,7 @@ export class BufferBuilder {
     }
 
     appendByte(value: number) {
-        if(this.cursor + 1 > this.maxSize) {
+        if (this.cursor + 1 > this.maxSize) {
             throw new Error(`Out of bounds`);
         }
 
@@ -20,9 +20,10 @@ export class BufferBuilder {
     }
 
     appendUint16(num: number) {
-        if (num > 255 * 256) throw new Error(`${num} is more than 2 bytes long`);
+        if (num > 255 * 256)
+            throw new Error(`${num} is more than 2 bytes long`);
 
-        if(this.cursor + 2 > this.maxSize) {
+        if (this.cursor + 2 > this.maxSize) {
             throw new Error(`Out of bounds`);
         }
 
@@ -36,31 +37,28 @@ export class BufferBuilder {
         this.cursor += 2;
     }
 
-    appendString(str: string, skipLength?: "SKIP_LENGTH") {
-        if(!skipLength) {
+    appendString(str: string, skipLength?: 'SKIP_LENGTH') {
+        if (!skipLength) {
             this.appendUint16(str.length);
         }
 
         const serialized = stringToArrayBuffer(str);
 
-        if(this.cursor + serialized.byteLength > this.maxSize) {
+        if (this.cursor + serialized.byteLength > this.maxSize) {
             throw new Error(`Out of bounds`);
         }
 
-        this.bytes.set(
-            serialized,
-            this.cursor
-        )
+        this.bytes.set(serialized, this.cursor);
 
         this.cursor += serialized.byteLength;
     }
 
-    appendBuffer(data: ArrayBuffer, skipLength?: "SKIP_LENGTH") {
-        if(!skipLength) {
+    appendBuffer(data: ArrayBuffer, skipLength?: 'SKIP_LENGTH') {
+        if (!skipLength) {
             this.appendUint16(data.byteLength);
         }
 
-        if(this.cursor + data.byteLength > this.maxSize) {
+        if (this.cursor + data.byteLength > this.maxSize) {
             throw new Error(`Out of bounds`);
         }
 

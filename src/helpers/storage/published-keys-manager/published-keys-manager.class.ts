@@ -12,43 +12,47 @@ export type PublishedKeyInfo = {
 };
 
 export class PublishedKeysManager {
-    static async import(data: ArrayBuffer, keysIndex: KeysIndex): Promise<PublishedKeysManager> {
+    static async import(
+        data: ArrayBuffer,
+        keysIndex: KeysIndex,
+    ): Promise<PublishedKeysManager> {
         const reader = new BufferReader(data);
 
         const entitiesNumber = reader.readByte();
 
-        const entities: PublishedKeyInfo[] = await Promise.all(new Array(entitiesNumber)
-            .fill(null)
-            .map(() => {
-                const id = reader.readString();
-                const timesUsed = reader.readUint16();
-                const issuedAtISO = reader.readString();
-                const publicRsaKey = reader.readBytes();
-                const privateRsaKey = reader.readBytes();
+        const entities: PublishedKeyInfo[] = await Promise.all(
+            new Array(entitiesNumber)
+                .fill(null)
+                .map(() => {
+                    const id = reader.readString();
+                    const timesUsed = reader.readUint16();
+                    const issuedAtISO = reader.readString();
+                    const publicRsaKey = reader.readBytes();
+                    const privateRsaKey = reader.readBytes();
 
-                return {
-                    id,
-                    timesUsed,
-                    issuedAtISO,
-                    publicRsaKey,
-                    privateRsaKey,
-                }
-            })
-            .map(async (entry): Promise<PublishedKeyInfo> => {
-                const [publicKey, privateKey] = await Promise.all([
-                    RSAEncryptionKey.fromSPKI(entry.publicRsaKey),
-                    RSAEncryptionKey.fromPKCS8(entry.privateRsaKey),
-                ])
+                    return {
+                        id,
+                        timesUsed,
+                        issuedAtISO,
+                        publicRsaKey,
+                        privateRsaKey,
+                    };
+                })
+                .map(async (entry): Promise<PublishedKeyInfo> => {
+                    const [publicKey, privateKey] = await Promise.all([
+                        RSAEncryptionKey.fromSPKI(entry.publicRsaKey),
+                        RSAEncryptionKey.fromPKCS8(entry.privateRsaKey),
+                    ]);
 
-                return {
-                    id: entry.id,
-                    issuedAt: new Date(entry.issuedAtISO),
-                    timesUsed: entry.timesUsed,
-                    privateKey,
-                    publicKey
-                }
-            })
-        )
+                    return {
+                        id: entry.id,
+                        issuedAt: new Date(entry.issuedAtISO),
+                        timesUsed: entry.timesUsed,
+                        privateKey,
+                        publicKey,
+                    };
+                }),
+        );
 
         return new PublishedKeysManager(keysIndex, entities);
     }
@@ -58,12 +62,11 @@ export class PublishedKeysManager {
     private publishedKeys = new Map<string, PublishedKeyInfo>();
 
     constructor(
-        private keysIndex: KeysIndex, 
-        inits?: PublishedKeyInfo[]
+        private keysIndex: KeysIndex,
+        inits?: PublishedKeyInfo[],
     ) {
-        if(inits) 
-            for(const info of inits) 
-                this.publishedKeys.set(info.id, info);
+        if (inits)
+            for (const info of inits) this.publishedKeys.set(info.id, info);
     }
 
     async issueKey() {
@@ -99,7 +102,7 @@ export class PublishedKeysManager {
         if (!info) return;
 
         info.timesUsed += 1;
-        
+
         this.sendUpdate();
     }
 
@@ -111,56 +114,63 @@ export class PublishedKeysManager {
         this.listeners.add(cb);
 
         return {
-            unsubscribe: () => this.listeners.delete(cb)
-        }
+            unsubscribe: () => this.listeners.delete(cb),
+        };
     }
 
     /**
      * format:
      * number of items(N): 1byte
      * items: array of Items
-     * 
+     *
      * Items:
      * id = 2bytes length + data
      * timesUsed - 2 bytes
      * issuedAtISO = 2bytes string length + data
      * publicRsaKey = 2bytes length + data in SPKI format
      * privateRSAKey = 2bytes length + data in PKCS8 format
-    */
+     */
     async export(): Promise<ArrayBuffer> {
         let bufferSize = 1;
 
-        const prepared = await Promise.all(Array.from(this.publishedKeys.values()).map(async (info) => {
-            const [privateKey, publicKey] = await Promise.all([
-                info.privateKey.toPKCS8(),
-                info.publicKey.toSPKI()
-            ])
+        const prepared = await Promise.all(
+            Array.from(this.publishedKeys.values()).map(async (info) => {
+                const [privateKey, publicKey] = await Promise.all([
+                    info.privateKey.toPKCS8(),
+                    info.publicKey.toSPKI(),
+                ]);
 
-            const issuedAt = info.issuedAt.toISOString();
+                const issuedAt = info.issuedAt.toISOString();
 
-            const bytesLength = 0
-                + 2 + info.id.length
-                + 2
-                + 2 + issuedAt.length
-                + 2 + publicKey.byteLength
-                + 2 + privateKey.byteLength
+                const bytesLength =
+                    0 +
+                    2 +
+                    info.id.length +
+                    2 +
+                    2 +
+                    issuedAt.length +
+                    2 +
+                    publicKey.byteLength +
+                    2 +
+                    privateKey.byteLength;
 
-            bufferSize += bytesLength;
+                bufferSize += bytesLength;
 
-            return {
-                bytesLength,
-                id: info.id,
-                timesUsed: info.timesUsed,
-                issuedAt,
-                publicKey,
-                privateKey,
-            }
-        }))
+                return {
+                    bytesLength,
+                    id: info.id,
+                    timesUsed: info.timesUsed,
+                    issuedAt,
+                    publicKey,
+                    privateKey,
+                };
+            }),
+        );
 
         const builder = new BufferBuilder(bufferSize);
         builder.appendByte(prepared.length);
 
-        for(const item of prepared) {
+        for (const item of prepared) {
             builder.appendString(item.id);
             builder.appendUint16(item.timesUsed);
             builder.appendString(item.issuedAt);
@@ -168,11 +178,10 @@ export class PublishedKeysManager {
             builder.appendBuffer(item.privateKey);
         }
 
-
         return builder.getBuffer();
     }
 
     private sendUpdate = () => {
-        this.listeners.forEach(cb => cb());
-    }
+        this.listeners.forEach((cb) => cb());
+    };
 }

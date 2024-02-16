@@ -9,7 +9,7 @@ export type InputProps = {
     onChange?: (next: string) => void;
     className?: string;
     placeholder?: string;
-    password?: boolean
+    password?: boolean;
 };
 
 export const Input: FC<InputProps> = memo((props) => {
@@ -21,7 +21,7 @@ export const Input: FC<InputProps> = memo((props) => {
             value={props.value}
             onChange={(e) => props.onChange && props.onChange(e.target.value)}
             className={rootClass}
-            type={props.password ? "password" : "text"}
+            type={props.password ? 'password' : 'text'}
         />
     );
 });

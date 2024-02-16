@@ -16,7 +16,7 @@ export type ButtonProps = {
     style?: CSSProperties;
     margin?: string;
     variant?: 'purple' | 'orange';
-    size?: 'small' | 'big'
+    size?: 'small' | 'big';
 };
 
 export const Button: FC<ButtonProps> = memo((props) => {

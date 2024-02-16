@@ -1,17 +1,17 @@
 export enum MessageOrigin {
     SERVER,
-    CLIENT
+    CLIENT,
 }
 
 export enum ChatState {
     PENDING,
-    ACTIVE
+    ACTIVE,
 }
 
 export type ChatMessage = {
     origin: MessageOrigin;
     text: string;
-}
+};
 
 export type ChatInfo = {
     id: string;
@@ -19,7 +19,7 @@ export type ChatInfo = {
     connectionID: string;
     state: ChatState;
     messages: ChatMessage[];
-}
+};
 
 export class ChatStorage {
     private listeners = new Set<VoidFunction>();
@@ -29,8 +29,8 @@ export class ChatStorage {
     private connectionIDToChatID = new Map<string, string>();
 
     constructor(inits?: ChatInfo[]) {
-        if(inits)
-            for(const info of inits) {
+        if (inits)
+            for (const info of inits) {
                 this.chats.set(info.id, info);
 
                 this.connectionIDToChatID.set(info.connectionID, info.id);
@@ -45,8 +45,8 @@ export class ChatStorage {
             messages: [],
             title,
             connectionID,
-            state: ChatState.PENDING
-        }
+            state: ChatState.PENDING,
+        };
 
         this.chats.set(id, chat);
 
@@ -55,13 +55,16 @@ export class ChatStorage {
         return chat;
     }
 
-    setChatData(chatId: string, changeRequest: Partial<ChatInfo> | ((prev: ChatInfo) => ChatInfo)) {
+    setChatData(
+        chatId: string,
+        changeRequest: Partial<ChatInfo> | ((prev: ChatInfo) => ChatInfo),
+    ) {
         const info = this.chats.get(chatId);
 
-        if(!info) return;
+        if (!info) return;
 
         let nextState;
-        if(typeof changeRequest === "function") {
+        if (typeof changeRequest === 'function') {
             nextState = changeRequest(info);
         } else {
             nextState = Object.assign(info, changeRequest);
@@ -80,22 +83,22 @@ export class ChatStorage {
         return Array.from(this.chats.values());
     }
 
-    getByConnectionID(connectionID: string):  Readonly<ChatInfo> | null {
+    getByConnectionID(connectionID: string): Readonly<ChatInfo> | null {
         const chatID = this.connectionIDToChatID.get(connectionID);
-        if(!chatID) return null;
+        if (!chatID) return null;
 
         return this.chats.get(chatID) ?? null;
     }
 
     subscribe(cb: VoidFunction) {
-        this.listeners.add(cb)
-        
+        this.listeners.add(cb);
+
         return {
-            unsubscribe: () => this.listeners.delete(cb)
-        }
+            unsubscribe: () => this.listeners.delete(cb),
+        };
     }
 
     private sendUpdate() {
-        this.listeners.forEach(cb => cb());
+        this.listeners.forEach((cb) => cb());
     }
 }

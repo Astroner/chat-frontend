@@ -120,6 +120,4 @@ export const writeUint16At = (buffer: Uint8Array, data: number, offset = 0) => {
     );
 };
 
-export const writeString = (buffer: Uint8Array, str: string, offset = 0) => {
-
-}
+export const writeString = (buffer: Uint8Array, str: string, offset = 0) => {};

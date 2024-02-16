@@ -6,7 +6,10 @@ import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 import { ConnectionEntry } from './connection-entity.class';
 import { ConnectionData } from './connections-manager.types';
 
-export type PortableConnections = Array<{ key: string, connection: ConnectionData[keyof ConnectionData] }>;
+export type PortableConnections = Array<{
+    key: string;
+    connection: ConnectionData[keyof ConnectionData];
+}>;
 
 export class ConnectionsManager {
     static async import(buffer: ArrayBuffer): Promise<ConnectionsManager> {
@@ -14,125 +17,145 @@ export class ConnectionsManager {
 
         const connectionsNumber = reader.readByte();
 
-        const data: PortableConnections = await Promise.all(new Array(connectionsNumber).fill(null).map(() => {
-            const key = reader.readString();
-            const status = reader.readByte();
-            const date = new Date(reader.readString());
+        const data: PortableConnections = await Promise.all(
+            new Array(connectionsNumber)
+                .fill(null)
+                .map(() => {
+                    const key = reader.readString();
+                    const status = reader.readByte();
+                    const date = new Date(reader.readString());
 
-            switch(status) {
-                case 0:
-                    return {
+                    switch (status) {
+                        case 0:
+                            return {
+                                key,
+                                date,
+                                data: {
+                                    type: 'requested' as 'requested',
+                                    ecdhPrivateKey: reader.readBytes(),
+                                    responseRSAPrivateKey: reader.readBytes(),
+                                },
+                            };
+
+                        case 1:
+                            return {
+                                key,
+                                date,
+                                data: {
+                                    type: 'pending' as 'pending',
+                                    from: reader.readString(),
+                                    ecdhPublicKey: reader.readBytes(),
+                                    responseRSA: reader.readBytes(),
+                                },
+                            };
+
+                        case 2:
+                            return {
+                                key,
+                                date,
+                                data: {
+                                    type: 'preEstablished' as 'preEstablished',
+                                    aesKey: reader.readBytes(),
+                                },
+                            };
+
+                        case 3:
+                            return {
+                                key,
+                                date,
+                                data: {
+                                    type: 'established' as 'established',
+                                    aesKey: reader.readBytes(),
+                                },
+                            };
+                    }
+
+                    throw new Error('Unexpected connection type');
+                })
+                .map(
+                    async ({
                         key,
                         date,
-                        data: {
-                            type: "requested" as "requested",
-                            ecdhPrivateKey: reader.readBytes(),
-                            responseRSAPrivateKey: reader.readBytes()
-                        }
-                    }
-                
-                case 1:
-                    return {
-                        key,
-                        date,
-                        data: {
-                            type: "pending" as "pending",
-                            from: reader.readString(),
-                            ecdhPublicKey: reader.readBytes(),
-                            responseRSA: reader.readBytes()
-                        }
-                    }
-                
-                case 2:
-                    return {
-                        key,
-                        date,
-                        data: {
-                            type: "preEstablished" as "preEstablished",
-                            aesKey: reader.readBytes()
-                        }
-                    }
-                
-                case 3:
-                    return {
-                        key,
-                        date,
-                        data: {
-                            type: "established" as "established",
-                            aesKey: reader.readBytes()
-                        }
-                    } 
-            }
+                        data,
+                    }): Promise<PortableConnections[0]> => {
+                        let connection: ConnectionData[keyof ConnectionData];
 
-            throw new Error("Unexpected connection type");
-        })
-            .map(async ({ key, date, data }): Promise<PortableConnections[0]> => {
-                let connection: ConnectionData[keyof ConnectionData];
+                        switch (data.type) {
+                            case 'requested': {
+                                const [ecdhPrivateKey, responseRSAPrivateKey] =
+                                    await Promise.all([
+                                        ECDHKey.fromPKCS8(data.ecdhPrivateKey),
+                                        RSAEncryptionKey.fromPKCS8(
+                                            data.responseRSAPrivateKey,
+                                        ),
+                                    ]);
 
-                switch(data.type) {
-                    case "requested": {
-                        const [ecdhPrivateKey, responseRSAPrivateKey] = await Promise.all([
-                            ECDHKey.fromPKCS8(data.ecdhPrivateKey),
-                            RSAEncryptionKey.fromPKCS8(data.responseRSAPrivateKey)
-                        ])
+                                connection = {
+                                    status: 'requested',
+                                    createdAt: date,
+                                    ecdhPrivateKey,
+                                    responseRSAPrivateKey,
+                                };
 
-                        connection = {
-                            status: "requested",
-                            createdAt: date,
-                            ecdhPrivateKey,
-                            responseRSAPrivateKey
-                        }
+                                break;
+                            }
 
-                        break;
-                    }
+                            case 'pending': {
+                                const [ecdhPublicKey, responseRSA] =
+                                    await Promise.all([
+                                        ECDHKey.fromSPKI(data.ecdhPublicKey),
+                                        RSAEncryptionKey.fromPKCS8(
+                                            data.responseRSA,
+                                        ),
+                                    ]);
 
-                    case "pending": {
-                        const [ecdhPublicKey, responseRSA] = await Promise.all([
-                            ECDHKey.fromSPKI(data.ecdhPublicKey),
-                            RSAEncryptionKey.fromPKCS8(data.responseRSA)
-                        ])
+                                connection = {
+                                    status: 'pending',
+                                    from: data.from,
+                                    registeredAt: date,
+                                    ecdhPublicKey,
+                                    responseRSA,
+                                };
 
-                        connection = {
-                            status: "pending",
-                            from: data.from,
-                            registeredAt: date,
-                            ecdhPublicKey,
-                            responseRSA,
+                                break;
+                            }
+
+                            case 'preEstablished': {
+                                const aesKey = await AesGcmKey.fromRawBytes(
+                                    data.aesKey,
+                                );
+
+                                connection = {
+                                    status: 'preEstablished',
+                                    aesKey,
+                                    confirmedAt: date,
+                                };
+
+                                break;
+                            }
+
+                            case 'established': {
+                                const aesKey = await AesGcmKey.fromRawBytes(
+                                    data.aesKey,
+                                );
+
+                                connection = {
+                                    status: 'established',
+                                    aesKey,
+                                    establishedAt: date,
+                                };
+
+                                break;
+                            }
                         }
 
-                        break;
-                    }
-
-                    case "preEstablished": {
-                        const aesKey = await AesGcmKey.fromRawBytes(data.aesKey);
-
-                        connection = {
-                            status: "preEstablished",
-                            aesKey,
-                            confirmedAt: date    
-                        }
-
-                        break;
-                    }
-
-                    case "established": {
-                        const aesKey = await AesGcmKey.fromRawBytes(data.aesKey);
-
-                        connection = {
-                            status: "established",
-                            aesKey,
-                            establishedAt: date    
-                        }
-
-                        break;
-                    }
-                }
-
-                return {
-                    key,
-                    connection
-                }
-            }))
+                        return {
+                            key,
+                            connection,
+                        };
+                    },
+                ),
+        );
 
         return new ConnectionsManager(data);
     }
@@ -142,14 +165,17 @@ export class ConnectionsManager {
     private connections = new Map<string, ConnectionEntry>();
 
     constructor(inits?: PortableConnections) {
-        if(inits) {
+        if (inits) {
             const api = {
                 onChange: this.sendUpdate,
-                onDestroy: this.deleteConnection
+                onDestroy: this.deleteConnection,
             };
-            
-            for(const { key, connection } of inits) 
-                this.connections.set(key, new ConnectionEntry(connection, key, api));
+
+            for (const { key, connection } of inits)
+                this.connections.set(
+                    key,
+                    new ConnectionEntry(connection, key, api),
+                );
         }
     }
 
@@ -158,19 +184,23 @@ export class ConnectionsManager {
 
         const { privateKey: ecdhPrivateKey, publicKey: ecdhPublicKey } =
             await ECDHKey.generatePair();
-        
+
         const { privateKey: rsaPrivateKey, publicKey: rsaPublicKey } =
             await RSAEncryptionKey.generatePair();
 
-        const entry = new ConnectionEntry({
-            status: 'requested',
-            ecdhPrivateKey,
-            createdAt: new Date(),
-            responseRSAPrivateKey: rsaPrivateKey
-        }, id, {
-            onChange: this.sendUpdate,
-            onDestroy: this.deleteConnection
-        });
+        const entry = new ConnectionEntry(
+            {
+                status: 'requested',
+                ecdhPrivateKey,
+                createdAt: new Date(),
+                responseRSAPrivateKey: rsaPrivateKey,
+            },
+            id,
+            {
+                onChange: this.sendUpdate,
+                onDestroy: this.deleteConnection,
+            },
+        );
 
         this.connections.set(id, entry);
 
@@ -178,7 +208,7 @@ export class ConnectionsManager {
             id,
             ecdhPublicKey,
             rsaPublicKey,
-            rsaPrivateKey
+            rsaPrivateKey,
         };
     }
 
@@ -189,17 +219,20 @@ export class ConnectionsManager {
     ) {
         const id = crypto.randomUUID();
 
-        const entry = new ConnectionEntry({
-            status: 'pending',
-            ecdhPublicKey,
-            registeredAt: new Date(),
-            responseRSA,
-            from
-        }, id, {
-            onChange: this.sendUpdate,
-            onDestroy: this.deleteConnection
-        });
-
+        const entry = new ConnectionEntry(
+            {
+                status: 'pending',
+                ecdhPublicKey,
+                registeredAt: new Date(),
+                responseRSA,
+                from,
+            },
+            id,
+            {
+                onChange: this.sendUpdate,
+                onDestroy: this.deleteConnection,
+            },
+        );
 
         this.connections.set(id, entry);
 
@@ -215,15 +248,15 @@ export class ConnectionsManager {
     deleteConnection = (id: string) => {
         this.connections.delete(id);
         this.sendUpdate();
-    }
+    };
 
     getAll(): PortableConnections {
         const result: PortableConnections = [];
 
-        for(const [key, entry] of this.connections.entries()) {
+        for (const [key, entry] of this.connections.entries()) {
             result.push({
                 key,
-                connection: entry.getPortable()
+                connection: entry.getPortable(),
             });
         }
 
@@ -234,36 +267,36 @@ export class ConnectionsManager {
         this.listeners.add(cb);
 
         return {
-            unsubscribe: () => this.listeners.delete(cb)
-        }
+            unsubscribe: () => this.listeners.delete(cb),
+        };
     }
 
     /**
      * format:
      * number of connections(N) - 1 byte
      * N Connections
-     * 
+     *
      * Connection:
      * id - 2 bytes id length, id string
-     * 
+     *
      * status - 1 byte
      *  00 - requested
      *  01 - pending
      *  02 - preEstablished
      *  03 - established
-     * 
+     *
      * Date - Date relative data for status - 2 bytes length, ISO string
-     * 
+     *
      * next data depends on the connection status:
      * [requested]
      * ecdhPrivateKey - 2 bytes length, ECDH private key in PKCS8 format
      * responseRSAPrivateKey - 2 bytes length, RSA private key in PKCS8 format
-     * 
+     *
      * [pending]
      * from - 2 bytes length, string
      * ecdhPublicKey - 2 bytes length, ECDH public key in SPKI format
      * responseRSA - 2 bytes length, RSA public key in SPKI format
-     * 
+     *
      * [preEstablished]
      * [established]
      * aesKey - 2 bytes length, aes-gcm key in PKCS8 format
@@ -271,86 +304,85 @@ export class ConnectionsManager {
     async export(): Promise<ArrayBuffer> {
         let bufferLength = 1;
 
-        const prepared = await Promise.all(        this.getAll().map(async ({ key, connection }) => {
-            const id = key;
-            let status;
-            let date;
-            let data;
+        const prepared = await Promise.all(
+            this.getAll().map(async ({ key, connection }) => {
+                const id = key;
+                let status;
+                let date;
+                let data;
 
-            switch(connection.status) {
-                case "requested":
-                    status = 0;
-                    date = connection.createdAt.toISOString();
+                switch (connection.status) {
+                    case 'requested':
+                        status = 0;
+                        date = connection.createdAt.toISOString();
 
-                    data = await Promise.all([
-                        connection.ecdhPrivateKey.toPKCS8(),
-                        connection.responseRSAPrivateKey.toPKCS8()
-                    ])
+                        data = await Promise.all([
+                            connection.ecdhPrivateKey.toPKCS8(),
+                            connection.responseRSAPrivateKey.toPKCS8(),
+                        ]);
 
-                    break;
+                        break;
 
-                case "pending":
-                    status = 1;
-                    date = connection.registeredAt.toISOString();
-                    data = await Promise.all([
-                        connection.from,
-                        connection.ecdhPublicKey.toSPKI(),
-                        connection.responseRSA.toSPKI()
-                    ])
+                    case 'pending':
+                        status = 1;
+                        date = connection.registeredAt.toISOString();
+                        data = await Promise.all([
+                            connection.from,
+                            connection.ecdhPublicKey.toSPKI(),
+                            connection.responseRSA.toSPKI(),
+                        ]);
 
-                    break;
-                
-                case "preEstablished":
-                    status = 2;
-                    date = connection.confirmedAt.toISOString();
-                    data = await Promise.all([
-                        connection.aesKey.toRawBytes()
-                    ])
+                        break;
 
-                    break;
+                    case 'preEstablished':
+                        status = 2;
+                        date = connection.confirmedAt.toISOString();
+                        data = await Promise.all([
+                            connection.aesKey.toRawBytes(),
+                        ]);
 
-                case "established":
-                    status = 3;
-                    date = connection.establishedAt.toISOString();
-                    data = await Promise.all([
-                        connection.aesKey.toRawBytes()
-                    ])
+                        break;
 
-                    break;
-            }
+                    case 'established':
+                        status = 3;
+                        date = connection.establishedAt.toISOString();
+                        data = await Promise.all([
+                            connection.aesKey.toRawBytes(),
+                        ]);
 
-            bufferLength += 0
-                + 2 + id.length
-                + 1
-                + 2 + date.length
-
-            for(const datum of data) {
-                bufferLength += 2;
-                if(typeof datum === "string") {
-                    bufferLength += datum.length
-                } else {
-                    bufferLength += datum.byteLength;
+                        break;
                 }
-            }
 
-            return {
-                id, 
-                status,
-                date,
-                data
-            }
-        }))
+                bufferLength += 0 + 2 + id.length + 1 + 2 + date.length;
+
+                for (const datum of data) {
+                    bufferLength += 2;
+                    if (typeof datum === 'string') {
+                        bufferLength += datum.length;
+                    } else {
+                        bufferLength += datum.byteLength;
+                    }
+                }
+
+                return {
+                    id,
+                    status,
+                    date,
+                    data,
+                };
+            }),
+        );
 
         const builder = new BufferBuilder(bufferLength);
         builder.appendByte(prepared.length);
 
-        for(const entry of prepared) {
+        for (const entry of prepared) {
             builder.appendString(entry.id);
             builder.appendByte(entry.status);
             builder.appendString(entry.date);
 
-            for(const datum of entry.data) {
-                if(typeof datum === "string") {
+            for (const datum of entry.data) {
+                if (typeof datum === 'string') {
                     builder.appendString(datum);
                 } else {
                     builder.appendBuffer(datum);
@@ -362,6 +394,6 @@ export class ConnectionsManager {
     }
 
     private sendUpdate = () => {
-        this.listeners.forEach(cb => cb());
-    }
+        this.listeners.forEach((cb) => cb());
+    };
 }

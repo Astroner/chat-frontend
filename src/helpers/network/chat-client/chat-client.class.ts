@@ -3,16 +3,13 @@ import {
     ProtocolClient,
     ProtocolClientEvent,
 } from '../protocol-client/protocol-client.class';
-import {
-    ConnectionsManager,
-} from '../../storage/connections-manager/connections-manager.class';
+import { ConnectionsManager } from '../../storage/connections-manager/connections-manager.class';
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { EventListener, EventTemplate, Subscription } from '../../types';
 import { PublishedKeysManager } from '../../storage/published-keys-manager/published-keys-manager.class';
 import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
 import { EstablishedConnection } from '../../storage/connections-manager/connections-manager.types';
-
 
 export type ChatClientEvent =
     | EventTemplate<
@@ -82,8 +79,8 @@ export class ChatClient {
         );
 
         return {
-            id: request.id
-        }
+            id: request.id,
+        };
     }
 
     sendMessage(connection: EstablishedConnection, message: string) {
@@ -149,7 +146,7 @@ export class ChatClient {
                 const { id } = this.connectionsManager.createPendingConnection(
                     event.ecdhPublicKey,
                     event.responseRSA,
-                    event.from
+                    event.from,
                 );
 
                 this.sendEvent({
@@ -186,8 +183,7 @@ export class ChatClient {
                 const connection = this.connectionsManager.getConnection(
                     event.keyID,
                 );
-                if (!connection || !connection.isPreEstablished())
-                    return;
+                if (!connection || !connection.isPreEstablished()) return;
 
                 connection.finish();
 
@@ -211,8 +207,7 @@ export class ChatClient {
                 const connection = this.connectionsManager.getConnection(
                     event.keyID,
                 );
-                if (!connection || !connection.isPreEstablished())
-                    return;
+                if (!connection || !connection.isPreEstablished()) return;
 
                 connection.finish();
 

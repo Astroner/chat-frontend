@@ -1,12 +1,16 @@
-import { AesGcmKey } from "../../crypto/aes-gcm/aes-gcm-key.class";
-import { ECDHKey } from "../../crypto/ecdh/ecdh-key.class";
-import { RSAEncryptionKey } from "../../crypto/rsa/rsa-encryption-key.class";
-import { ConnectionData, ConnectionMix, FullConnectionType } from "./connections-manager.types";
+import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
+import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
+import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
+import {
+    ConnectionData,
+    ConnectionMix,
+    FullConnectionType,
+} from './connections-manager.types';
 
 export type ConnectionEntityDependencies = {
     onChange: VoidFunction;
     onDestroy: (id: string) => void;
-}
+};
 
 export class ConnectionEntry implements ConnectionMix {
     public status: 'established' | 'preEstablished' | 'requested' | 'pending';
@@ -29,7 +33,7 @@ export class ConnectionEntry implements ConnectionMix {
     constructor(
         init: ConnectionData[keyof ConnectionData],
         private id: string,
-        private api: ConnectionEntityDependencies
+        private api: ConnectionEntityDependencies,
     ) {
         this.status = init.status;
 
@@ -126,34 +130,38 @@ export class ConnectionEntry implements ConnectionMix {
     }
 
     getPortable(): ConnectionData[keyof ConnectionData] {
-        if(this.isRequested()) return {
-            status: "requested",
-            createdAt: this.createdAt,
-            ecdhPrivateKey: this.ecdhPrivateKey,
-            responseRSAPrivateKey: this.responseRSAPrivateKey
-        }
+        if (this.isRequested())
+            return {
+                status: 'requested',
+                createdAt: this.createdAt,
+                ecdhPrivateKey: this.ecdhPrivateKey,
+                responseRSAPrivateKey: this.responseRSAPrivateKey,
+            };
 
-        if(this.isPending()) return {
-            status: "pending",
-            ecdhPublicKey: this.ecdhPublicKey,
-            registeredAt: this.registeredAt,
-            responseRSA: this.responseRSA,
-            from: this.from
-        }
+        if (this.isPending())
+            return {
+                status: 'pending',
+                ecdhPublicKey: this.ecdhPublicKey,
+                registeredAt: this.registeredAt,
+                responseRSA: this.responseRSA,
+                from: this.from,
+            };
 
-        if(this.isPreEstablished()) return {
-            status: "preEstablished",
-            aesKey: this.aesKey,
-            confirmedAt: this.confirmedAt
-        }
+        if (this.isPreEstablished())
+            return {
+                status: 'preEstablished',
+                aesKey: this.aesKey,
+                confirmedAt: this.confirmedAt,
+            };
 
-        if(this.isEstablished()) return {
-            status: "established",
-            aesKey: this.aesKey,
-            establishedAt: this.establishedAt
-        }
+        if (this.isEstablished())
+            return {
+                status: 'established',
+                aesKey: this.aesKey,
+                establishedAt: this.establishedAt,
+            };
 
-        throw new Error("Unknown connection type");
+        throw new Error('Unknown connection type');
     }
 
     destroy() {

@@ -23,12 +23,16 @@ const meta: Meta = {
 
 export default meta;
 
-export const IssueKey: StoryFn<{ format: "JWK" | "Raw" }> = (args) => {
+export const IssueKey: StoryFn<{ format: 'JWK' | 'Raw' }> = (args) => {
     const [key, setKey] = useState<string>();
 
     const generate = async () => {
         const key = await AesGcmKey.generate();
-        setKey(args.format === "JWK" ? await key.toJSON() : arrayBufferToBase64(await key.toRawBytes()));
+        setKey(
+            args.format === 'JWK'
+                ? await key.toJSON()
+                : arrayBufferToBase64(await key.toRawBytes()),
+        );
     };
 
     return (
@@ -45,8 +49,8 @@ export const IssueKey: StoryFn<{ format: "JWK" | "Raw" }> = (args) => {
 };
 
 IssueKey.args = {
-    format: "JWK"
-}
+    format: 'JWK',
+};
 
 IssueKey.argTypes = {
     format: {
@@ -54,8 +58,8 @@ IssueKey.argTypes = {
             name: 'enum',
             value: ['JWK', 'raw'],
         },
-    }
-}
+    },
+};
 
 export const DeriveFromPassword = () => {
     const [password, setPassword] = useState<string>('');
