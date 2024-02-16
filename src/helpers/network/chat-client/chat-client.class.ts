@@ -5,17 +5,14 @@ import {
 } from '../protocol-client/protocol-client.class';
 import {
     ConnectionsManager,
-    EstablishedConnection,
-} from '../../storage/connections-manager.class';
+} from '../../storage/connections-manager/connections-manager.class';
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { EventListener, EventTemplate, Subscription } from '../../types';
-import { PublishedKeysManager } from '../../storage/published-keys-manager.class';
+import { PublishedKeysManager } from '../../storage/published-keys-manager/published-keys-manager.class';
 import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
+import { EstablishedConnection } from '../../storage/connections-manager/connections-manager.types';
 
-export type PromptAPI = {
-    connectionRequest: (from: string) => Promise<'ACCEPT' | 'DECLINE'>;
-};
 
 export type ChatClientEvent =
     | EventTemplate<
@@ -69,21 +66,24 @@ export class ChatClient {
     }
 
     async sendConnectionRequest(key: RSAEncryptionKey, from: string) {
-        const { privateKey, publicKey } = await RSAEncryptionKey.generatePair();
         const request =
             await this.connectionsManager.createNewConnectionRequest();
 
-        this.keysIndex.addKey(request.id, privateKey);
+        this.keysIndex.addKey(request.id, request.rsaPrivateKey);
 
         this.protocolClient.postMessage(
             {
                 type: 'connectionRequest',
                 from,
                 ecdhPublicKey: request.ecdhPublicKey,
-                responseRSA: publicKey,
+                responseRSA: request.rsaPublicKey,
             },
             key,
         );
+
+        return {
+            id: request.id
+        }
     }
 
     sendMessage(connection: EstablishedConnection, message: string) {
@@ -119,7 +119,7 @@ export class ChatClient {
         const connection = this.connectionsManager.getConnection(connectionID);
         if (!connection || !connection.isPending()) return;
 
-        this.connectionsManager.deleteConnection(connectionID);
+        connection.destroy();
 
         this.protocolClient.postMessage(
             {
@@ -149,6 +149,7 @@ export class ChatClient {
                 const { id } = this.connectionsManager.createPendingConnection(
                     event.ecdhPublicKey,
                     event.responseRSA,
+                    event.from
                 );
 
                 this.sendEvent({
@@ -185,7 +186,7 @@ export class ChatClient {
                 const connection = this.connectionsManager.getConnection(
                     event.keyID,
                 );
-                if (!connection || !connection.isPreEstablishedConnection())
+                if (!connection || !connection.isPreEstablished())
                     return;
 
                 connection.finish();
@@ -210,7 +211,7 @@ export class ChatClient {
                 const connection = this.connectionsManager.getConnection(
                     event.keyID,
                 );
-                if (!connection || !connection.isPreEstablishedConnection())
+                if (!connection || !connection.isPreEstablished())
                     return;
 
                 connection.finish();

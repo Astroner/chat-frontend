@@ -16,11 +16,14 @@ export type ButtonProps = {
     style?: CSSProperties;
     margin?: string;
     variant?: 'purple' | 'orange';
+    size?: 'small' | 'big'
 };
 
 export const Button: FC<ButtonProps> = memo((props) => {
     const root = useClass(
+        cn.root,
         cn['root--' + (props.variant ?? 'purple')],
+        cn['root--' + (props.size ?? 'big')],
         props.className,
     );
 

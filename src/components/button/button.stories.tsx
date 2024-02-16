@@ -10,6 +10,10 @@ const meta: Meta<typeof Button> = {
             options: ['purple', 'orange'],
             control: { type: 'radio' },
         },
+        size: {
+            options: ['small', 'big'],
+            control: { type: 'radio' },
+        },
     },
 };
 
@@ -23,5 +27,6 @@ export const Default: Story = {
         disabled: false,
         submit: false,
         variant: 'purple',
+        size: 'big',
     },
 };

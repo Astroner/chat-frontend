@@ -16,8 +16,8 @@ import {
     base64ToArrayBuffer,
 } from '../../arraybuffer-utils';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
-import { ConnectionsManager } from '../../storage/connections-manager.class';
-import { PublishedKeysManager } from '../../storage/published-keys-manager.class';
+import { ConnectionsManager } from '../../storage/connections-manager/connections-manager.class';
+import { PublishedKeysManager } from '../../storage/published-keys-manager/published-keys-manager.class';
 
 const meta: Meta = {
     title: 'Network/Chat Client',
