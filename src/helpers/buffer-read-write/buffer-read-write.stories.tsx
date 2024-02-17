@@ -2,7 +2,7 @@ import { Meta, StoryFn, StoryObj } from '@storybook/react';
 
 import { BufferBuilder } from './buffer-builder.class';
 import { BufferReader } from './buffer-reader.class';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { arrayBufferToBase64, base64ToArrayBuffer } from '../arraybuffer-utils';
 
 const meta: Meta<typeof BufferBuilder> = {
@@ -12,15 +12,13 @@ const meta: Meta<typeof BufferBuilder> = {
 export default meta;
 
 export const Builder: StoryFn = () => {
-    const [input, setInput] = useState('20');
+    const [input, setInput] = useState('');
 
-    const [builder, setBuilder] = useState<BufferBuilder | null>();
+    const builder = useMemo(() => new BufferBuilder(), []);
     const [data, setData] = useState<string | null>(null);
     const [exported, setExported] = useState<string | null>(null);
 
     const update = () => {
-        if (!builder) return;
-
         const str = Array.from(new Uint8Array(builder.getBuffer()))
             .map((n) => {
                 const str = n.toString(16);
@@ -30,12 +28,6 @@ export const Builder: StoryFn = () => {
             .join(' ');
 
         setData(str);
-        setInput('');
-    };
-
-    const create = () => {
-        setBuilder(new BufferBuilder(+input));
-
         setInput('');
     };
 
@@ -76,23 +68,15 @@ export const Builder: StoryFn = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
             />
-            {!builder ? (
-                <div>
-                    <button onClick={create}>Create buffer</button>
-                </div>
-            ) : (
-                <>
-                    <div>
-                        <button onClick={appendByte}>Append byte</button>
-                    </div>
-                    <div style={{ marginTop: 20 }}>
-                        <button onClick={appendUint16}>Append Uint16</button>
-                    </div>
-                    <div style={{ marginTop: 20 }}>
-                        <button onClick={appendString}>Append string</button>
-                    </div>
-                </>
-            )}
+            <div>
+                <button onClick={appendByte}>Append byte</button>
+            </div>
+            <div style={{ marginTop: 20 }}>
+                <button onClick={appendUint16}>Append Uint16</button>
+            </div>
+            <div style={{ marginTop: 20 }}>
+                <button onClick={appendString}>Append string</button>
+            </div>
             {data && (
                 <div>
                     <h3>Data</h3>

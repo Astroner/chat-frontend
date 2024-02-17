@@ -1,51 +1,43 @@
 'use client';
 
 import {
-    FormEvent,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
-import { env } from '../env';
 
-import cn from './page.module.scss';
-import { Input } from '../components/input/input.component';
+import { useAsyncCallback } from '@dogonis/hooks';
 import {
     FieldConsumer,
     FormProvider,
     useController,
 } from '@schematic-forms/react';
-import { Button } from '../components/button/button.component';
 import { Str } from '@schematic-forms/core';
-import { AesGcmKey } from '../helpers/crypto/aes-gcm/aes-gcm-key.class';
+
+import { Input } from '../components/input/input.component';
+import { Button } from '../components/button/button.component';
 import {
     ChatInfo,
-    ChatState,
-    ChatStorage,
-    MessageOrigin,
 } from '../helpers/storage/chat-storage.class';
-import { ConnectionsManager } from '../helpers/storage/connections-manager/connections-manager.class';
-import { PublishedKeysManager } from '../helpers/storage/published-keys-manager/published-keys-manager.class';
 import { KeysIndex } from '../helpers/crypto/keys-index/keys-index.class';
 import { Connection } from '../helpers/network/connection/connection.class';
 import { ProtocolClient } from '../helpers/network/protocol-client/protocol-client.class';
 import { ChatClient } from '../helpers/network/chat-client/chat-client.class';
 import {
     arrayBufferToBase64,
-    arrayBufferToString,
     base64ToArrayBuffer,
-    stringToArrayBuffer,
 } from '../helpers/arraybuffer-utils';
-import { useAsyncCallback } from '@dogonis/hooks';
 import { RSAEncryptionKey } from '../helpers/crypto/rsa/rsa-encryption-key.class';
-import { Messages } from './components/messages/messages.component';
 import { Chat } from './components/chat/chat.component';
-import { Subscription } from '../helpers/types';
+import { joinSubs } from '../helpers/types';
 import { GZip } from '../helpers/compression/gzip.class';
-import { BufferBuilder } from '../helpers/buffer-read-write/buffer-builder.class';
-import { BufferReader } from '../helpers/buffer-read-write/buffer-reader.class';
+
+import { env } from '../env';
+
+import cn from './page.module.scss';
+
+import { Storage, StorageState } from "./model/storage.class";
 
 const STORAGE_KEY = 'AKSHDGJALSD';
 
@@ -59,18 +51,22 @@ export default function Home() {
         | { name: 'CHAT'; id: string }
     >({ name: 'LOGIN' });
 
+    const gzip = useMemo<GZip>(() => new GZip(), []);
     const keysIndex = useMemo<KeysIndex>(() => new KeysIndex(), []);
-    const [storageEncryptionKey, setStorageEncryptionKey] =
-        useState<AesGcmKey | null>(null);
-    const gzip = useMemo(() => new GZip(), []);
+    const storage = useMemo(() => new Storage({
+        save: async data => {
+            localStorage.setItem(STORAGE_KEY, arrayBufferToBase64(data));
+        },
+        hasData: async () => !!localStorage.getItem(STORAGE_KEY),
+        load: async () => {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if(!data)   throw new Error("A");
 
-    const [chatsStorage, setChatsStorage] = useState<ChatStorage | null>(null);
-    const [connections, setConnections] = useState<ConnectionsManager | null>(
-        null,
-    );
-    const [published, setPublished] = useState<PublishedKeysManager | null>(
-        null,
-    );
+            return base64ToArrayBuffer(data);
+        }
+    }, keysIndex, gzip), [keysIndex, gzip])
+
+    const [storageState, setStorageState] = useState<StorageState>(() => storage.getState());
 
     const [chatClient, setChatClient] = useState<ChatClient | null>(null);
 
@@ -94,15 +90,9 @@ export default function Home() {
             password: Str(true),
         },
         async submit({ password }) {
-            const aes = await AesGcmKey.fromPassword(
-                password,
-                Uint8Array.from([
-                    124, 158, 73, 238, 216, 204, 48, 8, 30, 52, 65, 251, 13,
-                    175, 32, 141,
-                ]),
-            );
+            await storage.init(password);
 
-            setStorageEncryptionKey(aes);
+            setScene({ name: "CHATS" });
         },
     });
 
@@ -141,12 +131,12 @@ export default function Home() {
     );
 
     const [createKey] = useAsyncCallback(async () => {
-        if (!published) return;
+        if (storageState.type !== "READY") return;
 
-        const { id } = await published.issueKey();
+        const { id } = await storageState.published.issueKey();
 
         setScene({ name: 'PUBLISHED_KEY', id });
-    }, [published]);
+    }, [storageState]);
 
     const copyToClipboard = useCallback(() => {
         if (!publishedKeyInfo) return;
@@ -155,32 +145,31 @@ export default function Home() {
     }, [publishedKeyInfo]);
 
     const call = async (from: string, to: string, key: RSAEncryptionKey) => {
-        if (!chatClient || !chatsStorage) return;
+        if (!chatClient || storageState.type !== "READY") return;
 
         const { id: connectionID } = await chatClient.sendConnectionRequest(
             key,
             from,
         );
-
-        chatsStorage.createChat(to, connectionID);
+        storageState.chats.createChat(to, connectionID);
     };
 
     const sendMessage = (message: string) => {
-        if (!chatClient || !currentChatInfo || !connections || !chatsStorage)
+        if (!chatClient || !currentChatInfo || storageState.type !== "READY")
             return;
 
-        const connection = connections.getConnection(
+        const connection = storageState.connections.getConnection(
             currentChatInfo.connectionID,
         );
 
         if (!connection || !connection.isEstablished()) return;
 
         chatClient.sendMessage(connection, message);
-        chatsStorage.setChatData(currentChatInfo.id, (prev) => ({
+        storageState.chats.setChatData(currentChatInfo.id, (prev) => ({
             ...prev,
             messages: prev.messages.concat([
                 {
-                    origin: MessageOrigin.CLIENT,
+                    origin: "CLIENT",
                     text: message,
                 },
             ]),
@@ -188,180 +177,25 @@ export default function Home() {
     };
 
     useEffect(() => {
-        if (!storageEncryptionKey) return;
-
-        (async () => {
-            const stored = localStorage.getItem(STORAGE_KEY);
-
-            if (!stored) {
-                setChatsStorage(new ChatStorage());
-                setConnections(new ConnectionsManager());
-                setPublished(new PublishedKeysManager(keysIndex));
-            } else {
-                const cipher = base64ToArrayBuffer(stored);
-
-                const data = await storageEncryptionKey.decrypt(cipher);
-
-                const reader = new BufferReader(data);
-
-                const [chats, published, connections] = await Promise.all([
-                    gzip
-                        .decompress(reader.readBytes())
-                        .then(
-                            (data) =>
-                                new ChatStorage(
-                                    JSON.parse(arrayBufferToString(data)),
-                                ),
-                        ),
-                    PublishedKeysManager.import(reader.readBytes(), keysIndex),
-                    ConnectionsManager.import(reader.readBytes()),
-                ]);
-
-                setChatsStorage(chats);
-                setConnections(connections);
-                setPublished(published);
-
-                for (const { key, connection } of connections.getAll()) {
-                    switch (connection.status) {
-                        case 'preEstablished':
-                        case 'established':
-                            keysIndex.addKey(key, connection.aesKey);
-
-                            break;
-
-                        case 'requested':
-                            keysIndex.addKey(
-                                key,
-                                connection.responseRSAPrivateKey,
-                            );
-
-                            break;
-
-                        case 'pending':
-                            console.log('Pending one');
-
-                            break;
-                    }
-                }
-
-                for (const { id, privateKey } of published.getAll()) {
-                    keysIndex.addKey(id, privateKey);
-                }
-            }
-
-            setScene({ name: 'CHATS' });
-        })();
-    }, [storageEncryptionKey, keysIndex, gzip]);
-
-    useEffect(() => {
-        if (
-            !chatsStorage ||
-            !published ||
-            !connections ||
-            !storageEncryptionKey
-        )
-            return;
-
-        let chatsStorageSub: Subscription;
-        let connectionsSub: Subscription;
-        let publishedSub: Subscription;
-
-        (async () => {
-            setDisplayedChats(
-                chatsStorage
-                    .getAll()
-                    .map((a) => ({ title: a.title, id: a.id })),
-            );
-
-            setPublishedKeysList(
-                published.getAll().map((item) => ({
-                    id: item.id,
-                    timesUsed: item.timesUsed,
-                })),
-            );
-
-            const dataToStore = {
-                messages: await gzip.compress(
-                    stringToArrayBuffer(JSON.stringify(chatsStorage.getAll())),
-                ),
-                published: await published.export(),
-                connections: await connections.export(),
-            };
-
-            const save = async () => {
-                const builder = new BufferBuilder(
-                    6 +
-                        dataToStore.messages.byteLength +
-                        dataToStore.published.byteLength +
-                        dataToStore.connections.byteLength,
-                );
-
-                builder.appendBuffer(dataToStore.messages);
-                builder.appendBuffer(dataToStore.published);
-                builder.appendBuffer(dataToStore.connections);
-
-                const buffer = builder.getBuffer();
-
-                const data = await storageEncryptionKey.encrypt(buffer);
-
-                const base64 = arrayBufferToBase64(data);
-
-                localStorage.setItem(STORAGE_KEY, base64);
-            };
-
-            save();
-
-            chatsStorageSub = chatsStorage.subscribe(async () => {
-                const chats = chatsStorage.getAll();
-
-                setDisplayedChats(
-                    chats.map((a) => ({ title: a.title, id: a.id })),
-                );
-
-                dataToStore.messages = await gzip.compress(
-                    stringToArrayBuffer(JSON.stringify(chatsStorage.getAll())),
-                );
-
-                save();
-            });
-
-            connectionsSub = connections.subscribe(async () => {
-                dataToStore.connections = await connections.export();
-            });
-
-            publishedSub = published.subscribe(async () => {
-                const publishedList = published.getAll();
-
-                setPublishedKeysList(
-                    publishedList.map((item) => ({
-                        id: item.id,
-                        timesUsed: item.timesUsed,
-                    })),
-                );
-
-                dataToStore.published = await published.export();
-
-                save();
-            });
-        })();
+        const sub = storage.subscribe(() => {
+            setStorageState(storage.getState());
+        })
 
         return () => {
-            chatsStorageSub.unsubscribe();
-            connectionsSub.unsubscribe();
-            publishedSub.unsubscribe();
-        };
-    }, [chatsStorage, connections, gzip, published, storageEncryptionKey]);
+            sub.unsubscribe();
+        }
+    }, [storage]);
 
     useEffect(() => {
-        if (!connection || !connections || !published) return;
+        if (!connection || storageState.type !== "READY") return;
 
         const protocol = new ProtocolClient(connection, keysIndex);
         protocol.init();
 
         const chatClient = new ChatClient(
             protocol,
-            connections,
-            published,
+            storageState.connections,
+            storageState.published,
             keysIndex,
         );
         chatClient.init();
@@ -373,12 +207,13 @@ export default function Home() {
             protocol.destroy();
             connection.destroy();
         };
-    }, [connection, connections, keysIndex, published]);
+    }, [connection, keysIndex, storageState]);
 
     useEffect(() => {
-        if (!chatClient || !chatsStorage) return;
+        if (!chatClient || storageState.type !== "READY") return;
 
         const sub = chatClient.addEventListener((event) => {
+            console.log(event);
             switch (event.type) {
                 case 'newPendingConnection': {
                     if (
@@ -387,7 +222,7 @@ export default function Home() {
                         )
                     ) {
                         chatClient.acceptConnection(event.id);
-                        const { id } = chatsStorage.createChat(
+                        storageState.chats.createChat(
                             event.from,
                             event.id,
                         );
@@ -398,15 +233,16 @@ export default function Home() {
                 }
 
                 case 'connectionEstablished': {
-                    const chat = chatsStorage.getByConnectionID(event.id);
+                    const chat = storageState.chats.getByConnectionID(event.id);
+                    console.log(chat);
                     if (!chat) return;
 
                     alert(`Connection with "${chat.title}" was established`);
 
-                    chatsStorage.setChatData(chat.id, (prev) => {
+                    storageState.chats.setChatData(chat.id, (prev) => {
                         return {
                             ...prev,
-                            state: ChatState.ACTIVE,
+                            state: "ACTIVE",
                         };
                     });
 
@@ -414,10 +250,10 @@ export default function Home() {
                 }
 
                 case 'connectionDeclined': {
-                    const chat = chatsStorage.getByConnectionID(event.id);
+                    const chat = storageState.chats.getByConnectionID(event.id);
                     if (!chat) return;
 
-                    const info = chatsStorage.getChat(chat.id);
+                    const info = storageState.chats.getChat(chat.id);
                     if (!info) return;
 
                     alert(`Chat invite for "${info.title}" was declined`);
@@ -426,14 +262,14 @@ export default function Home() {
                 }
 
                 case 'message': {
-                    const chat = chatsStorage.getByConnectionID(event.id);
+                    const chat = storageState.chats.getByConnectionID(event.id);
                     if (!chat) return;
 
-                    chatsStorage.setChatData(chat.id, (prev) => ({
+                    storageState.chats.setChatData(chat.id, (prev) => ({
                         ...prev,
                         messages: prev.messages.concat([
                             {
-                                origin: MessageOrigin.SERVER,
+                                origin: "SERVER",
                                 text: event.message,
                             },
                         ]),
@@ -447,13 +283,13 @@ export default function Home() {
         return () => {
             sub.unsubscribe();
         };
-    }, [chatClient, chatsStorage]);
+    }, [chatClient, storageState]);
 
     useEffect(() => {
-        if (scene.name !== 'PUBLISHED_KEY' || !published) return;
+        if (scene.name !== 'PUBLISHED_KEY' || storageState.type !== "READY") return;
 
         (async () => {
-            const info = published.getKeyInfo(scene.id);
+            const info = storageState.published.getKeyInfo(scene.id);
             if (!info) return;
 
             setPublishedKeyInfo({
@@ -467,19 +303,19 @@ export default function Home() {
         return () => {
             setPublishedKeyInfo(null);
         };
-    }, [published, scene]);
+    }, [storageState, scene]);
 
     useEffect(() => {
-        if (scene.name !== 'CHAT' || !chatsStorage) return;
+        if (scene.name !== 'CHAT' || storageState.type !== "READY") return;
 
-        const info = chatsStorage.getChat(scene.id);
+        const info = storageState.chats.getChat(scene.id);
 
         if (!info) return;
 
         setCurrentChatInfo(info);
 
-        const sub = chatsStorage.subscribe(() => {
-            const info = chatsStorage.getChat(scene.id);
+        const sub = storageState.chats.subscribe(() => {
+            const info = storageState.chats.getChat(scene.id);
 
             if (!info) return;
 
@@ -489,7 +325,48 @@ export default function Home() {
         return () => {
             sub.unsubscribe();
         };
-    }, [chatsStorage, scene]);
+    }, [storageState, scene]);
+
+    useEffect(() => {
+        if(storageState.type !== "READY") return;
+
+        const chats = storageState.chats.getAll();
+        setDisplayedChats(
+            chats.map((a) => ({ title: a.title, id: a.id })),
+        );
+
+        const publishedList = storageState.published.getAll();
+        setPublishedKeysList(
+            publishedList.map((item) => ({
+                id: item.id,
+                timesUsed: item.timesUsed,
+            })),
+        );
+
+        const sub = joinSubs(
+            storageState.chats.subscribe(() => {
+                const chats = storageState.chats.getAll();
+
+                setDisplayedChats(
+                    chats.map((a) => ({ title: a.title, id: a.id })),
+                );
+            }),
+            storageState.published.subscribe(async () => {
+                const publishedList = storageState.published.getAll();
+    
+                setPublishedKeysList(
+                    publishedList.map((item) => ({
+                        id: item.id,
+                        timesUsed: item.timesUsed,
+                    })),
+                );
+            })
+        );
+
+        return () => {
+            sub.unsubscribe();
+        }
+    }, [storageState])
 
     return (
         <main className={cn.root}>
@@ -514,7 +391,7 @@ export default function Home() {
                     </FormProvider>
                 </div>
             )}
-            {scene.name === 'CHATS' && chatsStorage && (
+            {scene.name === 'CHATS' && (
                 <div>
                     {isConnecting ? (
                         'Connecting...'
@@ -559,7 +436,7 @@ export default function Home() {
                     </Button>
                 </div>
             )}
-            {scene.name === 'PUBLISHED' && published && (
+            {scene.name === 'PUBLISHED' && (
                 <div>
                     {publishedKeysList.length === 0 ? (
                         <div>Nothing published</div>
@@ -688,7 +565,7 @@ export default function Home() {
                                 messages={currentChatInfo.messages.map(
                                     (item) => ({
                                         origin:
-                                            item.origin === MessageOrigin.CLIENT
+                                            item.origin === "CLIENT"
                                                 ? 'CLIENT'
                                                 : 'SERVER',
                                         text: item.text,

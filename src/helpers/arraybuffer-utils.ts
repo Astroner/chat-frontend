@@ -3,7 +3,7 @@ export const arrayBufferToBlob = (src: ArrayBuffer) => {
 };
 
 const encoder = new TextEncoder();
-export const stringToArrayBuffer = (src: string) => encoder.encode(src);
+export const stringToArrayBuffer = (src: string) => encoder.encode(src).buffer;
 
 const decoder = new TextDecoder();
 export const arrayBufferToString = (src: ArrayBuffer) => decoder.decode(src);
@@ -19,7 +19,7 @@ export const arrayBufferToReadableStream = (src: ArrayBuffer) =>
 
 export const readableStreamToArrayBuffer = async (
     stream: ReadableStream<Uint8Array>,
-) => {
+): Promise<ArrayBuffer> => {
     const reader = stream.getReader();
 
     let result: Uint8Array | null = null;

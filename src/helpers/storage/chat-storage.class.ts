@@ -1,15 +1,6 @@
-export enum MessageOrigin {
-    SERVER,
-    CLIENT,
-}
-
-export enum ChatState {
-    PENDING,
-    ACTIVE,
-}
 
 export type ChatMessage = {
-    origin: MessageOrigin;
+    origin: "SERVER" | "CLIENT";
     text: string;
 };
 
@@ -17,7 +8,7 @@ export type ChatInfo = {
     id: string;
     title: string;
     connectionID: string;
-    state: ChatState;
+    state: "ACTIVE" | "PENDING";
     messages: ChatMessage[];
 };
 
@@ -45,8 +36,10 @@ export class ChatStorage {
             messages: [],
             title,
             connectionID,
-            state: ChatState.PENDING,
+            state: "PENDING",
         };
+
+        this.connectionIDToChatID.set(connectionID, id);
 
         this.chats.set(id, chat);
 

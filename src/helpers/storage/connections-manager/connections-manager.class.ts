@@ -302,8 +302,6 @@ export class ConnectionsManager {
      * aesKey - 2 bytes length, aes-gcm key in PKCS8 format
      */
     async export(): Promise<ArrayBuffer> {
-        let bufferLength = 1;
-
         const prepared = await Promise.all(
             this.getAll().map(async ({ key, connection }) => {
                 const id = key;
@@ -353,17 +351,6 @@ export class ConnectionsManager {
                         break;
                 }
 
-                bufferLength += 0 + 2 + id.length + 1 + 2 + date.length;
-
-                for (const datum of data) {
-                    bufferLength += 2;
-                    if (typeof datum === 'string') {
-                        bufferLength += datum.length;
-                    } else {
-                        bufferLength += datum.byteLength;
-                    }
-                }
-
                 return {
                     id,
                     status,
@@ -373,7 +360,7 @@ export class ConnectionsManager {
             }),
         );
 
-        const builder = new BufferBuilder(bufferLength);
+        const builder = new BufferBuilder();
         builder.appendByte(prepared.length);
 
         for (const entry of prepared) {

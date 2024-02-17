@@ -131,8 +131,6 @@ export class PublishedKeysManager {
      * privateRSAKey = 2bytes length + data in PKCS8 format
      */
     async export(): Promise<ArrayBuffer> {
-        let bufferSize = 1;
-
         const prepared = await Promise.all(
             Array.from(this.publishedKeys.values()).map(async (info) => {
                 const [privateKey, publicKey] = await Promise.all([
@@ -142,22 +140,7 @@ export class PublishedKeysManager {
 
                 const issuedAt = info.issuedAt.toISOString();
 
-                const bytesLength =
-                    0 +
-                    2 +
-                    info.id.length +
-                    2 +
-                    2 +
-                    issuedAt.length +
-                    2 +
-                    publicKey.byteLength +
-                    2 +
-                    privateKey.byteLength;
-
-                bufferSize += bytesLength;
-
                 return {
-                    bytesLength,
                     id: info.id,
                     timesUsed: info.timesUsed,
                     issuedAt,
@@ -167,7 +150,7 @@ export class PublishedKeysManager {
             }),
         );
 
-        const builder = new BufferBuilder(bufferSize);
+        const builder = new BufferBuilder();
         builder.appendByte(prepared.length);
 
         for (const item of prepared) {

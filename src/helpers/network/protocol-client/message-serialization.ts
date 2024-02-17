@@ -34,7 +34,7 @@ const serializer: Serializers = {
 
         const messageType = new Uint8Array(buffer);
         messageType[0] = PackageType.MESSAGE;
-        messageType.set(payload, 1);
+        messageType.set(new Uint8Array(payload), 1);
 
         return buffer;
     },
@@ -56,7 +56,7 @@ const serializer: Serializers = {
 
         bytes[bufferCursor] = data.from.length;
         bufferCursor += 1;
-        bytes.set(stringToArrayBuffer(data.from), bufferCursor);
+        bytes.set(new Uint8Array(stringToArrayBuffer(data.from)), bufferCursor);
         bufferCursor += data.from.length;
 
         writeUint16At(bytes, ecdh.byteLength, bufferCursor); // ECDH pub key length
