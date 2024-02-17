@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react"
-import { NetworkContext, StorageContext } from "./context"
-import { Storage, StorageState } from "./storage.class";
-import { Network, NetworkState } from "./network.class";
+import { useContext, useEffect, useState } from 'react';
+import { NetworkContext, StorageContext } from './context';
+import { Storage, StorageState } from './storage.class';
+import { Network, NetworkState } from './network.class';
 
 export const useStorage = (): [StorageState, Storage] => {
     const storage = useContext(StorageContext);
@@ -11,15 +11,15 @@ export const useStorage = (): [StorageState, Storage] => {
     useEffect(() => {
         const sub = storage.subscribe(() => {
             setState(storage.getState());
-        })
+        });
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [storage])
+        };
+    }, [storage]);
 
     return [state, storage];
-}
+};
 
 export const useNetwork = (): [NetworkState, Network] => {
     const network = useContext(NetworkContext);
@@ -29,12 +29,12 @@ export const useNetwork = (): [NetworkState, Network] => {
     useEffect(() => {
         const sub = network.subscribe(() => {
             setState(network.getState());
-        })
+        });
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [network])
+        };
+    }, [network]);
 
     return [state, network];
-}
+};
