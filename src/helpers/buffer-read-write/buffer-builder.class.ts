@@ -1,22 +1,25 @@
 import { stringToArrayBuffer } from '../arraybuffer-utils';
 
 type OperationTemplate<T, D> = {
-    type: T,
-    data: D
-}
+    type: T;
+    data: D;
+};
 
-type Operation = 
-    | OperationTemplate<"append-byte", number>
-    | OperationTemplate<"append-uint16", number>
-    | OperationTemplate<"append-string", { src: string, skipLength: boolean }>
-    | OperationTemplate<"append-buffer", { src: ArrayBuffer, skipLength: boolean }>
+type Operation =
+    | OperationTemplate<'append-byte', number>
+    | OperationTemplate<'append-uint16', number>
+    | OperationTemplate<'append-string', { src: string; skipLength: boolean }>
+    | OperationTemplate<
+          'append-buffer',
+          { src: ArrayBuffer; skipLength: boolean }
+      >;
 
 export class BufferBuilder {
     private operations: Operation[] = [];
     private bufferSize = 0;
 
     appendByte(value: number) {
-        this.operations.push({ type: "append-byte", data: value });
+        this.operations.push({ type: 'append-byte', data: value });
         this.bufferSize += 1;
     }
 
@@ -41,8 +44,11 @@ export class BufferBuilder {
     }
 
     appendString(str: string, skipLength?: 'SKIP_LENGTH') {
-        this.operations.push({ type: 'append-string', data: { src: str, skipLength: !!skipLength } });
-        if(!skipLength) this.bufferSize += 2;
+        this.operations.push({
+            type: 'append-string',
+            data: { src: str, skipLength: !!skipLength },
+        });
+        if (!skipLength) this.bufferSize += 2;
         this.bufferSize += str.length;
         // if (!skipLength) {
         //     this.appendUint16(str.length);
@@ -60,8 +66,11 @@ export class BufferBuilder {
     }
 
     appendBuffer(data: ArrayBuffer, skipLength?: 'SKIP_LENGTH') {
-        this.operations.push({ type: 'append-buffer', data: { src: data, skipLength: !!skipLength } });
-        if(!skipLength) this.bufferSize += 2;
+        this.operations.push({
+            type: 'append-buffer',
+            data: { src: data, skipLength: !!skipLength },
+        });
+        if (!skipLength) this.bufferSize += 2;
         this.bufferSize += data.byteLength;
         // if (!skipLength) {
         //     this.appendUint16(data.byteLength);
@@ -77,30 +86,33 @@ export class BufferBuilder {
         // this.cursor += data.byteLength;
     }
 
-
     getBuffer() {
         const buffer = new ArrayBuffer(this.bufferSize);
 
         const bytes = new Uint8Array(buffer);
         let cursor = 0;
 
-        for(const operation of this.operations) {
-            switch(operation.type) {
-                case "append-byte":
+        for (const operation of this.operations) {
+            switch (operation.type) {
+                case 'append-byte':
                     bytes[cursor++] = operation.data;
 
                     break;
 
-                case "append-uint16": {
+                case 'append-uint16': {
                     this.writeUint16(bytes, cursor, operation.data);
                     cursor += 2;
 
                     break;
                 }
 
-                case "append-string": {
-                    if(!operation.data.skipLength) {
-                        this.writeUint16(bytes, cursor, operation.data.src.length);
+                case 'append-string': {
+                    if (!operation.data.skipLength) {
+                        this.writeUint16(
+                            bytes,
+                            cursor,
+                            operation.data.src.length,
+                        );
                         cursor += 2;
                     }
 
@@ -112,9 +124,13 @@ export class BufferBuilder {
                     break;
                 }
 
-                case "append-buffer": {
-                    if(!operation.data.skipLength) {
-                        this.writeUint16(bytes, cursor, operation.data.src.byteLength);
+                case 'append-buffer': {
+                    if (!operation.data.skipLength) {
+                        this.writeUint16(
+                            bytes,
+                            cursor,
+                            operation.data.src.byteLength,
+                        );
                         cursor += 2;
                     }
 
@@ -136,7 +152,7 @@ export class BufferBuilder {
     private writeUint16(buffer: Uint8Array, offset: number, value: number) {
         if (value > 255 * 256)
             throw new Error(`${value} is more than 2 bytes long`);
-        
+
         const arr = Uint16Array.from([value]);
 
         buffer.set(

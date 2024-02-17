@@ -8,13 +8,12 @@ export type Subscription = {
     unsubscribe: VoidFunction;
 };
 
-
 export const joinSubs = (...subs: Subscription[]): Subscription => {
     return {
         unsubscribe: () => {
-            for(const sub of subs) {
+            for (const sub of subs) {
                 sub.unsubscribe();
             }
-        }
-    }
-}
+        },
+    };
+};

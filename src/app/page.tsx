@@ -1,11 +1,6 @@
 'use client';
 
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAsyncCallback } from '@dogonis/hooks';
 import {
@@ -17,9 +12,7 @@ import { Str } from '@schematic-forms/core';
 
 import { Input } from '../components/input/input.component';
 import { Button } from '../components/button/button.component';
-import {
-    ChatInfo,
-} from '../helpers/storage/chat-storage.class';
+import { ChatInfo } from '../helpers/storage/chat-storage.class';
 import { KeysIndex } from '../helpers/crypto/keys-index/keys-index.class';
 import { Connection } from '../helpers/network/connection/connection.class';
 import { ProtocolClient } from '../helpers/network/protocol-client/protocol-client.class';
@@ -37,7 +30,7 @@ import { env } from '../env';
 
 import cn from './page.module.scss';
 
-import { Storage, StorageState } from "./model/storage.class";
+import { Storage, StorageState } from './model/storage.class';
 
 const STORAGE_KEY = 'AKSHDGJALSD';
 
@@ -53,20 +46,33 @@ export default function Home() {
 
     const gzip = useMemo<GZip>(() => new GZip(), []);
     const keysIndex = useMemo<KeysIndex>(() => new KeysIndex(), []);
-    const storage = useMemo(() => new Storage({
-        save: async data => {
-            localStorage.setItem(STORAGE_KEY, arrayBufferToBase64(data));
-        },
-        hasData: async () => !!localStorage.getItem(STORAGE_KEY),
-        load: async () => {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if(!data)   throw new Error("A");
+    const storage = useMemo(
+        () =>
+            new Storage(
+                {
+                    save: async (data) => {
+                        localStorage.setItem(
+                            STORAGE_KEY,
+                            arrayBufferToBase64(data),
+                        );
+                    },
+                    hasData: async () => !!localStorage.getItem(STORAGE_KEY),
+                    load: async () => {
+                        const data = localStorage.getItem(STORAGE_KEY);
+                        if (!data) throw new Error('A');
 
-            return base64ToArrayBuffer(data);
-        }
-    }, keysIndex, gzip), [keysIndex, gzip])
+                        return base64ToArrayBuffer(data);
+                    },
+                },
+                keysIndex,
+                gzip,
+            ),
+        [keysIndex, gzip],
+    );
 
-    const [storageState, setStorageState] = useState<StorageState>(() => storage.getState());
+    const [storageState, setStorageState] = useState<StorageState>(() =>
+        storage.getState(),
+    );
 
     const [chatClient, setChatClient] = useState<ChatClient | null>(null);
 
@@ -92,7 +98,7 @@ export default function Home() {
         async submit({ password }) {
             await storage.init(password);
 
-            setScene({ name: "CHATS" });
+            setScene({ name: 'CHATS' });
         },
     });
 
@@ -131,7 +137,7 @@ export default function Home() {
     );
 
     const [createKey] = useAsyncCallback(async () => {
-        if (storageState.type !== "READY") return;
+        if (storageState.type !== 'READY') return;
 
         const { id } = await storageState.published.issueKey();
 
@@ -145,7 +151,7 @@ export default function Home() {
     }, [publishedKeyInfo]);
 
     const call = async (from: string, to: string, key: RSAEncryptionKey) => {
-        if (!chatClient || storageState.type !== "READY") return;
+        if (!chatClient || storageState.type !== 'READY') return;
 
         const { id: connectionID } = await chatClient.sendConnectionRequest(
             key,
@@ -155,7 +161,7 @@ export default function Home() {
     };
 
     const sendMessage = (message: string) => {
-        if (!chatClient || !currentChatInfo || storageState.type !== "READY")
+        if (!chatClient || !currentChatInfo || storageState.type !== 'READY')
             return;
 
         const connection = storageState.connections.getConnection(
@@ -169,7 +175,7 @@ export default function Home() {
             ...prev,
             messages: prev.messages.concat([
                 {
-                    origin: "CLIENT",
+                    origin: 'CLIENT',
                     text: message,
                 },
             ]),
@@ -179,15 +185,15 @@ export default function Home() {
     useEffect(() => {
         const sub = storage.subscribe(() => {
             setStorageState(storage.getState());
-        })
+        });
 
         return () => {
             sub.unsubscribe();
-        }
+        };
     }, [storage]);
 
     useEffect(() => {
-        if (!connection || storageState.type !== "READY") return;
+        if (!connection || storageState.type !== 'READY') return;
 
         const protocol = new ProtocolClient(connection, keysIndex);
         protocol.init();
@@ -210,7 +216,7 @@ export default function Home() {
     }, [connection, keysIndex, storageState]);
 
     useEffect(() => {
-        if (!chatClient || storageState.type !== "READY") return;
+        if (!chatClient || storageState.type !== 'READY') return;
 
         const sub = chatClient.addEventListener((event) => {
             console.log(event);
@@ -222,10 +228,7 @@ export default function Home() {
                         )
                     ) {
                         chatClient.acceptConnection(event.id);
-                        storageState.chats.createChat(
-                            event.from,
-                            event.id,
-                        );
+                        storageState.chats.createChat(event.from, event.id);
                     } else {
                         chatClient.declineConnection(event.id);
                     }
@@ -242,7 +245,7 @@ export default function Home() {
                     storageState.chats.setChatData(chat.id, (prev) => {
                         return {
                             ...prev,
-                            state: "ACTIVE",
+                            state: 'ACTIVE',
                         };
                     });
 
@@ -269,7 +272,7 @@ export default function Home() {
                         ...prev,
                         messages: prev.messages.concat([
                             {
-                                origin: "SERVER",
+                                origin: 'SERVER',
                                 text: event.message,
                             },
                         ]),
@@ -286,7 +289,8 @@ export default function Home() {
     }, [chatClient, storageState]);
 
     useEffect(() => {
-        if (scene.name !== 'PUBLISHED_KEY' || storageState.type !== "READY") return;
+        if (scene.name !== 'PUBLISHED_KEY' || storageState.type !== 'READY')
+            return;
 
         (async () => {
             const info = storageState.published.getKeyInfo(scene.id);
@@ -306,7 +310,7 @@ export default function Home() {
     }, [storageState, scene]);
 
     useEffect(() => {
-        if (scene.name !== 'CHAT' || storageState.type !== "READY") return;
+        if (scene.name !== 'CHAT' || storageState.type !== 'READY') return;
 
         const info = storageState.chats.getChat(scene.id);
 
@@ -328,12 +332,10 @@ export default function Home() {
     }, [storageState, scene]);
 
     useEffect(() => {
-        if(storageState.type !== "READY") return;
+        if (storageState.type !== 'READY') return;
 
         const chats = storageState.chats.getAll();
-        setDisplayedChats(
-            chats.map((a) => ({ title: a.title, id: a.id })),
-        );
+        setDisplayedChats(chats.map((a) => ({ title: a.title, id: a.id })));
 
         const publishedList = storageState.published.getAll();
         setPublishedKeysList(
@@ -353,20 +355,20 @@ export default function Home() {
             }),
             storageState.published.subscribe(async () => {
                 const publishedList = storageState.published.getAll();
-    
+
                 setPublishedKeysList(
                     publishedList.map((item) => ({
                         id: item.id,
                         timesUsed: item.timesUsed,
                     })),
                 );
-            })
+            }),
         );
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [storageState])
+        };
+    }, [storageState]);
 
     return (
         <main className={cn.root}>
@@ -565,7 +567,7 @@ export default function Home() {
                                 messages={currentChatInfo.messages.map(
                                     (item) => ({
                                         origin:
-                                            item.origin === "CLIENT"
+                                            item.origin === 'CLIENT'
                                                 ? 'CLIENT'
                                                 : 'SERVER',
                                         text: item.text,

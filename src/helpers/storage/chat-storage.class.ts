@@ -1,6 +1,5 @@
-
 export type ChatMessage = {
-    origin: "SERVER" | "CLIENT";
+    origin: 'SERVER' | 'CLIENT';
     text: string;
 };
 
@@ -8,7 +7,7 @@ export type ChatInfo = {
     id: string;
     title: string;
     connectionID: string;
-    state: "ACTIVE" | "PENDING";
+    state: 'ACTIVE' | 'PENDING';
     messages: ChatMessage[];
 };
 
@@ -36,7 +35,7 @@ export class ChatStorage {
             messages: [],
             title,
             connectionID,
-            state: "PENDING",
+            state: 'PENDING',
         };
 
         this.connectionIDToChatID.set(connectionID, id);
