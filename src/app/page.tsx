@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAsyncCallback } from '@dogonis/hooks';
 import {
@@ -13,7 +13,6 @@ import { Str } from '@schematic-forms/core';
 import { Input } from '../components/input/input.component';
 import { Button } from '../components/button/button.component';
 import { ChatInfo } from '../helpers/storage/chat-storage.class';
-import { KeysIndex } from '../helpers/crypto/keys-index/keys-index.class';
 import {
     arrayBufferToBase64,
     base64ToArrayBuffer,
@@ -21,14 +20,10 @@ import {
 import { RSAEncryptionKey } from '../helpers/crypto/rsa/rsa-encryption-key.class';
 import { Chat } from './components/chat/chat.component';
 import { joinSubs } from '../helpers/types';
-import { GZip } from '../helpers/compression/gzip.class';
-
-import { env } from '../env';
 
 import cn from './page.module.scss';
 
-import { Storage, StorageState } from './model/storage.class';
-import { Network, NetworkState } from './model/network.class';
+import { useNetwork, useStorage } from './model/hooks';
 
 const STORAGE_KEY = 'AKSHDGJALSD';
 
@@ -42,43 +37,8 @@ export default function Home() {
         | { name: 'CHAT'; id: string }
     >({ name: 'LOGIN' });
 
-    const gzip = useMemo<GZip>(() => new GZip(), []);
-    const keysIndex = useMemo<KeysIndex>(() => new KeysIndex(), []);
-    const network = useMemo(
-        () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex),
-        [keysIndex],
-    );
-    const storage = useMemo(
-        () =>
-            new Storage(
-                {
-                    save: async (data) => {
-                        localStorage.setItem(
-                            STORAGE_KEY,
-                            arrayBufferToBase64(data),
-                        );
-                    },
-                    hasData: async () => !!localStorage.getItem(STORAGE_KEY),
-                    load: async () => {
-                        const data = localStorage.getItem(STORAGE_KEY);
-                        if (!data) throw new Error('A');
-
-                        return base64ToArrayBuffer(data);
-                    },
-                },
-                keysIndex,
-                gzip,
-            ),
-        [keysIndex, gzip],
-    );
-
-    const [storageState, setStorageState] = useState<StorageState>(() =>
-        storage.getState(),
-    );
-
-    const [networkState, setNetworkState] = useState<NetworkState>(() =>
-        network.getState(),
-    );
+    const [storageState, storage] = useStorage();
+    const [networkState, network] = useNetwork();
 
     const [displayedChats, setDisplayedChats] = useState<
         Array<{ title: string; id: string }>
@@ -183,26 +143,6 @@ export default function Home() {
             ]),
         }));
     };
-
-    useEffect(() => {
-        const sub = storage.subscribe(() => {
-            setStorageState(storage.getState());
-        });
-
-        return () => {
-            sub.unsubscribe();
-        };
-    }, [storage]);
-
-    useEffect(() => {
-        const sub = network.subscribe(() => {
-            setNetworkState(network.getState());
-        });
-
-        return () => {
-            sub.unsubscribe();
-        };
-    }, [network]);
 
     useEffect(() => {
         if (networkState.type !== 'READY' || storageState.type !== 'READY')
