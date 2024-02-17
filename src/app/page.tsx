@@ -14,9 +14,6 @@ import { Input } from '../components/input/input.component';
 import { Button } from '../components/button/button.component';
 import { ChatInfo } from '../helpers/storage/chat-storage.class';
 import { KeysIndex } from '../helpers/crypto/keys-index/keys-index.class';
-import { Connection } from '../helpers/network/connection/connection.class';
-import { ProtocolClient } from '../helpers/network/protocol-client/protocol-client.class';
-import { ChatClient } from '../helpers/network/chat-client/chat-client.class';
 import {
     arrayBufferToBase64,
     base64ToArrayBuffer,
@@ -31,6 +28,7 @@ import { env } from '../env';
 import cn from './page.module.scss';
 
 import { Storage, StorageState } from './model/storage.class';
+import { Network, NetworkState } from './model/network.class';
 
 const STORAGE_KEY = 'AKSHDGJALSD';
 
@@ -46,6 +44,7 @@ export default function Home() {
 
     const gzip = useMemo<GZip>(() => new GZip(), []);
     const keysIndex = useMemo<KeysIndex>(() => new KeysIndex(), []);
+    const network = useMemo(() => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex), [keysIndex]);
     const storage = useMemo(
         () =>
             new Storage(
@@ -74,7 +73,9 @@ export default function Home() {
         storage.getState(),
     );
 
-    const [chatClient, setChatClient] = useState<ChatClient | null>(null);
+    const [networkState, setNetworkState] = useState<NetworkState>(() =>
+        network.getState(),
+    );
 
     const [displayedChats, setDisplayedChats] = useState<
         Array<{ title: string; id: string }>
@@ -125,16 +126,14 @@ export default function Home() {
         },
     });
 
-    const [connect, isConnecting, connection] = useAsyncCallback(
-        async (hook) => {
-            const connection = new Connection(env.WS_ADDRESS);
+    const connect = () => {
+        if(storageState.type !== "READY") return;
 
-            await connection.connect();
-
-            return connection;
-        },
-        [],
-    );
+        network.init(
+            storageState.connections,
+            storageState.published
+        );
+    }
 
     const [createKey] = useAsyncCallback(async () => {
         if (storageState.type !== 'READY') return;
@@ -151,9 +150,9 @@ export default function Home() {
     }, [publishedKeyInfo]);
 
     const call = async (from: string, to: string, key: RSAEncryptionKey) => {
-        if (!chatClient || storageState.type !== 'READY') return;
+        if (networkState.type !== "READY" || storageState.type !== 'READY') return;
 
-        const { id: connectionID } = await chatClient.sendConnectionRequest(
+        const { id: connectionID } = await networkState.chat.sendConnectionRequest(
             key,
             from,
         );
@@ -161,7 +160,7 @@ export default function Home() {
     };
 
     const sendMessage = (message: string) => {
-        if (!chatClient || !currentChatInfo || storageState.type !== 'READY')
+        if (networkState.type !== "READY" || !currentChatInfo || storageState.type !== 'READY')
             return;
 
         const connection = storageState.connections.getConnection(
@@ -170,7 +169,7 @@ export default function Home() {
 
         if (!connection || !connection.isEstablished()) return;
 
-        chatClient.sendMessage(connection, message);
+        networkState.chat.sendMessage(connection, message);
         storageState.chats.setChatData(currentChatInfo.id, (prev) => ({
             ...prev,
             messages: prev.messages.concat([
@@ -193,32 +192,19 @@ export default function Home() {
     }, [storage]);
 
     useEffect(() => {
-        if (!connection || storageState.type !== 'READY') return;
-
-        const protocol = new ProtocolClient(connection, keysIndex);
-        protocol.init();
-
-        const chatClient = new ChatClient(
-            protocol,
-            storageState.connections,
-            storageState.published,
-            keysIndex,
-        );
-        chatClient.init();
-
-        setChatClient(chatClient);
+        const sub = network.subscribe(() => {
+            setNetworkState(network.getState());
+        });
 
         return () => {
-            chatClient.destroy();
-            protocol.destroy();
-            connection.destroy();
+            sub.unsubscribe();
         };
-    }, [connection, keysIndex, storageState]);
+    }, [network]);
 
     useEffect(() => {
-        if (!chatClient || storageState.type !== 'READY') return;
+        if (networkState.type !== "READY" || storageState.type !== 'READY') return;
 
-        const sub = chatClient.addEventListener((event) => {
+        const sub = networkState.chat.addEventListener((event) => {
             console.log(event);
             switch (event.type) {
                 case 'newPendingConnection': {
@@ -227,10 +213,10 @@ export default function Home() {
                             `New connection request from '${event.from}'`,
                         )
                     ) {
-                        chatClient.acceptConnection(event.id);
+                        networkState.chat.acceptConnection(event.id);
                         storageState.chats.createChat(event.from, event.id);
                     } else {
-                        chatClient.declineConnection(event.id);
+                        networkState.chat.declineConnection(event.id);
                     }
                     break;
                 }
@@ -286,7 +272,7 @@ export default function Home() {
         return () => {
             sub.unsubscribe();
         };
-    }, [chatClient, storageState]);
+    }, [networkState, storageState]);
 
     useEffect(() => {
         if (scene.name !== 'PUBLISHED_KEY' || storageState.type !== 'READY')
@@ -395,9 +381,9 @@ export default function Home() {
             )}
             {scene.name === 'CHATS' && (
                 <div>
-                    {isConnecting ? (
+                    {networkState.type === "CONNECTING" ? (
                         'Connecting...'
-                    ) : connection ? (
+                    ) : networkState.type === "READY" ? (
                         'Connected'
                     ) : (
                         <Button variant="orange" onClick={connect}>
@@ -420,7 +406,7 @@ export default function Home() {
                     ) : (
                         <div>No Chats</div>
                     )}
-                    {connection && (
+                    {networkState.type === "READY" && (
                         <Button
                             variant="orange"
                             onClick={() =>
