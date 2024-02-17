@@ -44,7 +44,10 @@ export default function Home() {
 
     const gzip = useMemo<GZip>(() => new GZip(), []);
     const keysIndex = useMemo<KeysIndex>(() => new KeysIndex(), []);
-    const network = useMemo(() => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex), [keysIndex]);
+    const network = useMemo(
+        () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex),
+        [keysIndex],
+    );
     const storage = useMemo(
         () =>
             new Storage(
@@ -127,13 +130,10 @@ export default function Home() {
     });
 
     const connect = () => {
-        if(storageState.type !== "READY") return;
+        if (storageState.type !== 'READY') return;
 
-        network.init(
-            storageState.connections,
-            storageState.published
-        );
-    }
+        network.init(storageState.connections, storageState.published);
+    };
 
     const [createKey] = useAsyncCallback(async () => {
         if (storageState.type !== 'READY') return;
@@ -150,17 +150,20 @@ export default function Home() {
     }, [publishedKeyInfo]);
 
     const call = async (from: string, to: string, key: RSAEncryptionKey) => {
-        if (networkState.type !== "READY" || storageState.type !== 'READY') return;
+        if (networkState.type !== 'READY' || storageState.type !== 'READY')
+            return;
 
-        const { id: connectionID } = await networkState.chat.sendConnectionRequest(
-            key,
-            from,
-        );
+        const { id: connectionID } =
+            await networkState.chat.sendConnectionRequest(key, from);
         storageState.chats.createChat(to, connectionID);
     };
 
     const sendMessage = (message: string) => {
-        if (networkState.type !== "READY" || !currentChatInfo || storageState.type !== 'READY')
+        if (
+            networkState.type !== 'READY' ||
+            !currentChatInfo ||
+            storageState.type !== 'READY'
+        )
             return;
 
         const connection = storageState.connections.getConnection(
@@ -202,7 +205,8 @@ export default function Home() {
     }, [network]);
 
     useEffect(() => {
-        if (networkState.type !== "READY" || storageState.type !== 'READY') return;
+        if (networkState.type !== 'READY' || storageState.type !== 'READY')
+            return;
 
         const sub = networkState.chat.addEventListener((event) => {
             console.log(event);
@@ -381,9 +385,9 @@ export default function Home() {
             )}
             {scene.name === 'CHATS' && (
                 <div>
-                    {networkState.type === "CONNECTING" ? (
+                    {networkState.type === 'CONNECTING' ? (
                         'Connecting...'
-                    ) : networkState.type === "READY" ? (
+                    ) : networkState.type === 'READY' ? (
                         'Connected'
                     ) : (
                         <Button variant="orange" onClick={connect}>
@@ -406,7 +410,7 @@ export default function Home() {
                     ) : (
                         <div>No Chats</div>
                     )}
-                    {networkState.type === "READY" && (
+                    {networkState.type === 'READY' && (
                         <Button
                             variant="orange"
                             onClick={() =>

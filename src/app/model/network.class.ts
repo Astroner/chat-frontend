@@ -1,24 +1,26 @@
-import { KeysIndex } from "@/src/helpers/crypto/keys-index/keys-index.class"
-import { ChatClient } from "@/src/helpers/network/chat-client/chat-client.class"
-import { Connection } from "@/src/helpers/network/connection/connection.class"
-import { HTTPClient } from "@/src/helpers/network/http-client/http-client.class"
-import { ProtocolClient } from "@/src/helpers/network/protocol-client/protocol-client.class"
-import { ConnectionsManager } from "@/src/helpers/storage/connections-manager/connections-manager.class"
-import { PublishedKeysManager } from "@/src/helpers/storage/published-keys-manager/published-keys-manager.class"
+import { KeysIndex } from '@/src/helpers/crypto/keys-index/keys-index.class';
+import { ChatClient } from '@/src/helpers/network/chat-client/chat-client.class';
+import { Connection } from '@/src/helpers/network/connection/connection.class';
+import { HTTPClient } from '@/src/helpers/network/http-client/http-client.class';
+import { ProtocolClient } from '@/src/helpers/network/protocol-client/protocol-client.class';
+import { ConnectionsManager } from '@/src/helpers/storage/connections-manager/connections-manager.class';
+import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manager/published-keys-manager.class';
 
-export type NetworkState = { type: "IDLE" } | { type: "CONNECTING" } | {
-    type: "READY",
-    socket: Connection,
-    protocol: ProtocolClient,
-    chat: ChatClient,
-    http: HTTPClient
-}
+export type NetworkState =
+    | { type: 'IDLE' }
+    | { type: 'CONNECTING' }
+    | {
+          type: 'READY';
+          socket: Connection;
+          protocol: ProtocolClient;
+          chat: ChatClient;
+          http: HTTPClient;
+      };
 
 export class Network {
     private listeners = new Set<VoidFunction>();
 
     private state: NetworkState = { type: 'IDLE' };
-    
 
     constructor(
         private wsAddress: string,
@@ -28,9 +30,9 @@ export class Network {
 
     async init(
         connections: ConnectionsManager,
-        publishedKeys: PublishedKeysManager
+        publishedKeys: PublishedKeysManager,
     ) {
-        this.setState({ type: "CONNECTING" });
+        this.setState({ type: 'CONNECTING' });
         const connection = new Connection(this.wsAddress);
 
         await connection.connect();
@@ -42,8 +44,8 @@ export class Network {
             protocol,
             connections,
             publishedKeys,
-            this.keysIndex
-        )
+            this.keysIndex,
+        );
 
         chatClient.init();
 
@@ -52,8 +54,8 @@ export class Network {
             chat: chatClient,
             http: new HTTPClient(this.httpUrl),
             protocol,
-            socket: connection
-        })
+            socket: connection,
+        });
     }
 
     getState(): Readonly<NetworkState> {
@@ -61,13 +63,13 @@ export class Network {
     }
 
     async destroy() {
-        if(this.state.type !== "READY") return;
+        if (this.state.type !== 'READY') return;
 
         this.state.chat.destroy();
         this.state.protocol.destroy();
         await this.state.socket.destroy();
 
-        this.setState({ type: "IDLE" });
+        this.setState({ type: 'IDLE' });
     }
 
     subscribe(cb: VoidFunction) {
