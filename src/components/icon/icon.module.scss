@@ -1,0 +1,26 @@
+.root {
+    &--orange {
+        fill: var(--orange);
+    }
+
+    &--light-purple {
+        fill: var(--light-purple);
+    }
+
+    &--dark-purple {
+        fill: var(--dark-purple);
+    }
+
+    &--black {
+        fill: var(--black);
+    }
+
+    &--small {
+        
+    }
+
+    &--big {
+        scale: 1.5;
+    }
+
+}

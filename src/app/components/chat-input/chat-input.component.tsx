@@ -28,7 +28,7 @@ export const ChatInput: FC<ChatInputProps> = memo((props) => {
     return (
         <form className={root} onSubmit={(e) => (e.preventDefault(), submit())}>
             <Input className={cn.input} value={value} onChange={setValue} />
-            <Button margin="0 0 0 10px" variant="orange"></Button>
+            <Button margin="0 0 0 10px" color="orange"></Button>
         </form>
     );
 });

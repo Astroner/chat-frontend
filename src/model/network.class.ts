@@ -56,6 +56,14 @@ export class Network {
             protocol,
             socket: connection,
         });
+
+        return {
+            type: 'READY',
+            chat: chatClient,
+            http: new HTTPClient(this.httpUrl),
+            protocol,
+            socket: connection,
+        }
     }
 
     getState(): Readonly<NetworkState> {

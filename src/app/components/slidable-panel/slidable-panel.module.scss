@@ -1,0 +1,15 @@
+
+.root {
+    position: absolute;
+
+    left: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background-color: var(--black);
+
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+
+    box-shadow: 0 0 10px 5px rgba($color: #000000, $alpha: .3);
+}

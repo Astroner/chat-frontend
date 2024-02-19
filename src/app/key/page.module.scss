@@ -1,0 +1,68 @@
+.root {
+    width: 100vw;
+    height: 100vh;
+
+    background-color: var(--black);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+}
+
+.content {
+    width: 100%;
+
+
+    h1 {
+        color: var(--light-purple);
+
+        margin: 0;
+
+        text-align: center;
+    }
+
+    animation: fade-in .5s linear forwards;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.back {
+    position: absolute;
+
+    left: 20px;
+    top: 20px;
+}
+
+.url {
+    width: 100%;
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__link {
+        display: block;
+        color: var(--light-purple);
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    button {
+        margin-top: 20px;
+        display: block;
+    }
+}

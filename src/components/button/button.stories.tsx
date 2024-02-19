@@ -1,12 +1,13 @@
 import { Meta, StoryObj } from '@storybook/react';
 
 import { Button } from './button.component';
+import { IconsNames } from '../icon/icons';
 
 const meta: Meta<typeof Button> = {
     title: 'Components/Button',
     component: Button,
     argTypes: {
-        variant: {
+        color: {
             options: ['purple', 'orange'],
             control: { type: 'radio' },
         },
@@ -14,6 +15,12 @@ const meta: Meta<typeof Button> = {
             options: ['small', 'big'],
             control: { type: 'radio' },
         },
+        icon: {
+            type: {
+                name: 'enum',
+                value: IconsNames
+            },
+        }
     },
 };
 
@@ -26,7 +33,8 @@ export const Default: Story = {
         children: 'Text',
         disabled: false,
         submit: false,
-        variant: 'purple',
+        color: 'purple',
         size: 'big',
+        icon: undefined
     },
 };

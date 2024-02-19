@@ -157,11 +157,17 @@ export class Storage {
             connections,
             published,
         });
+
+        return {
+            type: 'READY',
+            chats,
+            connections,
+            published,
+        }
     }
 
-    destroy() {
-        this.sub?.unsubscribe();
-        this.setState({ type: 'IDLE' });
+    async hasEntry() {
+        return this.env.hasData()
     }
 
     getState(): Readonly<StorageState> {
@@ -174,6 +180,11 @@ export class Storage {
         return {
             unsubscribe: () => this.listeners.delete(cb),
         };
+    }
+
+    destroy() {
+        this.sub?.unsubscribe();
+        this.setState({ type: 'IDLE' });
     }
 
     private setState(state: StorageState) {

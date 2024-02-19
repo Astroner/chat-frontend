@@ -1,46 +1,61 @@
-import { CSSProperties, FC, ReactNode, memo } from 'react';
+import { CSSProperties, FC, HTMLAttributes, ReactComponentElement, ReactNode, memo } from 'react';
 import { useClass } from '@dogonis/hooks';
 
+import { IconName } from '../icon/icons';
+
 import cn from './button.module.scss';
+import { Icon } from '../icon/icon.component';
 
-export type ButtonProps = {
+export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
     disabled?: boolean;
-
-    onClick?: VoidFunction;
 
     children?: ReactNode;
 
     submit?: boolean;
 
-    className?: string;
-    style?: CSSProperties;
     margin?: string;
-    variant?: 'purple' | 'orange';
+    color?: 'purple' | 'orange';
     size?: 'small' | 'big';
+
+    icon?: IconName;
 };
 
-export const Button: FC<ButtonProps> = memo((props) => {
+export const Button: FC<ButtonProps> = memo(({
+    color,
+    size,
+    children,
+    className,
+    margin,
+    style: styleProps,
+    disabled,
+    submit,
+    icon,
+    ...rest
+}) => {
     const root = useClass(
         cn.root,
-        cn['root--' + (props.variant ?? 'purple')],
-        cn['root--' + (props.size ?? 'big')],
-        props.className,
+        cn['root--' + (color ?? 'purple')],
+        cn['root--' + (size ?? 'big') + ((icon && !children) ? '' : '--padding')],
+        className,
     );
 
     const style = {
-        ...props.style,
-        margin: props.margin,
+        ...styleProps,
+        margin: margin,
     };
 
     return (
         <button
+            {...rest}
             className={root}
-            onClick={props.onClick}
-            disabled={props.disabled}
-            type={props.submit ? 'submit' : 'button'}
+            disabled={disabled}
+            type={submit ? 'submit' : 'button'}
             style={style}
         >
-            {props.children}
+            {icon && (
+                <Icon className={cn.icon} name={icon} size={size} color={color === 'orange' ? 'black' : 'light-purple'} />
+            )}
+            {children}
         </button>
     );
 });

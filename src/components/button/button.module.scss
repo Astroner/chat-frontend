@@ -41,7 +41,14 @@
 
         height: 26px;
 
-        padding: 0 10px;
+        &--padding {
+            composes: root--small;
+            padding: 0 10px;
+
+            .icon {
+                margin-right: 4px;
+            }
+        }
     }
 
     &--big {
@@ -49,7 +56,18 @@
 
         height: 48px;
         min-width: 48px;
+        
+        &--padding {
+            composes: root--big;
+            padding: 0 20px;
 
-        padding: 0 20px;
+            .icon {
+                margin-right: 10px;
+            }
+        }
     }
+}
+
+.icon {
+    display: block;
 }

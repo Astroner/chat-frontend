@@ -5,6 +5,7 @@ import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 
 export type PublishedKeyInfo = {
     id: string;
+    name: string;
     timesUsed: number;
     issuedAt: Date;
     publicKey: RSAEncryptionKey;
@@ -25,6 +26,7 @@ export class PublishedKeysManager {
                 .fill(null)
                 .map(() => {
                     const id = reader.readString();
+                    const name = reader.readString();
                     const timesUsed = reader.readUint16();
                     const issuedAtISO = reader.readString();
                     const publicRsaKey = reader.readBytes();
@@ -33,6 +35,7 @@ export class PublishedKeysManager {
                     return {
                         id,
                         timesUsed,
+                        name,
                         issuedAtISO,
                         publicRsaKey,
                         privateRsaKey,
@@ -46,6 +49,7 @@ export class PublishedKeysManager {
 
                     return {
                         id: entry.id,
+                        name: entry.name,
                         issuedAt: new Date(entry.issuedAtISO),
                         timesUsed: entry.timesUsed,
                         privateKey,
@@ -69,9 +73,9 @@ export class PublishedKeysManager {
             for (const info of inits) this.publishedKeys.set(info.id, info);
     }
 
-    async issueKey() {
+    async issueKey(name: string) {
         const { privateKey, publicKey } =
-            await RSAEncryptionKey.generatePair(8192);
+            await RSAEncryptionKey.generatePair(4096);
 
         const id = crypto.randomUUID();
 
@@ -81,6 +85,7 @@ export class PublishedKeysManager {
             issuedAt: new Date(),
             privateKey,
             publicKey,
+            name,
         });
 
         this.keysIndex.addKey(id, privateKey);
@@ -93,8 +98,8 @@ export class PublishedKeysManager {
         };
     }
 
-    getKeyInfo(id: string): Readonly<PublishedKeyInfo> | undefined {
-        return this.publishedKeys.get(id);
+    getKeyInfo(id: string): Readonly<PublishedKeyInfo> | null {
+        return this.publishedKeys.get(id) ?? null;
     }
 
     registerKeyUsage(id: string) {
@@ -125,6 +130,7 @@ export class PublishedKeysManager {
      *
      * Items:
      * id = 2bytes length + data
+     * name - length + string
      * timesUsed - 2 bytes
      * issuedAtISO = 2bytes string length + data
      * publicRsaKey = 2bytes length + data in SPKI format
@@ -142,6 +148,7 @@ export class PublishedKeysManager {
 
                 return {
                     id: info.id,
+                    name: info.name,
                     timesUsed: info.timesUsed,
                     issuedAt,
                     publicKey,
@@ -155,6 +162,7 @@ export class PublishedKeysManager {
 
         for (const item of prepared) {
             builder.appendString(item.id);
+            builder.appendString(item.name);
             builder.appendUint16(item.timesUsed);
             builder.appendString(item.issuedAt);
             builder.appendBuffer(item.publicKey);
