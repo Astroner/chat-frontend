@@ -163,11 +163,11 @@ export class Storage {
             chats,
             connections,
             published,
-        }
+        };
     }
 
     async hasEntry() {
-        return this.env.hasData()
+        return this.env.hasData();
     }
 
     getState(): Readonly<StorageState> {

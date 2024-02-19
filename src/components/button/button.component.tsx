@@ -1,4 +1,11 @@
-import { CSSProperties, FC, HTMLAttributes, ReactComponentElement, ReactNode, memo } from 'react';
+import {
+    CSSProperties,
+    FC,
+    HTMLAttributes,
+    ReactComponentElement,
+    ReactNode,
+    memo,
+} from 'react';
 import { useClass } from '@dogonis/hooks';
 
 import { IconName } from '../icon/icons';
@@ -20,42 +27,53 @@ export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
     icon?: IconName;
 };
 
-export const Button: FC<ButtonProps> = memo(({
-    color,
-    size,
-    children,
-    className,
-    margin,
-    style: styleProps,
-    disabled,
-    submit,
-    icon,
-    ...rest
-}) => {
-    const root = useClass(
-        cn.root,
-        cn['root--' + (color ?? 'purple')],
-        cn['root--' + (size ?? 'big') + ((icon && !children) ? '' : '--padding')],
+export const Button: FC<ButtonProps> = memo(
+    ({
+        color,
+        size,
+        children,
         className,
-    );
+        margin,
+        style: styleProps,
+        disabled,
+        submit,
+        icon,
+        ...rest
+    }) => {
+        const root = useClass(
+            cn.root,
+            cn['root--' + (color ?? 'purple')],
+            cn[
+                'root--' +
+                    (size ?? 'big') +
+                    (icon && !children ? '' : '--padding')
+            ],
+            className,
+        );
 
-    const style = {
-        ...styleProps,
-        margin: margin,
-    };
+        const style = {
+            ...styleProps,
+            margin: margin,
+        };
 
-    return (
-        <button
-            {...rest}
-            className={root}
-            disabled={disabled}
-            type={submit ? 'submit' : 'button'}
-            style={style}
-        >
-            {icon && (
-                <Icon className={cn.icon} name={icon} size={size} color={color === 'orange' ? 'black' : 'light-purple'} />
-            )}
-            {children}
-        </button>
-    );
-});
+        return (
+            <button
+                {...rest}
+                className={root}
+                disabled={disabled}
+                type={submit ? 'submit' : 'button'}
+                style={style}
+            >
+                {icon && (
+                    <Icon
+                        className={cn.icon}
+                        name={icon}
+                        size={size}
+                        color={color === 'orange' ? 'black' : 'light-purple'}
+                    />
+                )}
+                {children}
+            </button>
+        );
+    },
+);

@@ -63,7 +63,7 @@ export class Network {
             http: new HTTPClient(this.httpUrl),
             protocol,
             socket: connection,
-        }
+        };
     }
 
     getState(): Readonly<NetworkState> {

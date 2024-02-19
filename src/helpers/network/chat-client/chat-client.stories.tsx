@@ -228,7 +228,7 @@ export const Default: StoryFn = () => {
 
     const issueKey = async () => {
         setIsLoading(true);
-        const { publicKey } = await publishedManager.issueKey("ss");
+        const { publicKey } = await publishedManager.issueKey('ss');
 
         setIssuedPublicKey(arrayBufferToBase64(await publicKey.toSPKI()));
         setIsLoading(false);

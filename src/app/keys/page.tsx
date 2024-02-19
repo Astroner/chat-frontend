@@ -1,9 +1,5 @@
-import cn from "./page.module.scss";
+import cn from './page.module.scss';
 
 export default function Keys() {
-    return (
-        <main className={cn.root}>
-
-        </main>
-    )
+    return <main className={cn.root}></main>;
 }

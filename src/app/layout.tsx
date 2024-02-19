@@ -60,7 +60,6 @@ export default function RootLayout({
         [keysIndex],
     );
 
-        
     // useEffect(() => {
     //     if(pathname !== "/login") redirect("/login");
 
@@ -71,18 +70,18 @@ export default function RootLayout({
     useEffect(() => {
         let mounted = true;
 
-        storage.init("memes")
-            // .then(({ connections, published }) => {
-            //     if(!mounted) return;
-            //     network.init(connections, published);
-            // })
+        storage.init('memes');
+        // .then(({ connections, published }) => {
+        //     if(!mounted) return;
+        //     network.init(connections, published);
+        // })
 
         return () => {
             mounted = false;
             storage.destroy();
             network.destroy();
-        }
-    }, [network, storage])
+        };
+    }, [network, storage]);
 
     return (
         <StorageContext.Provider value={storage}>

@@ -1,15 +1,15 @@
-"use client"
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation"
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
-import { arrayBufferToBase64 } from "@/src/helpers/arraybuffer-utils";
-import { generateQRCode } from "@/src/helpers/qr-code/generate-qr-code";
-import { useStorage } from "@/src/model/hooks";
-import { Button } from "@/src/components/button/button.component";
+import { arrayBufferToBase64 } from '@/src/helpers/arraybuffer-utils';
+import { generateQRCode } from '@/src/helpers/qr-code/generate-qr-code';
+import { useStorage } from '@/src/model/hooks';
+import { Button } from '@/src/components/button/button.component';
 
-import cn from "./page.module.scss";
+import cn from './page.module.scss';
 
 export default function Key() {
     const [storageState] = useStorage();
@@ -19,60 +19,64 @@ export default function Key() {
     const [qr, setQr] = useState<null | string>();
 
     const info = useMemo(() => {
-        const id = params.get("id");
+        const id = params.get('id');
 
-        if(storageState.type !== "READY" || !id) return null;
+        if (storageState.type !== 'READY' || !id) return null;
 
         return storageState.published.getKeyInfo(id);
-    }, [params, storageState])
+    }, [params, storageState]);
 
     const copy = useCallback(() => {
-        if(!inviteUrl) return;
+        if (!inviteUrl) return;
 
         navigator.clipboard.writeText(inviteUrl);
-    }, [inviteUrl])
+    }, [inviteUrl]);
 
     useEffect(() => {
-        if(!info) return;
+        if (!info) return;
 
         let mounted = true;
 
-        info.publicKey.toSPKI()
-            .then(value => {
-                if(!mounted) return;
+        info.publicKey.toSPKI().then((value) => {
+            if (!mounted) return;
 
-                setInviteUrl(`${location.origin}/invite?name=${info.name}&key=${arrayBufferToBase64(value)}`)
-            })
+            setInviteUrl(
+                `${location.origin}/invite?name=${info.name}&key=${arrayBufferToBase64(value)}`,
+            );
+        });
 
         return () => {
             mounted = false;
-        }
-    }, [info])
+        };
+    }, [info]);
 
     useEffect(() => {
-        if(!inviteUrl) return;
+        if (!inviteUrl) return;
 
         let mounted = true;
 
-        generateQRCode(inviteUrl)
-            .then(qr => {
-                if(mounted) setQr(qr)
-            })
+        generateQRCode(inviteUrl).then((qr) => {
+            if (mounted) setQr(qr);
+        });
 
         return () => {
             mounted = false;
-        }
-    }, [inviteUrl])
+        };
+    }, [inviteUrl]);
 
-    if(!info) return null;
+    if (!info) return null;
 
     return (
         <main className={cn.root}>
-            {
-                qr && inviteUrl && (
+            {qr && inviteUrl && (
                 <div className={cn.content}>
                     <Link href="/">
-                        <Button className={cn.back} color="orange" icon="arrow-back" size="small">
+                        <Button
+                            className={cn.back}
+                            color="orange"
+                            icon="arrow-back"
+                            size="small"
+                        >
                             home
                         </Button>
                     </Link>
@@ -81,10 +85,12 @@ export default function Key() {
                     <img style={{ width: '100%' }} src={qr} alt={inviteUrl} />
                     <div className={cn.url}>
                         <div className={cn.url__link}>{inviteUrl}</div>
-                        <Button color="orange" onClick={copy}>Copy URL</Button>
+                        <Button color="orange" onClick={copy}>
+                            Copy URL
+                        </Button>
                     </div>
                 </div>
             )}
         </main>
-    )
+    );
 }

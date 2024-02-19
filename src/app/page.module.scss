@@ -7,7 +7,6 @@
     background-color: var(--dark-purple);
 
     overflow: hidden;
-
 }
 
 .panel-container {
@@ -33,7 +32,7 @@
     font-size: var(--text-font-size);
     text-align: center;
 
-    transition: opacity .3s;
+    transition: opacity 0.3s;
 
     &--visible {
         composes: announcement;

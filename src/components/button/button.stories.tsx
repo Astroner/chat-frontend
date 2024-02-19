@@ -18,9 +18,9 @@ const meta: Meta<typeof Button> = {
         icon: {
             type: {
                 name: 'enum',
-                value: IconsNames
+                value: IconsNames,
             },
-        }
+        },
     },
 };
 
@@ -35,6 +35,6 @@ export const Default: Story = {
         submit: false,
         color: 'purple',
         size: 'big',
-        icon: undefined
+        icon: undefined,
     },
 };
