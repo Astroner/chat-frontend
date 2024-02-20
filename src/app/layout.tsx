@@ -109,7 +109,6 @@ export default function RootLayout({
             const { chats } = sState;
 
             clientSub = client.addEventListener(async (ev) => {
-                console.log(ev);
                 switch (ev.type) {
                     case 'newPendingConnection': {
                         if (
