@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { NetworkContext, StorageContext } from './context';
+import { NetworkContext, SmartStorageContext, StorageContext } from './context';
 import { Storage, StorageState } from './storage.class';
 import { Network, NetworkState } from './network.class';
+import { SmartStorage } from './smart-storage.class';
 
 export const useStorage = (): [StorageState, Storage] => {
     const storage = useContext(StorageContext);
@@ -37,4 +38,11 @@ export const useNetwork = (): [NetworkState, Network] => {
     }, [network]);
 
     return [state, network];
+};
+
+
+export const useStorageEnv = (): SmartStorage => {
+    const value = useContext(SmartStorageContext);
+
+    return value;
 };

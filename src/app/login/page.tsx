@@ -38,29 +38,38 @@ export default function Login() {
 
     return (
         <main className={cn.root}>
-            <form
-                className={cn.container}
-                onSubmit={(e) => (e.preventDefault(), submit())}
-            >
-                <h1>{!loading && hasEntry ? 'Login' : 'Sign up'}</h1>
-                <Input
-                    password
-                    placeholder="Password"
-                    value={input}
-                    onChange={setInput}
-                />
-                {!loading && !hasEntry && (
+            <div className={cn.container}>
+                <form
+                    onSubmit={(e) => (e.preventDefault(), submit())}
+                >
+                    <h1>{!loading && hasEntry ? 'Login' : 'Sign up'}</h1>
                     <Input
                         password
-                        placeholder="Confirm password"
-                        value={confirm}
-                        onChange={setConfirm}
+                        placeholder="Password"
+                        value={input}
+                        onChange={setInput}
                     />
-                )}
-                <Button submit color="orange">
-                    Enter
-                </Button>
-            </form>
+                    {!loading && !hasEntry && (
+                        <Input
+                            password
+                            placeholder="Confirm password"
+                            value={confirm}
+                            onChange={setConfirm}
+                        />
+                    )}
+                    <Button submit color="orange">
+                        Enter
+                    </Button>
+                </form>
+                <div style={{ marginTop: 30 }}>
+                    <Button submit color="orange">
+                        Import Session
+                    </Button>
+                    <Button submit color="orange">
+                        Create External Session
+                    </Button>
+                </div>
+            </div>
         </main>
     );
 }

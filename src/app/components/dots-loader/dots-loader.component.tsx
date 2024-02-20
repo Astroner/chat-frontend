@@ -34,11 +34,13 @@ export const DotsLoader: FC<DotsLoaderProps> = memo((props) => {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, width, height);
 
-            dots.add({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                createdAt: tick,
-            });
+            for(let i = 0; i < 20; i++) {
+                dots.add({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    createdAt: tick,
+                });
+            }
 
             dots.forEach((dot) => {
                 if (tick - dot.createdAt > DOT_TTL) {

@@ -17,32 +17,39 @@ import { DotsLoader } from '../../components/dots-loader/dots-loader.component';
 
 import cn from './page.module.scss';
 import { ButtonLink } from '@/src/components/button-link/button-link.component';
+import { useState } from 'react';
 
 export default function Generate() {
     const [, storage] = useStorage();
     const router = useRouter();
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const { controller, submit } = useController({
         fields: {
             keyName: Str(true, ''),
         },
         async submit({ keyName }) {
-            const state = storage.getState();
+            setIsLoading(true);
 
-            if (state.type !== 'READY') return;
+            try {
+                const state = storage.getState();
 
-            const { id } = await state.published.issueKey(keyName);
+                if (state.type !== 'READY') return;
 
-            router.push(`/key?id=${id}`);
+                const { id } = await state.published.issueKey(keyName);
+
+                router.push(`/key?id=${id}`);
+            } catch {
+                setIsLoading(false);
+            }
         },
     });
-
-    const { isPending } = usePending(controller);
 
     return (
         <main className={cn.root}>
             <FormProvider controller={controller}>
-                {!isPending ? (
+                {!isLoading ? (
                     <form
                         className={cn.container}
                         onSubmit={(e) => (e.preventDefault(), submit())}
