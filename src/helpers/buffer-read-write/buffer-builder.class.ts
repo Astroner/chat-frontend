@@ -50,7 +50,7 @@ export class BufferBuilder {
         });
         if (!skipLength) this.bufferSize += 2;
         this.bufferSize += data.byteLength;
-        
+
         return this;
     }
 

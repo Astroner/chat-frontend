@@ -8,13 +8,15 @@ import { BufferBuilder } from '../../buffer-read-write/buffer-builder.class';
 import { BufferReader } from '../../buffer-read-write/buffer-reader.class';
 import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 
-export type ProtocolClientEvent = (ProtocolMessage & { keyID: string }) | {
-    type: "signature-mismatch",
-    keyID: string;
-    signature?: ArrayBuffer
-    cipher: ArrayBuffer,
-    data: ArrayBuffer;
-};
+export type ProtocolClientEvent =
+    | (ProtocolMessage & { keyID: string })
+    | {
+          type: 'signature-mismatch';
+          keyID: string;
+          signature?: ArrayBuffer;
+          cipher: ArrayBuffer;
+          data: ArrayBuffer;
+      };
 
 export class ProtocolClient {
     private listeners = new Set<EventListener<ProtocolClientEvent>>();
@@ -24,7 +26,7 @@ export class ProtocolClient {
     constructor(
         private connection: Connection,
         private keysIndex: KeysIndex,
-        private signsIndex: SignsIndex
+        private signsIndex: SignsIndex,
     ) {}
 
     init() {
@@ -44,27 +46,32 @@ export class ProtocolClient {
             const data = await this.keysIndex.tryToDecrypt(cipher);
             if (!data) return;
 
-            if(reader.hasNext()) {
+            if (reader.hasNext()) {
                 const signature = reader.readBytes();
 
-                if(!(await this.signsIndex.verifyForKey(data.keyID, cipher, signature))){
+                if (
+                    !(await this.signsIndex.verifyForKey(
+                        data.keyID,
+                        cipher,
+                        signature,
+                    ))
+                ) {
                     this.sendEvent({
-                        type: "signature-mismatch",
+                        type: 'signature-mismatch',
                         cipher,
                         data: data.data,
                         keyID: data.keyID,
-                        signature
-                    })
+                        signature,
+                    });
                     return;
                 }
-
-            } else if(this.signsIndex.hasSigningKey(data.keyID)) {
+            } else if (this.signsIndex.hasSigningKey(data.keyID)) {
                 this.sendEvent({
-                    type: "signature-mismatch",
+                    type: 'signature-mismatch',
                     cipher,
                     data: data.data,
                     keyID: data.keyID,
-                })
+                });
 
                 return;
             }
@@ -84,14 +91,20 @@ export class ProtocolClient {
         this.connectionSub?.unsubscribe();
     }
 
-    async postMessage(message: ProtocolMessage, encryptionKey: EncryptionKey, signingKey?: SigningKey) {
+    async postMessage(
+        message: ProtocolMessage,
+        encryptionKey: EncryptionKey,
+        signingKey?: SigningKey,
+    ) {
         const payload = new BufferBuilder();
 
-        const cipher = await encryptionKey.encrypt(await serializeMessage(message));
-        payload.appendBuffer(cipher)
+        const cipher = await encryptionKey.encrypt(
+            await serializeMessage(message),
+        );
+        payload.appendBuffer(cipher);
 
-        if(signingKey) {
-            payload.appendBuffer(await signingKey.createSignature(cipher))
+        if (signingKey) {
+            payload.appendBuffer(await signingKey.createSignature(cipher));
         }
 
         this.connection.sendMessage(payload.getBuffer());

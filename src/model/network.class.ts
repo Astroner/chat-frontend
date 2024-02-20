@@ -27,7 +27,7 @@ export class Network {
         private wsAddress: string,
         private httpUrl: string,
         private keysIndex: KeysIndex,
-        private signsIndex: SignsIndex
+        private signsIndex: SignsIndex,
     ) {}
 
     async init(
@@ -39,7 +39,11 @@ export class Network {
 
         await connection.connect();
 
-        const protocol = new ProtocolClient(connection, this.keysIndex, this.signsIndex);
+        const protocol = new ProtocolClient(
+            connection,
+            this.keysIndex,
+            this.signsIndex,
+        );
         protocol.init();
 
         const chatClient = new ChatClient(
@@ -47,7 +51,7 @@ export class Network {
             connections,
             publishedKeys,
             this.keysIndex,
-            this.signsIndex
+            this.signsIndex,
         );
 
         chatClient.init();

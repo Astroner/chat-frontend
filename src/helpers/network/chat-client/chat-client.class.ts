@@ -26,7 +26,7 @@ export type ChatClientEvent =
           {
               id: string;
               aesKey: AesGcmKey;
-              hmacKey: HMACKey
+              hmacKey: HMACKey;
           }
       >
     | EventTemplate<
@@ -94,7 +94,7 @@ export class ChatClient {
                 message,
             },
             connection.aesKey,
-            connection.hmacKey
+            connection.hmacKey,
         );
     }
 
@@ -170,7 +170,9 @@ export class ChatClient {
                 );
                 if (!connection || !connection.isRequested()) return;
 
-                const { aesKey, hmacKey } = await connection.confirm(event.ecdhPublicKey);
+                const { aesKey, hmacKey } = await connection.confirm(
+                    event.ecdhPublicKey,
+                );
 
                 this.keysIndex.removeKey(event.keyID);
                 this.keysIndex.addKey(event.keyID, aesKey);
@@ -181,7 +183,7 @@ export class ChatClient {
                         type: 'connectionEstablished',
                     },
                     aesKey,
-                    hmacKey
+                    hmacKey,
                 );
 
                 break;
@@ -200,14 +202,14 @@ export class ChatClient {
                         type: 'connectionEstablishedConfirm',
                     },
                     connection.aesKey,
-                    connection.hmacKey
+                    connection.hmacKey,
                 );
 
                 this.sendEvent({
                     type: 'connectionEstablished',
                     id: event.keyID,
                     aesKey: connection.aesKey,
-                    hmacKey: connection.hmacKey
+                    hmacKey: connection.hmacKey,
                 });
 
                 break;
@@ -225,7 +227,7 @@ export class ChatClient {
                     type: 'connectionEstablished',
                     id: event.keyID,
                     aesKey: connection.aesKey,
-                    hmacKey: connection.hmacKey
+                    hmacKey: connection.hmacKey,
                 });
 
                 break;

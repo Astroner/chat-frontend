@@ -1,4 +1,4 @@
-import { SigningKey } from "../crypto.types";
+import { SigningKey } from '../crypto.types';
 
 export class SignsIndex {
     private keyIDToSign = new Map<string, SigningKey>();
@@ -9,10 +9,14 @@ export class SignsIndex {
         this.keyIDToSign.set(keyID, key);
     }
 
-    async verifyForKey(keyID: string, data: ArrayBuffer, signature: ArrayBuffer) {
+    async verifyForKey(
+        keyID: string,
+        data: ArrayBuffer,
+        signature: ArrayBuffer,
+    ) {
         const key = this.keyIDToSign.get(keyID);
-        
-        if(!key) return false;
+
+        if (!key) return false;
 
         return key.verify(data, signature);
     }

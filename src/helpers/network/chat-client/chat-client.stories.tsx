@@ -119,7 +119,7 @@ const ClientView: FC<{
                                 {({ value, setValue }) => (
                                     <textarea
                                         placeholder="Address Base64 Key"
-                                        value={value ?? ""}
+                                        value={value ?? ''}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -132,7 +132,7 @@ const ClientView: FC<{
                                 {({ value, setValue }) => (
                                     <input
                                         placeholder="From"
-                                        value={value ?? ""}
+                                        value={value ?? ''}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -166,7 +166,7 @@ const ClientView: FC<{
                                     {({ value, setValue }) => (
                                         <input
                                             placeholder="Connection ID"
-                                            value={value ?? ""}
+                                            value={value ?? ''}
                                             onChange={(e) =>
                                                 setValue(e.target.value)
                                             }
@@ -179,7 +179,7 @@ const ClientView: FC<{
                                     {({ value, setValue }) => (
                                         <textarea
                                             placeholder="Message"
-                                            value={value ?? ""}
+                                            value={value ?? ''}
                                             onChange={(e) =>
                                                 setValue(e.target.value)
                                             }
@@ -240,7 +240,9 @@ export const Default: StoryFn = () => {
     useEffect(() => {
         if (!connection) return;
 
-        const connectionSub = connection.addEventListener(ev => console.log("SOCKET", ev))
+        const connectionSub = connection.addEventListener((ev) =>
+            console.log('SOCKET', ev),
+        );
         let protocolSub: Subscription | null = null;
 
         let protocol: ProtocolClient;
@@ -250,7 +252,9 @@ export const Default: StoryFn = () => {
             await connection.connect();
 
             protocol = new ProtocolClient(connection, keysIndex, signsIndex);
-            protocolSub = protocol.addEventListener(ev => console.log("PROTOCOL", ev));
+            protocolSub = protocol.addEventListener((ev) =>
+                console.log('PROTOCOL', ev),
+            );
 
             protocol.init();
 
@@ -274,7 +278,13 @@ export const Default: StoryFn = () => {
             protocol.destroy();
             connection.destroy();
         };
-    }, [connection, keysIndex, connectionsManager, publishedManager, signsIndex]);
+    }, [
+        connection,
+        keysIndex,
+        connectionsManager,
+        publishedManager,
+        signsIndex,
+    ]);
 
     return (
         <div>

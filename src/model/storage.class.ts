@@ -109,7 +109,7 @@ export class Storage {
                 case 'established':
                 case 'preEstablished':
                     this.keysIndex.addKey(key, connection.aesKey);
-                    this.signsIndex.addKey(key, connection.hmacKey)
+                    this.signsIndex.addKey(key, connection.hmacKey);
 
                     break;
             }

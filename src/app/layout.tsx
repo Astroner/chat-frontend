@@ -74,7 +74,8 @@ export default function RootLayout({
     }, [gzip, keysIndex, signsIndex]);
 
     const network = useMemo(
-        () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex),
+        () =>
+            new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex),
         [keysIndex, signsIndex],
     );
 

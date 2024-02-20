@@ -41,7 +41,7 @@ export const Default: StoryFn = () => {
     const issueKey = async () => {
         if (!published) return;
 
-        const info = await published.issueKey("default-name");
+        const info = await published.issueKey('default-name');
 
         setKeys((p) => p.concat([info.id]));
     };

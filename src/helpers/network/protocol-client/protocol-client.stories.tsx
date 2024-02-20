@@ -67,18 +67,22 @@ export const Default: StoryFn = () => {
         },
     });
 
-    const { controller: SignsIndexController, submit: addSign } = useController({
-        fields: {
-            id: Str(true),
-            key: Str(true),
-        },
-        async submit(data) {
-            const key = await HMACKey.fromRawBytes(base64ToArrayBuffer(data.key));
+    const { controller: SignsIndexController, submit: addSign } = useController(
+        {
+            fields: {
+                id: Str(true),
+                key: Str(true),
+            },
+            async submit(data) {
+                const key = await HMACKey.fromRawBytes(
+                    base64ToArrayBuffer(data.key),
+                );
 
-            signsIndex.addKey(data.id, key);
-            setStoredSigns((p) => p.concat([data.id]));
+                signsIndex.addKey(data.id, key);
+                setStoredSigns((p) => p.concat([data.id]));
+            },
         },
-    });
+    );
 
     const client = useMemo(() => {
         if (!connection) return null;
@@ -95,7 +99,11 @@ export const Default: StoryFn = () => {
         },
         async submit(
             data,
-            postData: (s: { encryptionKey: EncryptionKey; signingKey?: SigningKey; message: string }) => void,
+            postData: (s: {
+                encryptionKey: EncryptionKey;
+                signingKey?: SigningKey;
+                message: string;
+            }) => void,
         ) {
             let encryptionKey: EncryptionKey;
             try {
@@ -112,21 +120,23 @@ export const Default: StoryFn = () => {
 
             let signingKey: SigningKey | undefined;
 
-            if(data.signingKey) {
-                signingKey = await HMACKey.fromRawBytes(base64ToArrayBuffer(data.signingKey))
+            if (data.signingKey) {
+                signingKey = await HMACKey.fromRawBytes(
+                    base64ToArrayBuffer(data.signingKey),
+                );
             }
 
             postData({
                 encryptionKey,
                 message: data.message,
-                signingKey
+                signingKey,
             });
         },
     });
 
     const sendMessage = async (data: {
         encryptionKey: EncryptionKey;
-        signingKey?: SigningKey
+        signingKey?: SigningKey;
         message: string;
     }) => {
         if (!client) return;
@@ -137,7 +147,7 @@ export const Default: StoryFn = () => {
                 message: data.message,
             },
             data.encryptionKey,
-            data.signingKey
+            data.signingKey,
         );
     };
 
@@ -174,7 +184,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="Key ID"
-                                    value={value ?? ""}
+                                    value={value ?? ''}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                             </div>
@@ -185,7 +195,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="JWK encryption key"
-                                    value={value ?? ""}
+                                    value={value ?? ''}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                                 {error}
@@ -196,7 +206,7 @@ export const Default: StoryFn = () => {
                         {({ value, setValue }) => (
                             <div>
                                 <select
-                                    value={value ?? ""}
+                                    value={value ?? ''}
                                     onChange={(e) => setValue(e.target.value)}
                                 >
                                     <option value="RSA">RSA</option>
@@ -221,7 +231,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="Key ID"
-                                    value={value ?? ""}
+                                    value={value ?? ''}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                             </div>
@@ -232,7 +242,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="HMAC key in base64"
-                                    value={value ?? ""}
+                                    value={value ?? ''}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                                 {error}
@@ -254,7 +264,7 @@ export const Default: StoryFn = () => {
                         {({ value, setValue }) => (
                             <input
                                 placeholder="Address"
-                                value={value ?? ""}
+                                value={value ?? ''}
                                 onChange={(e) => setValue(e.target.value)}
                             />
                         )}
@@ -270,7 +280,7 @@ export const Default: StoryFn = () => {
                             {({ value, setValue }) => (
                                 <div>
                                     <select
-                                        value={value ?? ""}
+                                        value={value ?? ''}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -286,7 +296,7 @@ export const Default: StoryFn = () => {
                                 <div>
                                     <textarea
                                         placeholder="JWK encryption key"
-                                        value={value ?? ""}
+                                        value={value ?? ''}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -300,7 +310,7 @@ export const Default: StoryFn = () => {
                                 <div>
                                     <textarea
                                         placeholder="Message"
-                                        value={value ?? ""}
+                                        value={value ?? ''}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -313,8 +323,10 @@ export const Default: StoryFn = () => {
                                 <div>
                                     <textarea
                                         placeholder="(Optional) HMAC signing key in base64"
-                                        value={value ?? ""}
-                                        onChange={(e) => setValue(e.target.value)}
+                                        value={value ?? ''}
+                                        onChange={(e) =>
+                                            setValue(e.target.value)
+                                        }
                                     />
                                     {error}
                                 </div>

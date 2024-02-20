@@ -57,16 +57,14 @@ export class ConnectionEntry implements ConnectionMix {
     }
 
     finish() {
-        if (!this.isPreEstablished())
-            throw new Error('Strange behavior');
-
+        if (!this.isPreEstablished()) throw new Error('Strange behavior');
 
         this.updateState({
-            status: "established",
+            status: 'established',
             aesKey: this.aesKey,
             hmacKey: this.hmacKey,
             establishedAt: new Date(),
-        })
+        });
     }
 
     async confirm(ecdhPublicKey: ECDHKey) {
@@ -84,11 +82,11 @@ export class ConnectionEntry implements ConnectionMix {
         );
 
         this.updateState({
-            status: "preEstablished",
+            status: 'preEstablished',
             aesKey,
             hmacKey,
             confirmedAt: new Date(),
-        })
+        });
 
         return { aesKey, hmacKey };
     }
@@ -104,15 +102,15 @@ export class ConnectionEntry implements ConnectionMix {
 
         const hmacKey = await HMACKey.fromECDH(
             this.ecdhPublicKey,
-            ecdhPrivateKey
+            ecdhPrivateKey,
         );
 
         this.updateState({
-            status: "preEstablished",
+            status: 'preEstablished',
             aesKey: aes,
             hmacKey: hmacKey,
             confirmedAt: new Date(),
-        })
+        });
 
         return { aes, hmacKey };
     }
@@ -140,7 +138,7 @@ export class ConnectionEntry implements ConnectionMix {
                 status: 'preEstablished',
                 aesKey: this.aesKey,
                 confirmedAt: this.confirmedAt,
-                hmacKey: this.hmacKey
+                hmacKey: this.hmacKey,
             };
 
         if (this.isEstablished())
@@ -148,7 +146,7 @@ export class ConnectionEntry implements ConnectionMix {
                 status: 'established',
                 aesKey: this.aesKey,
                 establishedAt: this.establishedAt,
-                hmacKey: this.hmacKey
+                hmacKey: this.hmacKey,
             };
 
         throw new Error('Unknown connection type');
@@ -158,7 +156,10 @@ export class ConnectionEntry implements ConnectionMix {
         this.api.onDestroy(this.id);
     }
 
-    private updateState(next: ConnectionData[keyof ConnectionData], quiet = false) {
+    private updateState(
+        next: ConnectionData[keyof ConnectionData],
+        quiet = false,
+    ) {
         this.status = next.status;
 
         switch (next.status) {
@@ -190,9 +191,8 @@ export class ConnectionEntry implements ConnectionMix {
                 this.from = next.from;
 
                 break;
-        
         }
 
-        if(!quiet) this.api.onChange();
+        if (!quiet) this.api.onChange();
     }
 }

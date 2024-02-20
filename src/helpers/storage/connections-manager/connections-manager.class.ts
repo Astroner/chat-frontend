@@ -125,11 +125,9 @@ export class ConnectionsManager {
 
                             case 'preEstablished': {
                                 const [aesKey, hmacKey] = await Promise.all([
-                                    AesGcmKey.fromRawBytes(
-                                        data.aesKey,
-                                    ),
-                                    HMACKey.fromRawBytes(data.hmacKey)
-                                ])
+                                    AesGcmKey.fromRawBytes(data.aesKey),
+                                    HMACKey.fromRawBytes(data.hmacKey),
+                                ]);
 
                                 connection = {
                                     status: 'preEstablished',
@@ -143,11 +141,9 @@ export class ConnectionsManager {
 
                             case 'established': {
                                 const [aesKey, hmacKey] = await Promise.all([
-                                    AesGcmKey.fromRawBytes(
-                                        data.aesKey,
-                                    ),
-                                    HMACKey.fromRawBytes(data.hmacKey)
-                                ])
+                                    AesGcmKey.fromRawBytes(data.aesKey),
+                                    HMACKey.fromRawBytes(data.hmacKey),
+                                ]);
 
                                 connection = {
                                     status: 'established',
