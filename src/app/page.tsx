@@ -87,8 +87,20 @@ export default function Home() {
                         )}
                         {networkState.type === 'READY' && (
                             <>
-                                <ButtonLink href='/key/generate' className={cn['menu-button']} color='orange'>Generate invite QR</ButtonLink>
-                                <ButtonLink href='/keys' className={cn['menu-button']} color='orange'>Generated Invites</ButtonLink>
+                                <ButtonLink
+                                    href="/key/generate"
+                                    className={cn['menu-button']}
+                                    color="orange"
+                                >
+                                    Generate invite QR
+                                </ButtonLink>
+                                <ButtonLink
+                                    href="/keys"
+                                    className={cn['menu-button']}
+                                    color="orange"
+                                >
+                                    Generated Invites
+                                </ButtonLink>
                             </>
                         )}
                     </div>

@@ -47,7 +47,15 @@ export default function Generate() {
                         className={cn.container}
                         onSubmit={(e) => (e.preventDefault(), submit())}
                     >
-                        <ButtonLink className={cn.home} href='/' color='orange' icon='arrow-back' size='small'>Home</ButtonLink>
+                        <ButtonLink
+                            className={cn.home}
+                            href="/"
+                            color="orange"
+                            icon="arrow-back"
+                            size="small"
+                        >
+                            Home
+                        </ButtonLink>
                         <h1>Generating invite</h1>
                         <FormInput field="keyName" placeholder="Invite Name" />
                         <Button submit color="orange">

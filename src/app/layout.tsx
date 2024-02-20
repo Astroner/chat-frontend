@@ -34,44 +34,41 @@ export default function RootLayout({
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
 
-    const storage = useMemo(
-        () => {
-            // return new Storage(
-            //     {
-            //         save: async (data) => {
-            //             localStorage.setItem(
-            //                 STORAGE_KEY,
-            //                 arrayBufferToBase64(data),
-            //             );
-            //         },
-            //         hasData: async () => !!localStorage.getItem(STORAGE_KEY),
-            //         load: async () => {
-            //             const data = localStorage.getItem(STORAGE_KEY);
-            //             if (!data) throw new Error('A');
+    const storage = useMemo(() => {
+        // return new Storage(
+        //     {
+        //         save: async (data) => {
+        //             localStorage.setItem(
+        //                 STORAGE_KEY,
+        //                 arrayBufferToBase64(data),
+        //             );
+        //         },
+        //         hasData: async () => !!localStorage.getItem(STORAGE_KEY),
+        //         load: async () => {
+        //             const data = localStorage.getItem(STORAGE_KEY);
+        //             if (!data) throw new Error('A');
 
-            //             return base64ToArrayBuffer(data);
-            //         },
-            //     },
-            //     keysIndex,
-            //     gzip,
-            // )
+        //             return base64ToArrayBuffer(data);
+        //         },
+        //     },
+        //     keysIndex,
+        //     gzip,
+        // )
 
-            let stored: ArrayBuffer | null = null;
+        let stored: ArrayBuffer | null = null;
 
-            return new Storage(
-                {
-                    save: async (data) => {
-                        stored = data;
-                    },
-                    hasData: async () => !!stored,
-                    load: async () => stored!,
+        return new Storage(
+            {
+                save: async (data) => {
+                    stored = data;
                 },
-                keysIndex,
-                gzip,
-            )
-        },
-        [gzip, keysIndex],
-    );
+                hasData: async () => !!stored,
+                load: async () => stored!,
+            },
+            keysIndex,
+            gzip,
+        );
+    }, [gzip, keysIndex]);
 
     const network = useMemo(
         () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex),
@@ -98,7 +95,6 @@ export default function RootLayout({
         };
     }, [network, storage]);
 
-
     // TODO: Move it into separate service
     useEffect(() => {
         let clientSub: Subscription | null = null;
@@ -107,60 +103,67 @@ export default function RootLayout({
             const nState = network.getState();
             const sState = storage.getState();
 
-            if(nState.type !== "READY" || sState.type !== "READY") return;
+            if (nState.type !== 'READY' || sState.type !== 'READY') return;
 
             const { chat: client } = nState;
             const { chats } = sState;
 
-
-            clientSub = client.addEventListener(async ev => {
+            clientSub = client.addEventListener(async (ev) => {
                 console.log(ev);
-                switch(ev.type) {
-                    case "newPendingConnection": {
-                        if(window.confirm(`New connection request from "${ev.from}"`)) {
+                switch (ev.type) {
+                    case 'newPendingConnection': {
+                        if (
+                            window.confirm(
+                                `New connection request from "${ev.from}"`,
+                            )
+                        ) {
                             await client.acceptConnection(ev.id);
                             chats.createChat(ev.from, ev.id);
                         } else {
-                            client.declineConnection(ev.id)
+                            client.declineConnection(ev.id);
                         }
 
                         break;
                     }
 
-                    case "connectionDeclined": {
+                    case 'connectionDeclined': {
                         const chat = chats.getByConnectionID(ev.id);
-                        if(chat) chats.deleteChat(chat.id);
+                        if (chat) chats.deleteChat(chat.id);
 
                         break;
                     }
 
-                    case "connectionEstablished": {
+                    case 'connectionEstablished': {
                         const chat = chats.getByConnectionID(ev.id);
-                        if(chat) chats.setChatData(chat.id, {
-                            state: "ACTIVE"
-                        })
+                        if (chat)
+                            chats.setChatData(chat.id, {
+                                state: 'ACTIVE',
+                            });
 
                         break;
                     }
 
-                    case "message": {
+                    case 'message': {
                         const chat = chats.getByConnectionID(ev.id);
-                        if(chat) chats.setChatData(chat.id, p => ({
-                            ...p,
-                            messages: p.messages.concat([{ origin: "SERVER", text: ev.message }])
-                        }))
+                        if (chat)
+                            chats.setChatData(chat.id, (p) => ({
+                                ...p,
+                                messages: p.messages.concat([
+                                    { origin: 'SERVER', text: ev.message },
+                                ]),
+                            }));
 
                         break;
                     }
                 }
-            })            
-        })
+            });
+        });
 
         return () => {
             sub.unsubscribe();
             clientSub?.unsubscribe();
-        }
-    }, [network, storage])
+        };
+    }, [network, storage]);
 
     return (
         <StorageContext.Provider value={storage}>
@@ -169,9 +172,7 @@ export default function RootLayout({
                     <head>
                         <title>Chat</title>
                     </head>
-                    <body className={inter.className}>
-                        {children}
-                    </body>
+                    <body className={inter.className}>{children}</body>
                 </html>
             </NetworkContext.Provider>
         </StorageContext.Provider>

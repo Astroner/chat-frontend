@@ -1,38 +1,38 @@
-import { useNetwork, useStorage } from "@/src/model/hooks";
-import Link from "next/link";
-import { FC, memo, useEffect, useState } from "react";
+import { useNetwork, useStorage } from '@/src/model/hooks';
+import Link from 'next/link';
+import { FC, memo, useEffect, useState } from 'react';
 
+export type ChatsProps = {};
 
-export type ChatsProps = {
-
-}
-
-export const Chats: FC<ChatsProps> = memo(props => {
+export const Chats: FC<ChatsProps> = memo((props) => {
     const [storage] = useStorage();
-    
-    const [chats, setChats] = useState(() => {
-        if(storage.type !== "READY") return null;
 
-        return storage.chats.getAll()
-    })
+    const [chats, setChats] = useState(() => {
+        if (storage.type !== 'READY') return null;
+
+        return storage.chats.getAll();
+    });
 
     useEffect(() => {
-        if(storage.type !== "READY") return;
+        if (storage.type !== 'READY') return;
 
-        const sub = storage.chats.subscribe(() => setChats(storage.chats.getAll()))
+        const sub = storage.chats.subscribe(() =>
+            setChats(storage.chats.getAll()),
+        );
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [storage])
+        };
+    }, [storage]);
 
-
-    if(!chats) return;
+    if (!chats) return;
     return (
         <div>
-            {chats.map(chat => (
-                <Link href={`/chat?id=${chat.id}`} key={chat.id}>{chat.title}</Link>
+            {chats.map((chat) => (
+                <Link href={`/chat?id=${chat.id}`} key={chat.id}>
+                    {chat.title}
+                </Link>
             ))}
         </div>
-    )
-})
+    );
+});

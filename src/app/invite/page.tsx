@@ -26,9 +26,9 @@ export default function Invite() {
     const keyParam = useMemo(() => {
         const param = search.get('key');
 
-        if(!param) return null;
+        if (!param) return null;
 
-        return param.replaceAll(" ", "+");
+        return param.replaceAll(' ', '+');
     }, [search]);
 
     const { controller, submit } = useController({
@@ -67,7 +67,10 @@ export default function Invite() {
                 data.from,
             );
 
-            const { id: chatID } = storageState.chats.createChat(data.name, connectionID);
+            const { id: chatID } = storageState.chats.createChat(
+                data.name,
+                connectionID,
+            );
 
             router.push(`/chat?id=${chatID}`);
         },
@@ -80,8 +83,10 @@ export default function Invite() {
                     className={cn.container}
                     onSubmit={(e) => (e.preventDefault(), submit())}
                 >
-                    <Link href={"/"} className={cn.home}>
-                        <Button icon='arrow-back' color='orange' size='small'>Home</Button>
+                    <Link href={'/'} className={cn.home}>
+                        <Button icon="arrow-back" color="orange" size="small">
+                            Home
+                        </Button>
                     </Link>
                     <h1>Connection form</h1>
                     <FormInput placeholder="Chat name" field="name" />

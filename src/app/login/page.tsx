@@ -27,12 +27,12 @@ export default function Login() {
 
         await storage.init(input);
 
-        if(location.search.includes("next")) {
-            const [, next] = location.search.split("next");
+        if (location.search.includes('next')) {
+            const [, next] = location.search.split('next');
 
             router.push(next.slice(1));
         } else {
-            router.push('/')
+            router.push('/');
         }
     };
 

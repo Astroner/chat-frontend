@@ -9,7 +9,7 @@ export const IconsDict = {
     hourglass: HourglassIcon,
     'no-network': NoNetworkIcon,
     'arrow-back': ArrowBackIcon,
-    close: CloseIcon
+    close: CloseIcon,
 };
 
 export const IconsNames: IconName[] = Object.keys(IconsDict) as IconName[];

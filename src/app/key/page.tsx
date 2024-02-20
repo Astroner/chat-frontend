@@ -39,7 +39,7 @@ export default function Key() {
 
         info.publicKey.toSPKI().then((value) => {
             if (!mounted) return;
-            
+
             setInviteUrl(
                 `${location.origin}/invite?name=${info.name}&key=${arrayBufferToBase64(value)}`,
             );
@@ -68,12 +68,12 @@ export default function Key() {
     }, [inviteUrl]);
 
     useEffect(() => {
-        if(!qr) return;
+        if (!qr) return;
 
         return () => {
             URL.revokeObjectURL(qr);
-        }
-    }, [qr])
+        };
+    }, [qr]);
 
     if (!info) return null;
 

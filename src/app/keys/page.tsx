@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -13,35 +13,39 @@ export default function Keys() {
     const [storage] = useStorage();
 
     const [keys, setKeys] = useState(() => {
-        if(storage.type !== "READY") return null;
+        if (storage.type !== 'READY') return null;
 
         return storage.published.getAll();
-    }) 
+    });
 
     useEffect(() => {
-        if(storage.type !== "READY") return
+        if (storage.type !== 'READY') return;
 
-        const sub = storage.published.subscribe(() => setKeys(storage.published.getAll()))
+        const sub = storage.published.subscribe(() =>
+            setKeys(storage.published.getAll()),
+        );
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [storage])
+        };
+    }, [storage]);
 
-    if(!keys) return null;
+    if (!keys) return null;
 
     return (
         <main className={cn.root}>
-            <ButtonLink href='/' color='orange' size='small' icon='arrow-back'>Home</ButtonLink>
+            <ButtonLink href="/" color="orange" size="small" icon="arrow-back">
+                Home
+            </ButtonLink>
             <h1>Issued Invites</h1>
             <ul>
-                {keys.map(key => (
+                {keys.map((key) => (
                     <li key={key.id}>
                         <Link href={`/key?id=${key.id}`}>{key.name}</Link>
-                        <Button icon='close' />
+                        <Button icon="close" />
                     </li>
                 ))}
             </ul>
         </main>
-    )
+    );
 }
