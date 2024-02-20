@@ -54,15 +54,26 @@ export default function Key() {
         if (!inviteUrl) return;
 
         let mounted = true;
-
         generateQRCode(inviteUrl).then((qr) => {
-            if (mounted) setQr(qr);
+            if (!mounted) {
+                URL.revokeObjectURL(qr);
+                return;
+            }
+            setQr(qr);
         });
 
         return () => {
             mounted = false;
         };
     }, [inviteUrl]);
+
+    useEffect(() => {
+        if(!qr) return;
+
+        return () => {
+            URL.revokeObjectURL(qr);
+        }
+    }, [qr])
 
     if (!info) return null;
 
