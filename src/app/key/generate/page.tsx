@@ -16,6 +16,7 @@ import { FormInput } from '@/src/components/form/form-input.component';
 import { DotsLoader } from '../../components/dots-loader/dots-loader.component';
 
 import cn from './page.module.scss';
+import { ButtonLink } from '@/src/components/button-link/button-link.component';
 
 export default function Generate() {
     const [, storage] = useStorage();
@@ -46,6 +47,7 @@ export default function Generate() {
                         className={cn.container}
                         onSubmit={(e) => (e.preventDefault(), submit())}
                     >
+                        <ButtonLink className={cn.home} href='/' color='orange' icon='arrow-back' size='small'>Home</ButtonLink>
                         <h1>Generating invite</h1>
                         <FormInput field="keyName" placeholder="Invite Name" />
                         <Button submit color="orange">

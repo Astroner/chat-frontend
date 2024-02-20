@@ -12,6 +12,8 @@
 .container {
     width: 80vw;
 
+    position: relative;
+
     h1 {
         color: var(--light-purple);
     }
@@ -25,4 +27,11 @@
 
         margin-top: 20px;
     }
+}
+
+.home {
+    position: absolute;
+
+    bottom: calc(100% + 20px);
+    left: 0;
 }

@@ -59,7 +59,7 @@ export class ChatStorage {
         if (typeof changeRequest === 'function') {
             nextState = changeRequest(info);
         } else {
-            nextState = Object.assign(info, changeRequest);
+            nextState = Object.assign({}, info, changeRequest);
         }
 
         this.chats.set(chatId, nextState);
@@ -80,6 +80,12 @@ export class ChatStorage {
         if (!chatID) return null;
 
         return this.chats.get(chatID) ?? null;
+    }
+
+    deleteChat(id: string) {
+        this.chats.delete(id);
+
+        this.sendUpdate();
     }
 
     subscribe(cb: VoidFunction) {

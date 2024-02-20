@@ -1,15 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 
 import { Button } from '../components/button/button.component';
 import { useNetwork, useStorage } from '../model/hooks';
+import { ButtonLink } from '../components/button-link/button-link.component';
 
 import { SlidablePanel } from './components/slidable-panel/slidable-panel.component';
 import { SlideAnchor } from './components/slidable-panel/slide-anchor.component';
-
 import { DotsLoader } from './components/dots-loader/dots-loader.component';
+import { Chats } from './components/chats/chats.component';
 
 import cn from './page.module.scss';
 
@@ -44,6 +44,7 @@ export default function Home() {
 
     return (
         <main className={cn.root}>
+            <Chats />
             <SlidablePanel open={isPanelOpen} onStateChange={setIsPanelOpen}>
                 <div className={cn['panel-container']}>
                     <div
@@ -86,22 +87,8 @@ export default function Home() {
                         )}
                         {networkState.type === 'READY' && (
                             <>
-                                <Link
-                                    className={cn['menu-button']}
-                                    href={'/key/generate'}
-                                >
-                                    <Button color="orange">
-                                        Generate invite QR
-                                    </Button>
-                                </Link>
-                                <Link
-                                    className={cn['menu-button']}
-                                    href={'/keys'}
-                                >
-                                    <Button color="orange">
-                                        Generated Invites
-                                    </Button>
-                                </Link>
+                                <ButtonLink href='/key/generate' className={cn['menu-button']} color='orange'>Generate invite QR</ButtonLink>
+                                <ButtonLink href='/keys' className={cn['menu-button']} color='orange'>Generated Invites</ButtonLink>
                             </>
                         )}
                     </div>

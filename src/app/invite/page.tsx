@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import cn from './page.module.scss';
 import { FormProvider, useController } from '@schematic-forms/react';
@@ -11,9 +11,11 @@ import { Button } from '@/src/components/button/button.component';
 import { useNetwork, useStorage } from '@/src/model/hooks';
 import { RSAEncryptionKey } from '@/src/helpers/crypto/rsa/rsa-encryption-key.class';
 import { base64ToArrayBuffer } from '@/src/helpers/arraybuffer-utils';
+import Link from 'next/link';
 
 export default function Invite() {
     const search = useSearchParams();
+    const router = useRouter();
     const [, storage] = useStorage();
     const [, network] = useNetwork();
 
@@ -21,8 +23,12 @@ export default function Invite() {
         return search.get('name') ?? null;
     }, [search]);
 
-    const key = useMemo(() => {
-        return search.get('key') ?? null;
+    const keyParam = useMemo(() => {
+        const param = search.get('key');
+
+        if(!param) return null;
+
+        return param.replaceAll(" ", "+");
     }, [search]);
 
     const { controller, submit } = useController({
@@ -31,7 +37,7 @@ export default function Invite() {
             from: Str(true),
         },
         async submit(data) {
-            if (!key) return;
+            if (!keyParam) return;
 
             const networkState = network.getState();
             const storageState = storage.getState();
@@ -53,7 +59,7 @@ export default function Invite() {
             }
 
             const rsaKey = await RSAEncryptionKey.fromSPKI(
-                base64ToArrayBuffer(key),
+                base64ToArrayBuffer(keyParam),
             );
 
             const { id: connectionID } = await chat.sendConnectionRequest(
@@ -61,10 +67,9 @@ export default function Invite() {
                 data.from,
             );
 
-            storageState.chats.createChat(data.name, connectionID);
+            const { id: chatID } = storageState.chats.createChat(data.name, connectionID);
 
-            // HERE
-            // FIX PROBLEM WITH INCORRECT KEY FROM URL
+            router.push(`/chat?id=${chatID}`);
         },
     });
 
@@ -75,6 +80,9 @@ export default function Invite() {
                     className={cn.container}
                     onSubmit={(e) => (e.preventDefault(), submit())}
                 >
+                    <Link href={"/"} className={cn.home}>
+                        <Button icon='arrow-back' color='orange' size='small'>Home</Button>
+                    </Link>
                     <h1>Connection form</h1>
                     <FormInput placeholder="Chat name" field="name" />
                     <FormInput placeholder="Sender" field="from" />

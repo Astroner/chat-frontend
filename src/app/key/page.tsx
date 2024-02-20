@@ -39,7 +39,7 @@ export default function Key() {
 
         info.publicKey.toSPKI().then((value) => {
             if (!mounted) return;
-
+            
             setInviteUrl(
                 `${location.origin}/invite?name=${info.name}&key=${arrayBufferToBase64(value)}`,
             );
