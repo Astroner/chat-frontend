@@ -11,6 +11,7 @@ import { ChatStorage } from '@/src/helpers/storage/chat-storage.class';
 import { ConnectionsManager } from '@/src/helpers/storage/connections-manager/connections-manager.class';
 import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manager/published-keys-manager.class';
 import { Subscription, joinSubs } from '@/src/helpers/types';
+import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 
 export type StorageState =
     | { type: 'IDLE' }
@@ -42,6 +43,7 @@ export class Storage {
     constructor(
         private env: StorageEnv,
         private keysIndex: KeysIndex,
+        private signsIndex: SignsIndex,
         private gzip: GZip,
     ) {}
 
@@ -107,6 +109,7 @@ export class Storage {
                 case 'established':
                 case 'preEstablished':
                     this.keysIndex.addKey(key, connection.aesKey);
+                    this.signsIndex.addKey(key, connection.hmacKey)
 
                     break;
             }

@@ -10,9 +10,12 @@ import {
     useController,
 } from '@schematic-forms/react';
 import { Enum, Str } from '@schematic-forms/core';
-import { EncryptionKey } from '../../crypto/crypto.types';
+import { EncryptionKey, SigningKey } from '../../crypto/crypto.types';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
+import { HMACKey } from '../../crypto/hmac/hmac-key.class';
+import { base64ToArrayBuffer } from '../../arraybuffer-utils';
+import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 
 const meta: Meta = {
     title: 'Network/Protocol Client',
@@ -35,6 +38,10 @@ export const Default: StoryFn = () => {
 
     const [storedKeys, setStoredKeys] = useState<string[]>([]);
     const keysIndex = useMemo(() => new KeysIndex(), []);
+
+    const [storedSigns, setStoredSigns] = useState<string[]>([]);
+    const signsIndex = useMemo(() => new SignsIndex(), []);
+
     const { controller: KeyIndexController, submit: addKey } = useController({
         fields: {
             id: Str(true),
@@ -60,28 +67,42 @@ export const Default: StoryFn = () => {
         },
     });
 
+    const { controller: SignsIndexController, submit: addSign } = useController({
+        fields: {
+            id: Str(true),
+            key: Str(true),
+        },
+        async submit(data) {
+            const key = await HMACKey.fromRawBytes(base64ToArrayBuffer(data.key));
+
+            signsIndex.addKey(data.id, key);
+            setStoredSigns((p) => p.concat([data.id]));
+        },
+    });
+
     const client = useMemo(() => {
         if (!connection) return null;
 
-        return new ProtocolClient(connection, keysIndex);
-    }, [connection, keysIndex]);
+        return new ProtocolClient(connection, keysIndex, signsIndex);
+    }, [connection, keysIndex, signsIndex]);
 
     const { controller, submit } = useController({
         fields: {
             key: Str(true),
             keyType: Enum(['RSA', 'AES'] as ['RSA', 'AES'], true, 'RSA'),
+            signingKey: Str(),
             message: Str(true),
         },
         async submit(
             data,
-            postData: (s: { key: EncryptionKey; message: string }) => void,
+            postData: (s: { encryptionKey: EncryptionKey; signingKey?: SigningKey; message: string }) => void,
         ) {
-            let key: EncryptionKey;
+            let encryptionKey: EncryptionKey;
             try {
                 if (data.keyType === 'RSA') {
-                    key = await RSAEncryptionKey.fromJSON(data.key);
+                    encryptionKey = await RSAEncryptionKey.fromJSON(data.key);
                 } else {
-                    key = await AesGcmKey.fromJSON(data.key);
+                    encryptionKey = await AesGcmKey.fromJSON(data.key);
                 }
             } catch {
                 return {
@@ -89,15 +110,23 @@ export const Default: StoryFn = () => {
                 };
             }
 
+            let signingKey: SigningKey | undefined;
+
+            if(data.signingKey) {
+                signingKey = await HMACKey.fromRawBytes(base64ToArrayBuffer(data.signingKey))
+            }
+
             postData({
-                key,
+                encryptionKey,
                 message: data.message,
+                signingKey
             });
         },
     });
 
     const sendMessage = async (data: {
-        key: EncryptionKey;
+        encryptionKey: EncryptionKey;
+        signingKey?: SigningKey
         message: string;
     }) => {
         if (!client) return;
@@ -107,7 +136,8 @@ export const Default: StoryFn = () => {
                 type: 'message',
                 message: data.message,
             },
-            data.key,
+            data.encryptionKey,
+            data.signingKey
         );
     };
 
@@ -144,7 +174,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="Key ID"
-                                    value={value}
+                                    value={value ?? ""}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                             </div>
@@ -155,7 +185,7 @@ export const Default: StoryFn = () => {
                             <div>
                                 <textarea
                                     placeholder="JWK encryption key"
-                                    value={value}
+                                    value={value ?? ""}
                                     onChange={(e) => setValue(e.target.value)}
                                 />
                                 {error}
@@ -166,7 +196,7 @@ export const Default: StoryFn = () => {
                         {({ value, setValue }) => (
                             <div>
                                 <select
-                                    value={value}
+                                    value={value ?? ""}
                                     onChange={(e) => setValue(e.target.value)}
                                 >
                                     <option value="RSA">RSA</option>
@@ -183,6 +213,40 @@ export const Default: StoryFn = () => {
                     ))}
                 </ul>
             </div>
+            <div>
+                <h3>Signs Index</h3>
+                <FormProvider controller={SignsIndexController}>
+                    <FieldConsumer field="id">
+                        {({ value, setValue }) => (
+                            <div>
+                                <textarea
+                                    placeholder="Key ID"
+                                    value={value ?? ""}
+                                    onChange={(e) => setValue(e.target.value)}
+                                />
+                            </div>
+                        )}
+                    </FieldConsumer>
+                    <FieldConsumer field="key">
+                        {({ value, setValue, error }) => (
+                            <div>
+                                <textarea
+                                    placeholder="HMAC key in base64"
+                                    value={value ?? ""}
+                                    onChange={(e) => setValue(e.target.value)}
+                                />
+                                {error}
+                            </div>
+                        )}
+                    </FieldConsumer>
+                </FormProvider>
+                <button onClick={addSign}>Add Sign</button>
+                <ul>
+                    {storedSigns.map((id) => (
+                        <li key={id}>{id}</li>
+                    ))}
+                </ul>
+            </div>
             <FormProvider controller={connectionController}>
                 <div>
                     <h3>Connection Address</h3>
@@ -190,7 +254,7 @@ export const Default: StoryFn = () => {
                         {({ value, setValue }) => (
                             <input
                                 placeholder="Address"
-                                value={value}
+                                value={value ?? ""}
                                 onChange={(e) => setValue(e.target.value)}
                             />
                         )}
@@ -206,7 +270,7 @@ export const Default: StoryFn = () => {
                             {({ value, setValue }) => (
                                 <div>
                                     <select
-                                        value={value}
+                                        value={value ?? ""}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -222,7 +286,7 @@ export const Default: StoryFn = () => {
                                 <div>
                                     <textarea
                                         placeholder="JWK encryption key"
-                                        value={value}
+                                        value={value ?? ""}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -236,11 +300,23 @@ export const Default: StoryFn = () => {
                                 <div>
                                     <textarea
                                         placeholder="Message"
-                                        value={value}
+                                        value={value ?? ""}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
                                     />
+                                </div>
+                            )}
+                        </FieldConsumer>
+                        <FieldConsumer field="signingKey">
+                            {({ value, setValue, error }) => (
+                                <div>
+                                    <textarea
+                                        placeholder="(Optional) HMAC signing key in base64"
+                                        value={value ?? ""}
+                                        onChange={(e) => setValue(e.target.value)}
+                                    />
+                                    {error}
                                 </div>
                             )}
                         </FieldConsumer>

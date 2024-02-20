@@ -1,6 +1,7 @@
+import { SigningKey } from '../crypto.types';
 import { ECDHKey } from '../ecdh/ecdh-key.class';
 
-export class HMACKey {
+export class HMACKey implements SigningKey {
     static async generate() {
         const key = await crypto.subtle.generateKey(
             { name: 'HMAC', hash: 'SHA-256' },
@@ -44,11 +45,11 @@ export class HMACKey {
 
     constructor(private key: CryptoKey) {}
 
-    sign(data: ArrayBuffer) {
+    createSignature(data: ArrayBuffer) {
         return crypto.subtle.sign('HMAC', this.key, data);
     }
 
-    verify(signature: ArrayBuffer, data: ArrayBuffer) {
+    verify(data: ArrayBuffer, signature: ArrayBuffer) {
         return crypto.subtle.verify('HMAC', this.key, signature, data);
     }
 

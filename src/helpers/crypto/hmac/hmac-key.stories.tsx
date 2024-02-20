@@ -119,7 +119,7 @@ export const SignData: StoryFn = () => {
                 base64ToArrayBuffer(form.key),
             );
 
-            const signature = await key.sign(stringToArrayBuffer(form.data));
+            const signature = await key.createSignature(stringToArrayBuffer(form.data));
 
             setSignature(arrayBufferToBase64(signature));
         },

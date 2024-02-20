@@ -1,5 +1,6 @@
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
+import { HMACKey } from '../../crypto/hmac/hmac-key.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 import {
     ConnectionData,
@@ -13,7 +14,7 @@ export type ConnectionEntityDependencies = {
 };
 
 export class ConnectionEntry implements ConnectionMix {
-    public status: 'established' | 'preEstablished' | 'requested' | 'pending';
+    public status!: 'established' | 'preEstablished' | 'requested' | 'pending';
 
     public establishedAt?: Date;
     public confirmedAt?: Date;
@@ -22,6 +23,7 @@ export class ConnectionEntry implements ConnectionMix {
 
     public ecdhPrivateKey?: ECDHKey;
     public aesKey?: AesGcmKey;
+    public hmacKey?: HMACKey;
 
     public ecdhPublicKey?: ECDHKey;
     public responseRSA?: RSAEncryptionKey;
@@ -35,36 +37,7 @@ export class ConnectionEntry implements ConnectionMix {
         private id: string,
         private api: ConnectionEntityDependencies,
     ) {
-        this.status = init.status;
-
-        switch (init.status) {
-            case 'established':
-                this.establishedAt = init.establishedAt;
-                this.aesKey = init.aesKey;
-
-                break;
-
-            case 'preEstablished':
-                this.aesKey = init.aesKey;
-                this.confirmedAt = init.confirmedAt;
-
-                break;
-
-            case 'requested':
-                this.createdAt = init.createdAt;
-                this.ecdhPrivateKey = init.ecdhPrivateKey;
-                this.responseRSAPrivateKey = init.responseRSAPrivateKey;
-
-                break;
-
-            case 'pending':
-                this.registeredAt = init.registeredAt;
-                this.ecdhPublicKey = init.ecdhPublicKey;
-                this.responseRSA = init.responseRSA;
-                this.from = init.from;
-
-                break;
-        }
+        this.updateState(init, true);
     }
 
     isRequested(): this is FullConnectionType['requested'] {
@@ -84,34 +57,43 @@ export class ConnectionEntry implements ConnectionMix {
     }
 
     finish() {
-        if (this.status !== 'preEstablished')
+        if (!this.isPreEstablished())
             throw new Error('Strange behavior');
-        this.status = 'established';
-        this.establishedAt = new Date();
 
-        this.api.onChange();
+
+        this.updateState({
+            status: "established",
+            aesKey: this.aesKey,
+            hmacKey: this.hmacKey,
+            establishedAt: new Date(),
+        })
     }
 
     async confirm(ecdhPublicKey: ECDHKey) {
         if (this.status !== 'requested' || !this.ecdhPrivateKey)
             throw new Error('Strange behavior');
 
-        this.status = 'preEstablished';
-
         const aesKey = await AesGcmKey.fromECDH(
             ecdhPublicKey,
             this.ecdhPrivateKey,
         );
 
-        this.aesKey = aesKey;
-        this.confirmedAt = new Date();
+        const hmacKey = await HMACKey.fromECDH(
+            ecdhPublicKey,
+            this.ecdhPrivateKey,
+        );
 
-        this.api.onChange();
+        this.updateState({
+            status: "preEstablished",
+            aesKey,
+            hmacKey,
+            confirmedAt: new Date(),
+        })
 
-        return aesKey;
+        return { aesKey, hmacKey };
     }
 
-    async accept(ecdhPrivateKey: ECDHKey): Promise<AesGcmKey> {
+    async accept(ecdhPrivateKey: ECDHKey) {
         if (this.status !== 'pending' || !this.ecdhPublicKey)
             throw new Error('Strange behavior');
 
@@ -120,13 +102,19 @@ export class ConnectionEntry implements ConnectionMix {
             ecdhPrivateKey,
         );
 
-        this.status = 'preEstablished';
-        this.aesKey = aes;
-        this.confirmedAt = new Date();
+        const hmacKey = await HMACKey.fromECDH(
+            this.ecdhPublicKey,
+            ecdhPrivateKey
+        );
 
-        this.api.onChange();
+        this.updateState({
+            status: "preEstablished",
+            aesKey: aes,
+            hmacKey: hmacKey,
+            confirmedAt: new Date(),
+        })
 
-        return aes;
+        return { aes, hmacKey };
     }
 
     getPortable(): ConnectionData[keyof ConnectionData] {
@@ -152,6 +140,7 @@ export class ConnectionEntry implements ConnectionMix {
                 status: 'preEstablished',
                 aesKey: this.aesKey,
                 confirmedAt: this.confirmedAt,
+                hmacKey: this.hmacKey
             };
 
         if (this.isEstablished())
@@ -159,6 +148,7 @@ export class ConnectionEntry implements ConnectionMix {
                 status: 'established',
                 aesKey: this.aesKey,
                 establishedAt: this.establishedAt,
+                hmacKey: this.hmacKey
             };
 
         throw new Error('Unknown connection type');
@@ -166,5 +156,43 @@ export class ConnectionEntry implements ConnectionMix {
 
     destroy() {
         this.api.onDestroy(this.id);
+    }
+
+    private updateState(next: ConnectionData[keyof ConnectionData], quiet = false) {
+        this.status = next.status;
+
+        switch (next.status) {
+            case 'established':
+                this.establishedAt = next.establishedAt;
+                this.aesKey = next.aesKey;
+                this.hmacKey = next.hmacKey;
+
+                break;
+
+            case 'preEstablished':
+                this.aesKey = next.aesKey;
+                this.confirmedAt = next.confirmedAt;
+                this.hmacKey = next.hmacKey;
+
+                break;
+
+            case 'requested':
+                this.createdAt = next.createdAt;
+                this.ecdhPrivateKey = next.ecdhPrivateKey;
+                this.responseRSAPrivateKey = next.responseRSAPrivateKey;
+
+                break;
+
+            case 'pending':
+                this.registeredAt = next.registeredAt;
+                this.ecdhPublicKey = next.ecdhPublicKey;
+                this.responseRSA = next.responseRSA;
+                this.from = next.from;
+
+                break;
+        
+        }
+
+        if(!quiet) this.api.onChange();
     }
 }

@@ -5,6 +5,7 @@ import { HTTPClient } from '@/src/helpers/network/http-client/http-client.class'
 import { ProtocolClient } from '@/src/helpers/network/protocol-client/protocol-client.class';
 import { ConnectionsManager } from '@/src/helpers/storage/connections-manager/connections-manager.class';
 import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manager/published-keys-manager.class';
+import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 
 export type NetworkState =
     | { type: 'IDLE' }
@@ -26,6 +27,7 @@ export class Network {
         private wsAddress: string,
         private httpUrl: string,
         private keysIndex: KeysIndex,
+        private signsIndex: SignsIndex
     ) {}
 
     async init(
@@ -37,7 +39,7 @@ export class Network {
 
         await connection.connect();
 
-        const protocol = new ProtocolClient(connection, this.keysIndex);
+        const protocol = new ProtocolClient(connection, this.keysIndex, this.signsIndex);
         protocol.init();
 
         const chatClient = new ChatClient(
@@ -45,6 +47,7 @@ export class Network {
             connections,
             publishedKeys,
             this.keysIndex,
+            this.signsIndex
         );
 
         chatClient.init();

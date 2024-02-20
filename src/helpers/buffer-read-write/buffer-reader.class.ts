@@ -49,6 +49,10 @@ export class BufferReader {
         return buffer;
     }
 
+    hasNext() {
+        return this.cursor < this.bytes.byteLength;
+    }
+
     getCursor() {
         return this.cursor;
     }

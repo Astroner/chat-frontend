@@ -98,7 +98,7 @@ export class AesGcmKey implements EncryptionKey {
         result.set(iv, 0);
         result.set(new Uint8Array(cipher), iv.byteLength);
 
-        return result;
+        return result.buffer;
     }
 
     async decrypt(src: ArrayBuffer): Promise<ArrayBuffer> {

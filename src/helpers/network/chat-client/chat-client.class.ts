@@ -10,6 +10,8 @@ import { PublishedKeysManager } from '../../storage/published-keys-manager/publi
 import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
 import { EstablishedConnection } from '../../storage/connections-manager/connections-manager.types';
+import { HMACKey } from '../../crypto/hmac/hmac-key.class';
+import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 
 export type ChatClientEvent =
     | EventTemplate<
@@ -24,6 +26,7 @@ export type ChatClientEvent =
           {
               id: string;
               aesKey: AesGcmKey;
+              hmacKey: HMACKey
           }
       >
     | EventTemplate<
@@ -50,6 +53,7 @@ export class ChatClient {
         private connectionsManager: ConnectionsManager,
         private publishedKeysManager: PublishedKeysManager,
         private keysIndex: KeysIndex,
+        private signsIndex: SignsIndex,
     ) {}
 
     init() {
@@ -90,6 +94,7 @@ export class ChatClient {
                 message,
             },
             connection.aesKey,
+            connection.hmacKey
         );
     }
 
@@ -99,9 +104,10 @@ export class ChatClient {
 
         const { privateKey, publicKey } = await ECDHKey.generatePair();
 
-        const aes = await connection.accept(privateKey);
+        const { aes, hmacKey } = await connection.accept(privateKey);
 
         this.keysIndex.addKey(connectionID, aes);
+        this.signsIndex.addKey(connectionID, hmacKey);
 
         this.protocolClient.postMessage(
             {
@@ -164,16 +170,18 @@ export class ChatClient {
                 );
                 if (!connection || !connection.isRequested()) return;
 
-                const aesKey = await connection.confirm(event.ecdhPublicKey);
+                const { aesKey, hmacKey } = await connection.confirm(event.ecdhPublicKey);
 
                 this.keysIndex.removeKey(event.keyID);
                 this.keysIndex.addKey(event.keyID, aesKey);
+                this.signsIndex.addKey(event.keyID, hmacKey);
 
                 this.protocolClient.postMessage(
                     {
                         type: 'connectionEstablished',
                     },
                     aesKey,
+                    hmacKey
                 );
 
                 break;
@@ -192,12 +200,14 @@ export class ChatClient {
                         type: 'connectionEstablishedConfirm',
                     },
                     connection.aesKey,
+                    connection.hmacKey
                 );
 
                 this.sendEvent({
                     type: 'connectionEstablished',
                     id: event.keyID,
                     aesKey: connection.aesKey,
+                    hmacKey: connection.hmacKey
                 });
 
                 break;
@@ -215,6 +225,7 @@ export class ChatClient {
                     type: 'connectionEstablished',
                     id: event.keyID,
                     aesKey: connection.aesKey,
+                    hmacKey: connection.hmacKey
                 });
 
                 break;
@@ -248,6 +259,12 @@ export class ChatClient {
                     id: event.keyID,
                     message: event.message,
                 });
+
+                break;
+            }
+
+            case 'signature-mismatch': {
+                console.error(event);
 
                 break;
             }

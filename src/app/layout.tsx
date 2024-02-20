@@ -20,6 +20,7 @@ import './globals.scss';
 import { Subscription, joinSubs } from '../helpers/types';
 import { ChatClient } from '../helpers/network/chat-client/chat-client.class';
 import { ChatStorage } from '../helpers/storage/chat-storage.class';
+import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
 }) {
     const router = useRouter();
     const keysIndex = useMemo(() => new KeysIndex(), []);
+    const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
 
     const storage = useMemo(() => {
@@ -66,13 +68,14 @@ export default function RootLayout({
                 load: async () => stored!,
             },
             keysIndex,
+            signsIndex,
             gzip,
         );
-    }, [gzip, keysIndex]);
+    }, [gzip, keysIndex, signsIndex]);
 
     const network = useMemo(
-        () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex),
-        [keysIndex],
+        () => new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex),
+        [keysIndex, signsIndex],
     );
 
     // useEffect(() => {

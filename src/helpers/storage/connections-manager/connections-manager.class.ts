@@ -2,6 +2,7 @@ import { BufferBuilder } from '../../buffer-read-write/buffer-builder.class';
 import { BufferReader } from '../../buffer-read-write/buffer-reader.class';
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
+import { HMACKey } from '../../crypto/hmac/hmac-key.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 import { ConnectionEntry } from './connection-entity.class';
 import { ConnectionData } from './connections-manager.types';
@@ -56,6 +57,7 @@ export class ConnectionsManager {
                                 data: {
                                     type: 'preEstablished' as 'preEstablished',
                                     aesKey: reader.readBytes(),
+                                    hmacKey: reader.readBytes(),
                                 },
                             };
 
@@ -66,6 +68,7 @@ export class ConnectionsManager {
                                 data: {
                                     type: 'established' as 'established',
                                     aesKey: reader.readBytes(),
+                                    hmacKey: reader.readBytes(),
                                 },
                             };
                     }
@@ -121,13 +124,17 @@ export class ConnectionsManager {
                             }
 
                             case 'preEstablished': {
-                                const aesKey = await AesGcmKey.fromRawBytes(
-                                    data.aesKey,
-                                );
+                                const [aesKey, hmacKey] = await Promise.all([
+                                    AesGcmKey.fromRawBytes(
+                                        data.aesKey,
+                                    ),
+                                    HMACKey.fromRawBytes(data.hmacKey)
+                                ])
 
                                 connection = {
                                     status: 'preEstablished',
                                     aesKey,
+                                    hmacKey,
                                     confirmedAt: date,
                                 };
 
@@ -135,13 +142,17 @@ export class ConnectionsManager {
                             }
 
                             case 'established': {
-                                const aesKey = await AesGcmKey.fromRawBytes(
-                                    data.aesKey,
-                                );
+                                const [aesKey, hmacKey] = await Promise.all([
+                                    AesGcmKey.fromRawBytes(
+                                        data.aesKey,
+                                    ),
+                                    HMACKey.fromRawBytes(data.hmacKey)
+                                ])
 
                                 connection = {
                                     status: 'established',
                                     aesKey,
+                                    hmacKey,
                                     establishedAt: date,
                                 };
 
@@ -299,7 +310,8 @@ export class ConnectionsManager {
      *
      * [preEstablished]
      * [established]
-     * aesKey - 2 bytes length, aes-gcm key in PKCS8 format
+     * aesKey - 2 bytes length, aes-gcm key in raw bytes format
+     * hmacKey - 2 bytes length, hmac key in raw bytes format
      */
     async export(): Promise<ArrayBuffer> {
         const prepared = await Promise.all(
@@ -337,6 +349,7 @@ export class ConnectionsManager {
                         date = connection.confirmedAt.toISOString();
                         data = await Promise.all([
                             connection.aesKey.toRawBytes(),
+                            connection.hmacKey.toRawBytes(),
                         ]);
 
                         break;
@@ -346,6 +359,7 @@ export class ConnectionsManager {
                         date = connection.establishedAt.toISOString();
                         data = await Promise.all([
                             connection.aesKey.toRawBytes(),
+                            connection.hmacKey.toRawBytes(),
                         ]);
 
                         break;

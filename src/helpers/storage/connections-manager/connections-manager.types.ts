@@ -1,5 +1,6 @@
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
+import { HMACKey } from '../../crypto/hmac/hmac-key.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 
 type ConnectionType = {
@@ -28,6 +29,7 @@ type ConnectionType = {
         data: {
             confirmedAt: Date;
             aesKey: AesGcmKey;
+            hmacKey: HMACKey;
         };
         methods: {
             finish: VoidFunction;
@@ -37,6 +39,7 @@ type ConnectionType = {
         data: {
             establishedAt: Date;
             aesKey: AesGcmKey;
+            hmacKey: HMACKey;
         };
         methods: {};
     };

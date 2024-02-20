@@ -18,6 +18,8 @@ import {
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
 import { ConnectionsManager } from '../../storage/connections-manager/connections-manager.class';
 import { PublishedKeysManager } from '../../storage/published-keys-manager/published-keys-manager.class';
+import { Subscription } from '../../types';
+import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 
 const meta: Meta = {
     title: 'Network/Chat Client',
@@ -117,7 +119,7 @@ const ClientView: FC<{
                                 {({ value, setValue }) => (
                                     <textarea
                                         placeholder="Address Base64 Key"
-                                        value={value}
+                                        value={value ?? ""}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -130,7 +132,7 @@ const ClientView: FC<{
                                 {({ value, setValue }) => (
                                     <input
                                         placeholder="From"
-                                        value={value}
+                                        value={value ?? ""}
                                         onChange={(e) =>
                                             setValue(e.target.value)
                                         }
@@ -164,7 +166,7 @@ const ClientView: FC<{
                                     {({ value, setValue }) => (
                                         <input
                                             placeholder="Connection ID"
-                                            value={value}
+                                            value={value ?? ""}
                                             onChange={(e) =>
                                                 setValue(e.target.value)
                                             }
@@ -177,7 +179,7 @@ const ClientView: FC<{
                                     {({ value, setValue }) => (
                                         <textarea
                                             placeholder="Message"
-                                            value={value}
+                                            value={value ?? ""}
                                             onChange={(e) =>
                                                 setValue(e.target.value)
                                             }
@@ -204,6 +206,7 @@ const ClientView: FC<{
 
 export const Default: StoryFn = () => {
     const keysIndex = useMemo(() => new KeysIndex(), []);
+    const signsIndex = useMemo(() => new SignsIndex(), []);
     const connectionsManager = useMemo(() => new ConnectionsManager(), []);
     const publishedManager = useMemo(
         () => new PublishedKeysManager(keysIndex),
@@ -237,13 +240,18 @@ export const Default: StoryFn = () => {
     useEffect(() => {
         if (!connection) return;
 
+        const connectionSub = connection.addEventListener(ev => console.log("SOCKET", ev))
+        let protocolSub: Subscription | null = null;
+
         let protocol: ProtocolClient;
         let client: ChatClient;
         (async () => {
             setIsLoading(true);
             await connection.connect();
 
-            protocol = new ProtocolClient(connection, keysIndex);
+            protocol = new ProtocolClient(connection, keysIndex, signsIndex);
+            protocolSub = protocol.addEventListener(ev => console.log("PROTOCOL", ev));
+
             protocol.init();
 
             client = new ChatClient(
@@ -251,6 +259,7 @@ export const Default: StoryFn = () => {
                 connectionsManager,
                 publishedManager,
                 keysIndex,
+                signsIndex,
             );
             client.init();
 
@@ -259,11 +268,13 @@ export const Default: StoryFn = () => {
         })();
 
         return () => {
+            connectionSub.unsubscribe();
+            protocolSub?.unsubscribe();
             client.destroy();
             protocol.destroy();
             connection.destroy();
         };
-    }, [connection, keysIndex, connectionsManager, publishedManager]);
+    }, [connection, keysIndex, connectionsManager, publishedManager, signsIndex]);
 
     return (
         <div>
