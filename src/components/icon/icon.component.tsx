@@ -5,12 +5,14 @@ import { IconsDict, IconName } from './icons';
 
 import cn from './icon.module.scss';
 
+export type IconColor = 'orange' | 'light-purple' | 'dark-purple' | 'black';
+
 export type IconProps = {
     name: IconName;
 
     size?: 'small' | 'big';
 
-    color?: 'orange' | 'light-purple' | 'dark-purple' | 'black';
+    color?: IconColor;
 
     className?: string;
 };

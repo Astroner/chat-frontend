@@ -6,6 +6,8 @@ import { ProtocolClient } from '@/src/helpers/network/protocol-client/protocol-c
 import { ConnectionsManager } from '@/src/helpers/storage/connections-manager/connections-manager.class';
 import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manager/published-keys-manager.class';
 import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
+import { getHash } from '../helpers/crypto/hash/get-hash';
+import { CommonStorage } from '../helpers/storage/common-storage.class';
 
 export type NetworkState =
     | { type: 'IDLE' }
@@ -33,7 +35,10 @@ export class Network {
     async init(
         connections: ConnectionsManager,
         publishedKeys: PublishedKeysManager,
+        common: CommonStorage,
     ) {
+        const start = Date.now();
+
         this.setState({ type: 'CONNECTING' });
         const connection = new Connection(this.wsAddress);
 
@@ -43,6 +48,7 @@ export class Network {
             connection,
             this.keysIndex,
             this.signsIndex,
+            common,
         );
         protocol.init();
 
@@ -55,11 +61,44 @@ export class Network {
         );
 
         chatClient.init();
+            
+        const http = new HTTPClient(this.httpUrl);
+
+        const lastMessage = common.getData().lastMessage;
+
+        if(lastMessage) {
+            const messages = await http.getMessages(lastMessage.timestamp - 100, start);
+
+            const lastMessageCodes = new BigUint64Array(lastMessage.hash);
+
+            let lastMessageIndex: null | number = null;
+            for(let i = 0; i < messages.length; i++) {
+                const hash = await getHash(messages[i].data)
+
+                const messageCodes = new BigUint64Array(hash);
+
+                for(let i = 0; i < lastMessageCodes.length; i++) {
+                    if(lastMessageCodes[i] !== messageCodes[i]) break;
+                }
+
+                lastMessageIndex = i;
+
+                break;
+            }
+
+            if(lastMessageIndex === null) throw new Error("Could not find starting message");
+
+            const newMessages = messages.slice(lastMessageIndex + 1);
+
+            for(const message of newMessages) {
+                protocol.dispatchMessage(Number(message.timestamp), message.data)
+            }
+        }
 
         this.setState({
             type: 'READY',
             chat: chatClient,
-            http: new HTTPClient(this.httpUrl),
+            http,
             protocol,
             socket: connection,
         });

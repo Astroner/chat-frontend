@@ -34,7 +34,7 @@ export const Default: Story = {
         color: {
             type: {
                 name: 'enum',
-                value: ['orange', 'light-purple', 'dark-purple'],
+                value: ['orange', 'light-purple', 'dark-purple', 'black'],
             },
         },
     },

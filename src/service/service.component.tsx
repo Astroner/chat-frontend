@@ -1,6 +1,7 @@
 import { FC, memo, useEffect } from "react";
 import { useNetwork, useStorage } from "../model/hooks";
 import { createPortal } from "react-dom";
+import { getHash } from "../helpers/crypto/hash/get-hash";
 
 
 export type ServiceProps = {
@@ -10,8 +11,6 @@ export type ServiceProps = {
 export const Service: FC<ServiceProps> = memo(props => {
     const [network] = useNetwork();
     const [storage] = useStorage();
-
-    
 
     useEffect(() => {
         if(network.type !== "READY" || storage.type !== "READY") return;

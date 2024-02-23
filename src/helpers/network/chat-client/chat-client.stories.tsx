@@ -20,6 +20,7 @@ import { ConnectionsManager } from '../../storage/connections-manager/connection
 import { PublishedKeysManager } from '../../storage/published-keys-manager/published-keys-manager.class';
 import { Subscription } from '../../types';
 import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
+import { CommonStorage } from '../../storage/common-storage.class';
 
 const meta: Meta = {
     title: 'Network/Chat Client',
@@ -208,6 +209,7 @@ export const Default: StoryFn = () => {
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const connectionsManager = useMemo(() => new ConnectionsManager(), []);
+    const commons = useMemo(() => new CommonStorage(), []);
     const publishedManager = useMemo(
         () => new PublishedKeysManager(keysIndex),
         [keysIndex],
@@ -251,7 +253,7 @@ export const Default: StoryFn = () => {
             setIsLoading(true);
             await connection.connect();
 
-            protocol = new ProtocolClient(connection, keysIndex, signsIndex);
+            protocol = new ProtocolClient(connection, keysIndex, signsIndex, commons);
             protocolSub = protocol.addEventListener((ev) =>
                 console.log('PROTOCOL', ev),
             );
@@ -284,6 +286,7 @@ export const Default: StoryFn = () => {
         connectionsManager,
         publishedManager,
         signsIndex,
+        commons,
     ]);
 
     return (

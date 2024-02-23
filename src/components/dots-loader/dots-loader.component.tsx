@@ -1,17 +1,37 @@
-import { CSSProperties, FC, memo, useEffect, useRef, useState } from 'react';
+import { CSSProperties, FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type DotsLoaderProps = {
     className?: string;
     style?: CSSProperties;
+    dotsColor?: 'white' | 'orange';
+    dotsNumber?: 'normal' | 'huge';
 };
 
 const DOT_TTL = 200;
 
-export const DotsLoader: FC<DotsLoaderProps> = memo((props) => {
+export const DotsLoader: FC<DotsLoaderProps> = memo(({ dotsColor = 'white', dotsNumber = 'normal', ...props }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+
+    const getColor = useCallback((alpha: number) => {
+        switch(dotsColor) {
+            case "white":
+                return `rgba(255, 255, 255, ${alpha})`;
+
+            case "orange":
+                return `rgba(242, 155, 48, ${alpha})`;
+
+        }
+    }, [dotsColor])
+
+    const dotsLimit = useMemo(() => {
+        switch(dotsNumber) {
+            case "normal": return 2;
+            case "huge": return 10;
+        }
+    }, [dotsNumber])
 
     useEffect(() => {
         const container = containerRef.current;
@@ -31,10 +51,9 @@ export const DotsLoader: FC<DotsLoaderProps> = memo((props) => {
         let animationID = 0;
         let tick = 0;
         const draw = () => {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, width, height);
+            ctx.clearRect(0, 0, width, height);
 
-            for(let i = 0; i < 20; i++) {
+            for(let i = 0; i < dotsLimit; i++) {
                 dots.add({
                     x: Math.random() * width,
                     y: Math.random() * height,
@@ -52,7 +71,7 @@ export const DotsLoader: FC<DotsLoaderProps> = memo((props) => {
 
                 const alpha = -4 * (progress - 0.5) ** 2 + 1;
 
-                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.fillStyle = getColor(alpha);
                 ctx.fillRect(dot.x, dot.y, 2, 2);
             });
 
@@ -65,7 +84,7 @@ export const DotsLoader: FC<DotsLoaderProps> = memo((props) => {
         return () => {
             cancelAnimationFrame(animationID);
         };
-    }, []);
+    }, [getColor, dotsLimit]);
 
     return (
         <div ref={containerRef} className={props.className} style={props.style}>

@@ -11,7 +11,7 @@ import { useClass } from '@dogonis/hooks';
 import { IconName } from '../icon/icons';
 
 import cn from './button.module.scss';
-import { Icon } from '../icon/icon.component';
+import { Icon, IconColor } from '../icon/icon.component';
 
 export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
     disabled?: boolean;
@@ -25,6 +25,7 @@ export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
     size?: 'small' | 'big';
 
     icon?: IconName;
+    iconColor?: IconColor;
 };
 
 export const Button: FC<ButtonProps> = memo(
@@ -38,6 +39,7 @@ export const Button: FC<ButtonProps> = memo(
         disabled,
         submit,
         icon,
+        iconColor,
         ...rest
     }) => {
         const root = useClass(
@@ -69,7 +71,7 @@ export const Button: FC<ButtonProps> = memo(
                         className={cn.icon}
                         name={icon}
                         size={size}
-                        color={color === 'orange' ? 'black' : 'light-purple'}
+                        color={iconColor ?? (color === 'orange' ? 'black' : 'light-purple')}
                     />
                 )}
                 {children}

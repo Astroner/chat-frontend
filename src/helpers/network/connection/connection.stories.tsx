@@ -56,9 +56,12 @@ export const SimpleConnection = () => {
                     let message: string;
 
                     switch (ev.data.type) {
-                        case 'blob':
-                            message = `[BLOB] ${arrayBufferToBase64(await ev.data.data.arrayBuffer())}`;
+                        case 'arrayBuffer':
+                            message = `[ARRAY_BUFFER] ${arrayBufferToBase64(await ev.data.data)}`;
                             break;
+
+                        case "string":
+                            message = `[STRING] ${ev.data.data}`
                     }
 
                     setMessages((p) =>

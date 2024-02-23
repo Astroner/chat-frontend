@@ -3,6 +3,7 @@ import { HourglassIcon } from './hourglass.icon';
 import { NoNetworkIcon } from './no-network.icon';
 import { ArrowBackIcon } from './arrow-back.icon';
 import { CloseIcon } from './close.icon';
+import { SendIcon } from './send.icon';
 
 export const IconsDict = {
     network: NetworkIcon,
@@ -10,6 +11,7 @@ export const IconsDict = {
     'no-network': NoNetworkIcon,
     'arrow-back': ArrowBackIcon,
     close: CloseIcon,
+    send: SendIcon
 };
 
 export const IconsNames: IconName[] = Object.keys(IconsDict) as IconName[];

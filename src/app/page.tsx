@@ -8,7 +8,7 @@ import { ButtonLink } from '../components/button-link/button-link.component';
 
 import { SlidablePanel } from './components/slidable-panel/slidable-panel.component';
 import { SlideAnchor } from './components/slidable-panel/slide-anchor.component';
-import { DotsLoader } from './components/dots-loader/dots-loader.component';
+import { DotsLoader } from '../components/dots-loader/dots-loader.component';
 import { Chats } from './components/chats/chats.component';
 
 import cn from './page.module.scss';
@@ -39,7 +39,7 @@ export default function Home() {
             isPanelOpen &&
             network.getState().type === 'IDLE'
         )
-            network.init(storageState.connections, storageState.published);
+            network.init(storageState.connections, storageState.published, storageState.common);
     }, [isPanelOpen, storage, network]);
 
     return (

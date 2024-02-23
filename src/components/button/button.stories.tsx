@@ -21,6 +21,12 @@ const meta: Meta<typeof Button> = {
                 value: IconsNames,
             },
         },
+        iconColor: {
+            type: {
+                name: 'enum',
+                value: ['orange', 'light-purple', 'dark-purple', 'black'],
+            },
+        },
     },
 };
 
@@ -36,5 +42,6 @@ export const Default: Story = {
         color: 'purple',
         size: 'big',
         icon: undefined,
+        iconColor: undefined
     },
 };

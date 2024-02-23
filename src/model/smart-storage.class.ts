@@ -7,6 +7,8 @@ const LOCAL_STORAGE_KEY = 'memes_and_prekols';
 export type SmartStorageType = "EXTERNAL" | "LOCAL_STORAGE";
 
 export class SmartStorage implements StorageEnv {
+    private listeners = new Set<VoidFunction>();
+
     private externalData: null | ArrayBuffer = null;
 
     constructor(
@@ -27,6 +29,8 @@ export class SmartStorage implements StorageEnv {
         } else {
             this.externalData && localStorage.setItem(LOCAL_STORAGE_KEY, arrayBufferToBase64(this.externalData));
         }
+
+        this.listeners.forEach((cb) => cb());
     }
 
     async hasData(): Promise<boolean> {
@@ -52,4 +56,17 @@ export class SmartStorage implements StorageEnv {
             return base64ToArrayBuffer(localStorage.getItem(LOCAL_STORAGE_KEY)!);
         }
     }
+
+    getType() {
+        return this.type;
+    }
+
+    subscribe(cb: VoidFunction) {
+        this.listeners.add(cb);
+
+        return {
+            unsubscribe: () => this.listeners.delete(cb),
+        };
+    }
+
 }

@@ -28,7 +28,7 @@ export default function RootLayout({
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
-    const storageEnv = useMemo(() => new SmartStorage(), []);
+    const storageEnv = useMemo(() => new SmartStorage("LOCAL_STORAGE"), []);
 
     const storage = useMemo(() => {
         return new Storage(
@@ -66,7 +66,7 @@ export default function RootLayout({
             storage.destroy();
             network.destroy();
         };
-    }, [network, storage]);
+    }, [network, storage, router]);
 
     return (
         <StorageContext.Provider value={storage}>

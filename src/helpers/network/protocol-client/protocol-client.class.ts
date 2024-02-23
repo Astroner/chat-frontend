@@ -7,12 +7,15 @@ import { deserializeMessage, serializeMessage } from './message-serialization';
 import { BufferBuilder } from '../../buffer-read-write/buffer-builder.class';
 import { BufferReader } from '../../buffer-read-write/buffer-reader.class';
 import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
+import { CommonStorage } from '../../storage/common-storage.class';
+import { getHash } from '../../crypto/hash/get-hash';
 
 export type ProtocolClientEvent =
-    | (ProtocolMessage & { keyID: string })
+    | (ProtocolMessage & { keyID: string, timestamp: number })
     | {
           type: 'signature-mismatch';
           keyID: string;
+          timestamp: number;
           signature?: ArrayBuffer;
           cipher: ArrayBuffer;
           data: ArrayBuffer;
@@ -27,64 +30,25 @@ export class ProtocolClient {
         private connection: Connection,
         private keysIndex: KeysIndex,
         private signsIndex: SignsIndex,
+        private commonStorage: CommonStorage
     ) {}
 
     init() {
         this.connectionSub = this.connection.addEventListener(async (ev) => {
             if (ev.type !== 'MESSAGE') return;
 
-            let buffer: ArrayBuffer;
-            switch (ev.data.type) {
-                case 'blob':
-                    buffer = await ev.data.data.arrayBuffer();
-            }
+            if(ev.data.type !== "arrayBuffer") return;
 
-            const reader = new BufferReader(buffer);
-
-            const cipher = reader.readBytes();
-
-            const data = await this.keysIndex.tryToDecrypt(cipher);
-            if (!data) return;
-
-            if (reader.hasNext()) {
-                const signature = reader.readBytes();
-
-                if (
-                    !(await this.signsIndex.verifyForKey(
-                        data.keyID,
-                        cipher,
-                        signature,
-                    ))
-                ) {
-                    this.sendEvent({
-                        type: 'signature-mismatch',
-                        cipher,
-                        data: data.data,
-                        keyID: data.keyID,
-                        signature,
-                    });
-                    return;
-                }
-            } else if (this.signsIndex.hasSigningKey(data.keyID)) {
-                this.sendEvent({
-                    type: 'signature-mismatch',
-                    cipher,
-                    data: data.data,
-                    keyID: data.keyID,
-                });
-
-                return;
-            }
-
-            const message = await deserializeMessage(data.data);
-
-            if (!message) return;
-
-            this.sendEvent({
-                keyID: data.keyID,
-                ...message,
-            });
+            this.handleMessage(ev.data.data, ev.timestamp);
+            this.commonStorage.updateLastMessage(ev.timestamp, await getHash(ev.data.data))
         });
+    }
+
+    async dispatchMessage(timestamp: number, data: ArrayBuffer) {
+        await Promise.all([
+            this.handleMessage(data, timestamp),
+            getHash(data).then(hash => this.commonStorage.updateLastMessage(timestamp, hash))
+        ])
     }
 
     destroy() {
@@ -107,7 +71,10 @@ export class ProtocolClient {
             payload.appendBuffer(await signingKey.createSignature(cipher));
         }
 
-        this.connection.sendMessage(payload.getBuffer());
+        const transfer = payload.getBuffer();
+
+        this.commonStorage.updateLastMessage(Date.now(), await getHash(transfer));
+        this.connection.sendMessage(transfer);
     }
 
     addEventListener(
@@ -122,5 +89,56 @@ export class ProtocolClient {
 
     private sendEvent(ev: ProtocolClientEvent) {
         this.listeners.forEach((cb) => cb(ev));
+    }
+
+    private async handleMessage(buffer: ArrayBuffer, timestamp: number) {
+        const reader = new BufferReader(buffer);
+
+        const cipher = reader.readBytes();
+
+        const data = await this.keysIndex.tryToDecrypt(cipher);
+        if (!data) return;
+
+        if (reader.hasNext()) {
+            const signature = reader.readBytes();
+
+            if (
+                !(await this.signsIndex.verifyForKey(
+                    data.keyID,
+                    cipher,
+                    signature,
+                ))
+            ) {
+                this.sendEvent({
+                    type: 'signature-mismatch',
+                    cipher,
+                    data: data.data,
+                    keyID: data.keyID,
+                    signature,
+                    timestamp,
+                });
+                return;
+            }
+        } else if (this.signsIndex.hasSigningKey(data.keyID)) {
+            this.sendEvent({
+                type: 'signature-mismatch',
+                cipher,
+                data: data.data,
+                keyID: data.keyID,
+                timestamp,
+            });
+
+            return;
+        }
+
+        const message = await deserializeMessage(data.data);
+
+        if (!message) return;
+        
+        this.sendEvent({
+            keyID: data.keyID,
+            timestamp,
+            ...message,
+        });
     }
 }

@@ -30,8 +30,8 @@ const meta: Meta = {
     },
     decorators: [
         (Story) => (
-            <div style={{ width: '100vw', height: '100vh' }}>
-                <Story />
+            <div>
+                <Story style={{ width: '100vw', height: '100vh' }} />
             </div>
         ),
     ],

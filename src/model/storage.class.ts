@@ -12,6 +12,7 @@ import { ConnectionsManager } from '@/src/helpers/storage/connections-manager/co
 import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manager/published-keys-manager.class';
 import { Subscription, joinSubs } from '@/src/helpers/types';
 import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
+import { CommonStorage } from '../helpers/storage/common-storage.class';
 
 export type StorageState =
     | { type: 'IDLE' }
@@ -21,6 +22,7 @@ export type StorageState =
           chats: ChatStorage;
           connections: ConnectionsManager;
           published: PublishedKeysManager;
+          common: CommonStorage;
       };
 
 export type StorageEnv = {
@@ -58,6 +60,7 @@ export class Storage {
         let chats: ChatStorage;
         let connections: ConnectionsManager;
         let published: PublishedKeysManager;
+        let common: CommonStorage;
 
         if (await this.env.hasData()) {
             const cipher = await this.env.load();
@@ -69,8 +72,9 @@ export class Storage {
             const chatsData = reader.readBytes();
             const connectionsData = reader.readBytes();
             const publishedData = reader.readBytes();
+            const commonData = reader.readBytes();
 
-            const [ch, con, pubs] = await Promise.all([
+            const [ch, con, pubs, com] = await Promise.all([
                 this.gzip
                     .decompress(chatsData)
                     .then(
@@ -81,15 +85,18 @@ export class Storage {
                     ),
                 ConnectionsManager.import(connectionsData),
                 PublishedKeysManager.import(publishedData, this.keysIndex),
+                CommonStorage.import(commonData)
             ]);
 
             chats = ch;
             connections = con;
             published = pubs;
+            common = com;
         } else {
-            (chats = new ChatStorage()),
-                (connections = new ConnectionsManager()),
-                (published = new PublishedKeysManager(this.keysIndex));
+            chats = new ChatStorage();
+            connections = new ConnectionsManager();
+            published = new PublishedKeysManager(this.keysIndex);
+            common = new CommonStorage();
         }
 
         for (const { id, privateKey } of published.getAll()) {
@@ -121,6 +128,7 @@ export class Storage {
             ),
             connections: await connections.export(),
             published: await published.export(),
+            common: await common.export()
         };
 
         const save = async () => {
@@ -129,6 +137,7 @@ export class Storage {
             builder.appendBuffer(dataToStore.chats);
             builder.appendBuffer(dataToStore.connections);
             builder.appendBuffer(dataToStore.published);
+            builder.appendBuffer(dataToStore.common);
 
             const cipher = await aesKey.encrypt(builder.getBuffer());
 
@@ -150,6 +159,10 @@ export class Storage {
                 dataToStore.published = await published.export();
                 save();
             }),
+            common.subscribe(async () => {
+                dataToStore.common = await common.export();
+                save();
+            }),
         );
 
         await save();
@@ -159,6 +172,7 @@ export class Storage {
             chats,
             connections,
             published,
+            common
         });
 
         return {
@@ -166,6 +180,7 @@ export class Storage {
             chats,
             connections,
             published,
+            common
         };
     }
 

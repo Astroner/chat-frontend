@@ -16,6 +16,7 @@ import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { HMACKey } from '../../crypto/hmac/hmac-key.class';
 import { base64ToArrayBuffer } from '../../arraybuffer-utils';
 import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
+import { CommonStorage } from '../../storage/common-storage.class';
 
 const meta: Meta = {
     title: 'Network/Protocol Client',
@@ -35,6 +36,8 @@ export const Default: StoryFn = () => {
             },
         },
     );
+    
+    const commons = useMemo(() => new CommonStorage(), []);
 
     const [storedKeys, setStoredKeys] = useState<string[]>([]);
     const keysIndex = useMemo(() => new KeysIndex(), []);
@@ -87,8 +90,8 @@ export const Default: StoryFn = () => {
     const client = useMemo(() => {
         if (!connection) return null;
 
-        return new ProtocolClient(connection, keysIndex, signsIndex);
-    }, [connection, keysIndex, signsIndex]);
+        return new ProtocolClient(connection, keysIndex, signsIndex, commons);
+    }, [connection, keysIndex, signsIndex, commons]);
 
     const { controller, submit } = useController({
         fields: {

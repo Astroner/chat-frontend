@@ -8,6 +8,7 @@ type OperationTemplate<T, D> = {
 type Operation =
     | OperationTemplate<'append-byte', number>
     | OperationTemplate<'append-uint16', number>
+    | OperationTemplate<'append-uint64', number>
     | OperationTemplate<'append-string', { src: string; skipLength: boolean }>
     | OperationTemplate<
           'append-buffer',
@@ -28,6 +29,13 @@ export class BufferBuilder {
     appendUint16(num: number): BufferBuilder {
         this.operations.push({ type: 'append-uint16', data: num });
         this.bufferSize += 2;
+
+        return this;
+    }
+
+    appendUint64(num: number): BufferBuilder {
+        this.operations.push({ type: 'append-uint64', data: num });
+        this.bufferSize += 8;
 
         return this;
     }
@@ -70,6 +78,15 @@ export class BufferBuilder {
                 case 'append-uint16': {
                     this.writeUint16(bytes, cursor, operation.data);
                     cursor += 2;
+
+                    break;
+                }
+
+                case 'append-uint64': {
+                    const data = BigUint64Array.from([BigInt(operation.data)]);
+                    bytes.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), cursor);
+
+                    cursor += 8;
 
                     break;
                 }

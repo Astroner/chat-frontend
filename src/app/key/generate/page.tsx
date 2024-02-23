@@ -13,7 +13,7 @@ import { useStorage } from '@/src/model/hooks';
 import { Button } from '@/src/components/button/button.component';
 import { FormInput } from '@/src/components/form/form-input.component';
 
-import { DotsLoader } from '../../components/dots-loader/dots-loader.component';
+import { DotsLoader } from '../../../components/dots-loader/dots-loader.component';
 
 import cn from './page.module.scss';
 import { ButtonLink } from '@/src/components/button-link/button-link.component';

@@ -6,6 +6,7 @@ import {
     stringToArrayBuffer,
 } from '../../arraybuffer-utils';
 import { SigningKey } from '../../crypto/crypto.types';
+import { BufferReader } from '../../buffer-read-write/buffer-reader.class';
 
 export class HTTPClient {
     private axios: AxiosT;
@@ -73,5 +74,31 @@ export class HTTPClient {
         await this.axios.delete('/contacts/delete', {
             data: formData,
         });
+    }
+
+    async getMessages(from?: number, to?: number) {
+        const { data } = await this.axios.get<ArrayBuffer>('/messages/all', {
+            params: {
+                from,
+                to
+            },
+            responseType: 'arraybuffer'
+        })
+
+        const reader = new BufferReader(data);
+
+        const messagesNumber = reader.readUint16();
+
+        const messages = new Array(messagesNumber).fill(null).map(() => {
+            const timestamp = reader.readUint64();
+            const data = reader.readBytes();
+
+            return {
+                timestamp,
+                data
+            }
+        })
+
+        return messages;
     }
 }

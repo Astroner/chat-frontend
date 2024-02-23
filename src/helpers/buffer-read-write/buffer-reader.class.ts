@@ -30,6 +30,19 @@ export class BufferReader {
         return result;
     }
 
+    readUint64() {
+        const arr = new BigUint64Array(
+            this.buffer.slice(this.cursor, this.cursor + 8),
+        );
+        const result = arr.at(0);
+
+        if (typeof result === 'undefined') throw new Error('Out of bounds');
+
+        this.cursor += 8;
+
+        return result;
+    }
+
     readString(length?: number) {
         const dataLength = length ?? this.readUint16();
         const arr = new Uint8Array(this.buffer, this.cursor, dataLength);

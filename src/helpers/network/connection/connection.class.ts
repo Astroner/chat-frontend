@@ -6,7 +6,9 @@ export type ConnectionDataTemplate<T extends string, Data> = {
     data: Data;
 };
 
-export type ConnectionData = ConnectionDataTemplate<'blob', Blob>;
+export type ConnectionData = 
+    | ConnectionDataTemplate<'arrayBuffer', ArrayBuffer>
+    | ConnectionDataTemplate<'string', string>;
 
 export type ConnectionEvent =
     | EventTemplate<'CONNECTED'>
@@ -28,6 +30,7 @@ export enum CONNECTION_CLOSE_CODE {
 const connectWebSocket = (address: string) =>
     new Promise<WebSocket>((resolve, reject) => {
         const ws = new WebSocket(address);
+        ws.binaryType = "arraybuffer";
 
         const closeHandler = (ev: CloseEvent) => reject(ev.code);
         const errorHandler = () => reject(CONNECTION_CLOSE_CODE.NO_STATUS);
@@ -35,7 +38,7 @@ const connectWebSocket = (address: string) =>
         ws.addEventListener('close', closeHandler);
         ws.addEventListener('error', errorHandler);
 
-        ws.addEventListener('open', () => {
+        ws.addEventListener('open', (e) => {
             ws.removeEventListener('close', closeHandler);
             ws.removeEventListener('error', errorHandler);
 
@@ -46,6 +49,7 @@ const connectWebSocket = (address: string) =>
 export class Connection {
     static MAX_RECONNECT_ATTEMPTS = 5;
     static RECONNECT_TIMEOUT_MS = 1000 * 30; // 30s
+    static TIMESTAMP_ORIGIN = Math.round(performance.timeOrigin)
 
     private listeners = new Set<ConnectionEventHandler>();
 
@@ -115,11 +119,16 @@ export class Connection {
 
         this.socket.addEventListener('message', (message) => {
             let data: ConnectionData;
-            if (message.data instanceof Blob) {
+            if (message.data instanceof ArrayBuffer) {
                 data = {
-                    type: 'blob',
+                    type: 'arrayBuffer',
                     data: message.data,
                 };
+            } else if(typeof message.data === "string"){
+                data = {
+                    type: 'string',
+                    data: message.data
+                }
             } else {
                 return;
             }
@@ -127,7 +136,7 @@ export class Connection {
             this.sendEvent({
                 type: 'MESSAGE',
                 data,
-                timestamp: message.timeStamp,
+                timestamp: Connection.TIMESTAMP_ORIGIN + Math.round(message.timeStamp),
             });
         });
 

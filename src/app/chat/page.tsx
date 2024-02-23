@@ -4,11 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useNetwork, useStorage } from '@/src/model/hooks';
+import { HomeLink } from '@/src/components/home-link.component';
+import { DotsLoader } from '@/src/components/dots-loader/dots-loader.component';
+
+import { Messages } from './components/messages/messages.component';
+import { ChatInput } from './components/chat-input/chat-input.component';
 
 import cn from './page.module.scss';
-import { ButtonLink } from '@/src/components/button-link/button-link.component';
-import { HomeLink } from '@/src/components/home-link.component';
-import { Chat } from '../components/chat/chat.component';
+
+const dotsLoaderStyle = {
+    flexGrow: 1
+};
 
 export default function ChatPage() {
     const params = useSearchParams();
@@ -50,6 +56,17 @@ export default function ChatPage() {
     );
 
     useEffect(() => {
+        // setChatInfo({
+        //     id: "ASDASD",
+        //     connectionID: "ASDASD",
+        //     messages: new Array(200).fill(null).map((_) => ({
+        //         origin: "SERVER",
+        //         text: "ASDASD"
+        //     })).concat([{ origin: "CLIENT", text: "ASDAasdhjgd jasdl;kj agshdjk kal;sdj hjakhlsdlk jjajshdkh kla;sjdhj ahklsdk lajhsdghk asd SD" }]),
+        //     state: "PENDING",
+        //     title: "Memes"
+        // })
+
         if (storage.type !== 'READY' || !chatID) return;
 
         const sub = storage.chats.subscribe(() =>
@@ -65,17 +82,29 @@ export default function ChatPage() {
 
     return (
         <main className={cn.root}>
-            <HomeLink />
-            <h1>{chatInfo.title}</h1>
-            {chatInfo.state === 'PENDING' && 'Loading...'}
+            <div className={cn.header}>
+                <HomeLink />
+                <h1>{chatInfo.title}</h1>
+            </div>
+            {chatInfo.state === 'PENDING' && <DotsLoader
+                style={dotsLoaderStyle}
+                dotsNumber='huge'
+            />}
             {chatInfo.state === 'ACTIVE' && (
-                <Chat
-                    messages={chatInfo.messages.map((item) => ({
-                        text: item.text,
-                        origin: item.origin,
-                    }))}
-                    onSubmit={sendMessage}
-                />
+                <div className={cn.container}>
+                    <Messages 
+                        className={cn.messages}
+                        messages={chatInfo.messages.map((item) => ({
+                            text: item.text,
+                            origin: item.origin,
+                        }))}
+                    />
+                    <div className={cn.input}>
+                        <ChatInput
+                            onSubmit={sendMessage}
+                        />
+                    </div>
+                </div>
             )}
         </main>
     );
