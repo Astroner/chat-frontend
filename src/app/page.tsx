@@ -39,7 +39,11 @@ export default function Home() {
             isPanelOpen &&
             network.getState().type === 'IDLE'
         )
-            network.init(storageState.connections, storageState.published, storageState.common);
+            network.init(
+                storageState.connections,
+                storageState.published,
+                storageState.common,
+            );
     }, [isPanelOpen, storage, network]);
 
     return (

@@ -23,12 +23,12 @@ export const Messages: FC<MessagesProps> = memo((props) => {
     const rootClass = useClass(props.className, cn.root);
 
     useEffect(() => {
-        if(!containerRef.current) return;
+        if (!containerRef.current) return;
 
         containerRef.current.scrollTo({
-            top: containerRef.current.scrollHeight
+            top: containerRef.current.scrollHeight,
         });
-    }, [])
+    }, []);
 
     return (
         <div style={props.style} className={rootClass}>

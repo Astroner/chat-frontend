@@ -85,7 +85,7 @@ export class Storage {
                     ),
                 ConnectionsManager.import(connectionsData),
                 PublishedKeysManager.import(publishedData, this.keysIndex),
-                CommonStorage.import(commonData)
+                CommonStorage.import(commonData),
             ]);
 
             chats = ch;
@@ -128,7 +128,7 @@ export class Storage {
             ),
             connections: await connections.export(),
             published: await published.export(),
-            common: await common.export()
+            common: await common.export(),
         };
 
         const save = async () => {
@@ -172,7 +172,7 @@ export class Storage {
             chats,
             connections,
             published,
-            common
+            common,
         });
 
         return {
@@ -180,7 +180,7 @@ export class Storage {
             chats,
             connections,
             published,
-            common
+            common,
         };
     }
 

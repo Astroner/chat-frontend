@@ -80,10 +80,10 @@ export class HTTPClient {
         const { data } = await this.axios.get<ArrayBuffer>('/messages/all', {
             params: {
                 from,
-                to
+                to,
             },
-            responseType: 'arraybuffer'
-        })
+            responseType: 'arraybuffer',
+        });
 
         const reader = new BufferReader(data);
 
@@ -95,9 +95,9 @@ export class HTTPClient {
 
             return {
                 timestamp,
-                data
-            }
-        })
+                data,
+            };
+        });
 
         return messages;
     }

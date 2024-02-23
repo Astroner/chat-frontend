@@ -11,7 +11,7 @@ import { CommonStorage } from '../../storage/common-storage.class';
 import { getHash } from '../../crypto/hash/get-hash';
 
 export type ProtocolClientEvent =
-    | (ProtocolMessage & { keyID: string, timestamp: number })
+    | (ProtocolMessage & { keyID: string; timestamp: number })
     | {
           type: 'signature-mismatch';
           keyID: string;
@@ -30,25 +30,30 @@ export class ProtocolClient {
         private connection: Connection,
         private keysIndex: KeysIndex,
         private signsIndex: SignsIndex,
-        private commonStorage: CommonStorage
+        private commonStorage: CommonStorage,
     ) {}
 
     init() {
         this.connectionSub = this.connection.addEventListener(async (ev) => {
             if (ev.type !== 'MESSAGE') return;
 
-            if(ev.data.type !== "arrayBuffer") return;
+            if (ev.data.type !== 'arrayBuffer') return;
 
             this.handleMessage(ev.data.data, ev.timestamp);
-            this.commonStorage.updateLastMessage(ev.timestamp, await getHash(ev.data.data))
+            this.commonStorage.updateLastMessage(
+                ev.timestamp,
+                await getHash(ev.data.data),
+            );
         });
     }
 
     async dispatchMessage(timestamp: number, data: ArrayBuffer) {
         await Promise.all([
             this.handleMessage(data, timestamp),
-            getHash(data).then(hash => this.commonStorage.updateLastMessage(timestamp, hash))
-        ])
+            getHash(data).then((hash) =>
+                this.commonStorage.updateLastMessage(timestamp, hash),
+            ),
+        ]);
     }
 
     destroy() {
@@ -73,7 +78,10 @@ export class ProtocolClient {
 
         const transfer = payload.getBuffer();
 
-        this.commonStorage.updateLastMessage(Date.now(), await getHash(transfer));
+        this.commonStorage.updateLastMessage(
+            Date.now(),
+            await getHash(transfer),
+        );
         this.connection.sendMessage(transfer);
     }
 
@@ -134,7 +142,7 @@ export class ProtocolClient {
         const message = await deserializeMessage(data.data);
 
         if (!message) return;
-        
+
         this.sendEvent({
             keyID: data.keyID,
             timestamp,

@@ -1,12 +1,12 @@
-import { BufferBuilder } from "../buffer-read-write/buffer-builder.class";
-import { BufferReader } from "../buffer-read-write/buffer-reader.class";
+import { BufferBuilder } from '../buffer-read-write/buffer-builder.class';
+import { BufferReader } from '../buffer-read-write/buffer-reader.class';
 
 export type CommonStorageData = {
     lastMessage?: {
-        timestamp: number,
-        hash: ArrayBuffer
-    }
-}
+        timestamp: number;
+        hash: ArrayBuffer;
+    };
+};
 
 export class CommonStorage {
     static import(buffer: ArrayBuffer) {
@@ -14,31 +14,33 @@ export class CommonStorage {
 
         const hasLastMessage = reader.readByte();
         let lastMessage: CommonStorageData['lastMessage'];
-        if(hasLastMessage) {
+        if (hasLastMessage) {
             lastMessage = {
                 timestamp: Number(reader.readUint64()),
-                hash: reader.readBytes(32)
-            }
+                hash: reader.readBytes(32),
+            };
         }
 
         return new CommonStorage({
-            lastMessage
-        })
+            lastMessage,
+        });
     }
 
     private listeners = new Set<VoidFunction>();
 
-    constructor(
-        private data: CommonStorageData = {}
-    ) {}
+    constructor(private data: CommonStorageData = {}) {}
 
     updateLastMessage(timestamp: number, hash: ArrayBuffer) {
-        if(this.data.lastMessage && this.data.lastMessage.timestamp >= timestamp) return;
+        if (
+            this.data.lastMessage &&
+            this.data.lastMessage.timestamp >= timestamp
+        )
+            return;
 
         this.data.lastMessage = {
             hash,
-            timestamp
-        }
+            timestamp,
+        };
 
         this.sendUpdate();
     }
@@ -51,8 +53,8 @@ export class CommonStorage {
 
     getData(): Readonly<CommonStorageData> {
         return this.data;
-    } 
-    
+    }
+
     subscribe(cb: VoidFunction) {
         this.listeners.add(cb);
 
@@ -60,7 +62,6 @@ export class CommonStorage {
             unsubscribe: () => this.listeners.delete(cb),
         };
     }
-
 
     /**
      * Format:
@@ -74,9 +75,9 @@ export class CommonStorage {
         const builder = new BufferBuilder();
 
         builder.appendByte(this.data.lastMessage ? 1 : 0);
-        if(this.data.lastMessage) {
+        if (this.data.lastMessage) {
             builder.appendUint64(this.data.lastMessage.timestamp);
-            builder.appendBuffer(this.data.lastMessage.hash, "SKIP_LENGTH");
+            builder.appendBuffer(this.data.lastMessage.hash, 'SKIP_LENGTH');
         }
 
         return builder.getBuffer();

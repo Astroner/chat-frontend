@@ -71,7 +71,10 @@ export const Button: FC<ButtonProps> = memo(
                         className={cn.icon}
                         name={icon}
                         size={size}
-                        color={iconColor ?? (color === 'orange' ? 'black' : 'light-purple')}
+                        color={
+                            iconColor ??
+                            (color === 'orange' ? 'black' : 'light-purple')
+                        }
                     />
                 )}
                 {children}

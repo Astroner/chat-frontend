@@ -36,7 +36,7 @@ export const Default: StoryFn = () => {
             },
         },
     );
-    
+
     const commons = useMemo(() => new CommonStorage(), []);
 
     const [storedKeys, setStoredKeys] = useState<string[]>([]);

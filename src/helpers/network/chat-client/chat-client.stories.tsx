@@ -253,7 +253,12 @@ export const Default: StoryFn = () => {
             setIsLoading(true);
             await connection.connect();
 
-            protocol = new ProtocolClient(connection, keysIndex, signsIndex, commons);
+            protocol = new ProtocolClient(
+                connection,
+                keysIndex,
+                signsIndex,
+                commons,
+            );
             protocolSub = protocol.addEventListener((ev) =>
                 console.log('PROTOCOL', ev),
             );

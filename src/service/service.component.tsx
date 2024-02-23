@@ -1,19 +1,16 @@
-import { FC, memo, useEffect } from "react";
-import { useNetwork, useStorage } from "../model/hooks";
-import { createPortal } from "react-dom";
-import { getHash } from "../helpers/crypto/hash/get-hash";
+import { FC, memo, useEffect } from 'react';
+import { useNetwork, useStorage } from '../model/hooks';
+import { createPortal } from 'react-dom';
+import { getHash } from '../helpers/crypto/hash/get-hash';
 
+export type ServiceProps = {};
 
-export type ServiceProps = {
-
-}
-
-export const Service: FC<ServiceProps> = memo(props => {
+export const Service: FC<ServiceProps> = memo((props) => {
     const [network] = useNetwork();
     const [storage] = useStorage();
 
     useEffect(() => {
-        if(network.type !== "READY" || storage.type !== "READY") return;
+        if (network.type !== 'READY' || storage.type !== 'READY') return;
 
         const sub = network.chat.addEventListener(async (ev) => {
             switch (ev.type) {
@@ -62,15 +59,12 @@ export const Service: FC<ServiceProps> = memo(props => {
                     break;
                 }
             }
-        })
-        
+        });
+
         return () => {
             sub.unsubscribe();
-        }
+        };
+    }, [network, storage]);
 
-    }, [network, storage])
-
-    return (
-        null
-    )
-})
+    return null;
+});

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { useNetwork, useStorage } from '@/src/model/hooks';
 
-import cn from "./chats.module.scss";
+import cn from './chats.module.scss';
 
 export type ChatsProps = {};
 
@@ -20,7 +20,7 @@ export const Chats: FC<ChatsProps> = memo((props) => {
         if (storage.type !== 'READY') return;
 
         setChats(storage.chats.getAll());
-        
+
         const sub = storage.chats.subscribe(() =>
             setChats(storage.chats.getAll()),
         );
@@ -33,10 +33,14 @@ export const Chats: FC<ChatsProps> = memo((props) => {
     if (!chats) return;
     return (
         <div className={cn.root}>
-            <h1>{chats.length > 0 ? "Chats" : "No chats created"}</h1>
+            <h1>{chats.length > 0 ? 'Chats' : 'No chats created'}</h1>
             <div className={cn.list}>
                 {chats.map((chat) => (
-                    <Link href={`/chat?id=${chat.id}`} key={chat.id} className={cn.chat}>
+                    <Link
+                        href={`/chat?id=${chat.id}`}
+                        key={chat.id}
+                        className={cn.chat}
+                    >
                         {chat.title}
                     </Link>
                 ))}

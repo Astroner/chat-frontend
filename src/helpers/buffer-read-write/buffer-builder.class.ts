@@ -84,7 +84,14 @@ export class BufferBuilder {
 
                 case 'append-uint64': {
                     const data = BigUint64Array.from([BigInt(operation.data)]);
-                    bytes.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), cursor);
+                    bytes.set(
+                        new Uint8Array(
+                            data.buffer,
+                            data.byteOffset,
+                            data.byteLength,
+                        ),
+                        cursor,
+                    );
 
                     cursor += 8;
 

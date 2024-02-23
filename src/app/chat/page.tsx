@@ -13,7 +13,7 @@ import { ChatInput } from './components/chat-input/chat-input.component';
 import cn from './page.module.scss';
 
 const dotsLoaderStyle = {
-    flexGrow: 1
+    flexGrow: 1,
 };
 
 export default function ChatPage() {
@@ -86,13 +86,12 @@ export default function ChatPage() {
                 <HomeLink />
                 <h1>{chatInfo.title}</h1>
             </div>
-            {chatInfo.state === 'PENDING' && <DotsLoader
-                style={dotsLoaderStyle}
-                dotsNumber='huge'
-            />}
+            {chatInfo.state === 'PENDING' && (
+                <DotsLoader style={dotsLoaderStyle} dotsNumber="huge" />
+            )}
             {chatInfo.state === 'ACTIVE' && (
                 <div className={cn.container}>
-                    <Messages 
+                    <Messages
                         className={cn.messages}
                         messages={chatInfo.messages.map((item) => ({
                             text: item.text,
@@ -100,9 +99,7 @@ export default function ChatPage() {
                         }))}
                     />
                     <div className={cn.input}>
-                        <ChatInput
-                            onSubmit={sendMessage}
-                        />
+                        <ChatInput onSubmit={sendMessage} />
                     </div>
                 </div>
             )}

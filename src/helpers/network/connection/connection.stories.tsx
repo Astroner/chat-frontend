@@ -60,8 +60,8 @@ export const SimpleConnection = () => {
                             message = `[ARRAY_BUFFER] ${arrayBufferToBase64(await ev.data.data)}`;
                             break;
 
-                        case "string":
-                            message = `[STRING] ${ev.data.data}`
+                        case 'string':
+                            message = `[STRING] ${ev.data.data}`;
                     }
 
                     setMessages((p) =>

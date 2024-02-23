@@ -50,7 +50,7 @@ export default function Invite() {
                 const { chat: Chat } = await network.init(
                     storageState.connections,
                     storageState.published,
-                    storageState.common
+                    storageState.common,
                 );
                 chat = Chat;
             } else if (networkState.type === 'READY') {

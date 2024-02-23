@@ -42,6 +42,6 @@ export const Default: Story = {
         color: 'purple',
         size: 'big',
         icon: undefined,
-        iconColor: undefined
+        iconColor: undefined,
     },
 };

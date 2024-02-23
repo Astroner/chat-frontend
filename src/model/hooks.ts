@@ -40,19 +40,18 @@ export const useNetwork = (): [NetworkState, Network] => {
     return [state, network];
 };
 
-
 export const useStorageEnv = (): [SmartStorageType, SmartStorage] => {
     const storage = useContext(SmartStorageContext);
 
     const [type, setType] = useState(() => storage.getType());
 
     useEffect(() => {
-        const sub = storage.subscribe(() => setType(storage.getType()))
+        const sub = storage.subscribe(() => setType(storage.getType()));
 
         return () => {
             sub.unsubscribe();
-        }
-    }, [storage])
+        };
+    }, [storage]);
 
     return [type, storage];
 };

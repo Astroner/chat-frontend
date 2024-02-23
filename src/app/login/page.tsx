@@ -39,9 +39,7 @@ export default function Login() {
     return (
         <main className={cn.root}>
             <div className={cn.container}>
-                <form
-                    onSubmit={(e) => (e.preventDefault(), submit())}
-                >
+                <form onSubmit={(e) => (e.preventDefault(), submit())}>
                     <h1>{!loading && hasEntry ? 'Login' : 'Sign up'}</h1>
                     <Input
                         password

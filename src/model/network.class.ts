@@ -61,24 +61,27 @@ export class Network {
         );
 
         chatClient.init();
-            
+
         const http = new HTTPClient(this.httpUrl);
 
         const lastMessage = common.getData().lastMessage;
 
-        if(lastMessage) {
-            const messages = await http.getMessages(lastMessage.timestamp - 100, start);
+        if (lastMessage) {
+            const messages = await http.getMessages(
+                lastMessage.timestamp - 100,
+                start,
+            );
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
             let lastMessageIndex: null | number = null;
-            for(let i = 0; i < messages.length; i++) {
-                const hash = await getHash(messages[i].data)
+            for (let i = 0; i < messages.length; i++) {
+                const hash = await getHash(messages[i].data);
 
                 const messageCodes = new BigUint64Array(hash);
 
-                for(let i = 0; i < lastMessageCodes.length; i++) {
-                    if(lastMessageCodes[i] !== messageCodes[i]) break;
+                for (let i = 0; i < lastMessageCodes.length; i++) {
+                    if (lastMessageCodes[i] !== messageCodes[i]) break;
                 }
 
                 lastMessageIndex = i;
@@ -86,12 +89,16 @@ export class Network {
                 break;
             }
 
-            if(lastMessageIndex === null) throw new Error("Could not find starting message");
+            if (lastMessageIndex === null)
+                throw new Error('Could not find starting message');
 
             const newMessages = messages.slice(lastMessageIndex + 1);
 
-            for(const message of newMessages) {
-                protocol.dispatchMessage(Number(message.timestamp), message.data)
+            for (const message of newMessages) {
+                protocol.dispatchMessage(
+                    Number(message.timestamp),
+                    message.data,
+                );
             }
         }
 

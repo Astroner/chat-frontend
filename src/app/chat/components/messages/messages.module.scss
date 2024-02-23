@@ -19,14 +19,22 @@
         composes: blur;
         top: 0;
 
-        background: linear-gradient(180deg, var(--dark-purple) 0%, rgba(0, 0, 0, 0) 100%);
+        background: linear-gradient(
+            180deg,
+            var(--dark-purple) 0%,
+            rgba(0, 0, 0, 0) 100%
+        );
     }
 
     &--bottom {
         composes: blur;
         bottom: 0;
 
-        background: linear-gradient(0, var(--dark-purple) 0%, rgba(0, 0, 0, 0) 100%);
+        background: linear-gradient(
+            0,
+            var(--dark-purple) 0%,
+            rgba(0, 0, 0, 0) 100%
+        );
     }
 }
 

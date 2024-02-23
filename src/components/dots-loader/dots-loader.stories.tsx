@@ -9,16 +9,16 @@ const meta: Meta<typeof DotsLoader> = {
         dotsColor: {
             type: {
                 name: 'enum',
-                value: ['white', 'orange']
-            }
+                value: ['white', 'orange'],
+            },
         },
         dotsNumber: {
             type: {
                 name: 'enum',
-                value: ['normal', 'huge']
-            }
-        }
-    }
+                value: ['normal', 'huge'],
+            },
+        },
+    },
 };
 
 export default meta;

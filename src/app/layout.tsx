@@ -8,7 +8,11 @@ import 'normalize.css';
 import { Storage } from '../model/storage.class';
 import { KeysIndex } from '../helpers/crypto/keys-index/keys-index.class';
 import { GZip } from '../helpers/compression/gzip.class';
-import { StorageContext, NetworkContext, SmartStorageContext } from '../model/context';
+import {
+    StorageContext,
+    NetworkContext,
+    SmartStorageContext,
+} from '../model/context';
 import { Network } from '../model/network.class';
 import { env } from '../env';
 
@@ -28,15 +32,10 @@ export default function RootLayout({
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
-    const storageEnv = useMemo(() => new SmartStorage("LOCAL_STORAGE"), []);
+    const storageEnv = useMemo(() => new SmartStorage('LOCAL_STORAGE'), []);
 
     const storage = useMemo(() => {
-        return new Storage(
-            storageEnv,
-            keysIndex,
-            signsIndex,
-            gzip,
-        );
+        return new Storage(storageEnv, keysIndex, signsIndex, gzip);
     }, [gzip, keysIndex, signsIndex, storageEnv]);
 
     const network = useMemo(

@@ -6,7 +6,7 @@ export type ConnectionDataTemplate<T extends string, Data> = {
     data: Data;
 };
 
-export type ConnectionData = 
+export type ConnectionData =
     | ConnectionDataTemplate<'arrayBuffer', ArrayBuffer>
     | ConnectionDataTemplate<'string', string>;
 
@@ -30,7 +30,7 @@ export enum CONNECTION_CLOSE_CODE {
 const connectWebSocket = (address: string) =>
     new Promise<WebSocket>((resolve, reject) => {
         const ws = new WebSocket(address);
-        ws.binaryType = "arraybuffer";
+        ws.binaryType = 'arraybuffer';
 
         const closeHandler = (ev: CloseEvent) => reject(ev.code);
         const errorHandler = () => reject(CONNECTION_CLOSE_CODE.NO_STATUS);
@@ -49,7 +49,7 @@ const connectWebSocket = (address: string) =>
 export class Connection {
     static MAX_RECONNECT_ATTEMPTS = 5;
     static RECONNECT_TIMEOUT_MS = 1000 * 30; // 30s
-    static TIMESTAMP_ORIGIN = Math.round(performance.timeOrigin)
+    static TIMESTAMP_ORIGIN = Math.round(performance.timeOrigin);
 
     private listeners = new Set<ConnectionEventHandler>();
 
@@ -124,11 +124,11 @@ export class Connection {
                     type: 'arrayBuffer',
                     data: message.data,
                 };
-            } else if(typeof message.data === "string"){
+            } else if (typeof message.data === 'string') {
                 data = {
                     type: 'string',
-                    data: message.data
-                }
+                    data: message.data,
+                };
             } else {
                 return;
             }
@@ -136,7 +136,8 @@ export class Connection {
             this.sendEvent({
                 type: 'MESSAGE',
                 data,
-                timestamp: Connection.TIMESTAMP_ORIGIN + Math.round(message.timeStamp),
+                timestamp:
+                    Connection.TIMESTAMP_ORIGIN + Math.round(message.timeStamp),
             });
         });
 

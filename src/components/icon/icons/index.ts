@@ -11,7 +11,7 @@ export const IconsDict = {
     'no-network': NoNetworkIcon,
     'arrow-back': ArrowBackIcon,
     close: CloseIcon,
-    send: SendIcon
+    send: SendIcon,
 };
 
 export const IconsNames: IconName[] = Object.keys(IconsDict) as IconName[];
