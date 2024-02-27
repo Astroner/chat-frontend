@@ -35,7 +35,7 @@ export default function RootLayout({
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
     const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
-    const storageEnv = useMemo(() => new SmartStorage('EXTERNAL'), []);
+    const storageEnv = useMemo(() => new SmartStorage('LOCAL_STORAGE'), []);
 
     const storage = useMemo(() => {
         return new Storage(storageEnv, keysIndex, signsIndex, gzip);
