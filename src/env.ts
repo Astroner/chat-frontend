@@ -3,7 +3,7 @@ const createEnv = () => {
         process.env.NEXT_PUBLIC_API_ADDRESS ?? 'http://localhost:3030',
     );
 
-    const WS_ADDRESS = `ws://${serverURL.host}/connect`;
+    const WS_ADDRESS = `wss://${serverURL.host}/connect`;
 
     return {
         API_ADDRESS: serverURL.toString(),

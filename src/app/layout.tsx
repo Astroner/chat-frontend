@@ -66,6 +66,8 @@ export default function RootLayout({
     }, [serviceWorker]);
 
     useEffect(() => {
+        if (env.NODE_ENV === 'development') return;
+
         storage.init('memes');
         // .then(({ connections, published }) => {
         //     if(!mounted) return;
@@ -77,20 +79,6 @@ export default function RootLayout({
             network.destroy();
         };
     }, [network, storage, router]);
-
-    // useEffect(() => {
-    //     (async () => {
-    //         await Notification.requestPermission();
-    //         await navigator.serviceWorker.register("/service-worker.js")
-    //         const registration = await navigator.serviceWorker.ready;
-    //         const sub = await registration.pushManager.subscribe({
-    //             userVisibleOnly: true,
-    //             applicationServerKey: env.PUSH_PUBLIC_KEY
-    //         })
-    //         console.log(sub.toJSON());
-    //     })()
-
-    // }, [])
 
     return (
         <StorageContext.Provider value={storage}>
