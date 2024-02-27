@@ -6,15 +6,15 @@ import {
 
 export type HomeLinkProps = Omit<
     ButtonLinkProps,
-    'href' | 'color' | 'size' | 'icon'
+    'href' | 'size' | 'icon'
 >;
 
-export const HomeLink: FC<HomeLinkProps> = memo((props) => {
+export const HomeLink: FC<HomeLinkProps> = memo(({ color, ...props }) => {
     return (
         <ButtonLink
             {...props}
             href="/"
-            color="orange"
+            color={color ?? "orange"}
             icon="arrow-back"
             size="small"
         >

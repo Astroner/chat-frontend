@@ -1,15 +1,5 @@
 $heading-height: 70px;
 
-.root {
-    width: 100vw;
-    height: calc(100vh - $heading-height);
-
-    background-color: var(--dark-purple);
-
-    display: flex;
-    flex-direction: column;
-}
-
 .header {
     position: relative;
 
@@ -28,25 +18,30 @@ $heading-height: 70px;
 
         padding: 0 10px;
     }
-
 }
 
-.home {
+.back {
     position: absolute;
     left: 10px;
     top: calc(50% - 18px);
 }
 
-.settings {
-    position: absolute;
-    right: 10px;
-    top: calc(50% - 18px);
-}
+.root {
+    width: 100vw;
+    height: calc(100vh - $heading-height);
 
-.messages {
-    height: calc(100vh - $heading-height - 80px);
-}
+    background-color: var(--dark-purple);
 
-.input {
     padding: 10px;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__label {
+        color: var(--light-purple);
+        font-size: var(--text-font-size);
+    }
 }

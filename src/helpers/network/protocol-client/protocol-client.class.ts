@@ -67,14 +67,18 @@ export class ProtocolClient {
     ) {
         const payload = new BufferBuilder();
 
+        payload.appendBoolean(!!signingKey);
+
         const cipher = await encryptionKey.encrypt(
             await serializeMessage(message),
         );
-        payload.appendBuffer(cipher);
-
+        
+        
         if (signingKey) {
             payload.appendBuffer(await signingKey.createSignature(cipher));
         }
+
+        payload.appendBuffer(cipher);
 
         const transfer = payload.getBuffer();
 
@@ -102,14 +106,16 @@ export class ProtocolClient {
     private async handleMessage(buffer: ArrayBuffer, timestamp: number) {
         const reader = new BufferReader(buffer);
 
-        const cipher = reader.readBytes();
+        const hasSignature = reader.readBool();
+        
+        const signature = hasSignature ? reader.readBytes() : null;
 
+        const cipher = reader.readBytes();
+        
         const data = await this.keysIndex.tryToDecrypt(cipher);
         if (!data) return;
 
-        if (reader.hasNext()) {
-            const signature = reader.readBytes();
-
+        if (signature) {
             if (
                 !(await this.signsIndex.verifyForKey(
                     data.keyID,

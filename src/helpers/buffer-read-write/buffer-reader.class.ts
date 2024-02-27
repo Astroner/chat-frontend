@@ -17,6 +17,14 @@ export class BufferReader {
         return result;
     }
 
+    readBool() {
+        const result = this.bytes.at(this.cursor++);
+
+        if (typeof result === 'undefined') throw new Error('Out of bounds');
+
+        return !!result;
+    }
+
     readUint16() {
         const arr = new Uint16Array(
             this.buffer.slice(this.cursor, this.cursor + 2),

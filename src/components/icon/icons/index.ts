@@ -4,6 +4,7 @@ import { NoNetworkIcon } from './no-network.icon';
 import { ArrowBackIcon } from './arrow-back.icon';
 import { CloseIcon } from './close.icon';
 import { SendIcon } from './send.icon';
+import { SettingsIcon } from './settings.icon';
 
 export const IconsDict = {
     network: NetworkIcon,
@@ -12,6 +13,7 @@ export const IconsDict = {
     'arrow-back': ArrowBackIcon,
     close: CloseIcon,
     send: SendIcon,
+    settings: SettingsIcon
 };
 
 export const IconsNames: IconName[] = Object.keys(IconsDict) as IconName[];

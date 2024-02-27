@@ -9,6 +9,7 @@ type Operation =
     | OperationTemplate<'append-byte', number>
     | OperationTemplate<'append-uint16', number>
     | OperationTemplate<'append-uint64', number>
+    | OperationTemplate<'append-bool', boolean>
     | OperationTemplate<'append-string', { src: string; skipLength: boolean }>
     | OperationTemplate<
           'append-buffer',
@@ -36,6 +37,13 @@ export class BufferBuilder {
     appendUint64(num: number): BufferBuilder {
         this.operations.push({ type: 'append-uint64', data: num });
         this.bufferSize += 8;
+
+        return this;
+    }
+
+    appendBoolean(flag: boolean) {
+        this.operations.push({ type: 'append-bool', data: flag });
+        this.bufferSize += 1;
 
         return this;
     }
@@ -74,6 +82,12 @@ export class BufferBuilder {
                     bytes[cursor++] = operation.data;
 
                     break;
+
+                case 'append-bool': {
+                    bytes[cursor++] = operation.data ? 1 : 0;
+
+                    break;
+                }
 
                 case 'append-uint16': {
                     this.writeUint16(bytes, cursor, operation.data);

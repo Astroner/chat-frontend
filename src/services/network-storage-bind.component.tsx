@@ -1,13 +1,11 @@
 import { FC, memo, useEffect } from 'react';
 import { useNetwork, useStorage } from '../model/hooks';
-import { createPortal } from 'react-dom';
-import { getHash } from '../helpers/crypto/hash/get-hash';
+import { useRouter } from 'next/navigation';
 
-export type ServiceProps = {};
-
-export const Service: FC<ServiceProps> = memo((props) => {
+export const NetworkStorageBind: FC = memo(() => {
     const [network] = useNetwork();
     const [storage] = useStorage();
+    const router = useRouter();
 
     useEffect(() => {
         if (network.type !== 'READY' || storage.type !== 'READY') return;
@@ -21,7 +19,8 @@ export const Service: FC<ServiceProps> = memo((props) => {
                         )
                     ) {
                         await network.chat.acceptConnection(ev.id);
-                        storage.chats.createChat(ev.from, ev.id);
+                        const {id} = storage.chats.createChat(ev.from, ev.id);
+                        router.push(`/chat?id=${id}`);
                     } else {
                         network.chat.declineConnection(ev.id);
                     }
@@ -64,7 +63,7 @@ export const Service: FC<ServiceProps> = memo((props) => {
         return () => {
             sub.unsubscribe();
         };
-    }, [network, storage]);
+    }, [network, storage, router]);
 
     return null;
 });

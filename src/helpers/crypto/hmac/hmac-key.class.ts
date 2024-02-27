@@ -56,4 +56,8 @@ export class HMACKey implements SigningKey {
     async toRawBytes() {
         return crypto.subtle.exportKey('raw', this.key);
     }
+
+    getKey() {
+        return this.key;
+    }
 }

@@ -76,11 +76,11 @@ export class HTTPClient {
         });
     }
 
-    async getMessages(from?: number, to?: number) {
+    async getMessages(fromTimestamp?: number, toTimestamp?: number) {
         const { data } = await this.axios.get<ArrayBuffer>('/messages/all', {
             params: {
-                from,
-                to,
+                from: fromTimestamp,
+                to: toTimestamp,
             },
             responseType: 'arraybuffer',
         });
@@ -100,5 +100,15 @@ export class HTTPClient {
         });
 
         return messages;
+    }
+
+    async addPushSubscription(endpoint: string, key: string, auth: string) {
+        const { data } = await this.axios.post<{ id: string }>("/subscription", {
+            endpoint,
+            key,
+            auth
+        })
+
+        return data;
     }
 }

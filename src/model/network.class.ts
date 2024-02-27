@@ -90,7 +90,7 @@ export class Network {
             }
 
             if (lastMessageIndex === null)
-                throw new Error('Could not find starting message');
+                throw new Error('Could not find starting message'); // TODO request from wider range
 
             const newMessages = messages.slice(lastMessageIndex + 1);
 

@@ -18,8 +18,10 @@ import { env } from '../env';
 
 import './globals.scss';
 import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
-import { Service } from '../service/service.component';
+import { NetworkStorageBind } from '../services/network-storage-bind.component';
 import { SmartStorage } from '../model/smart-storage.class';
+import { ServiceWorkerService } from '../services/service-worker.service';
+import { ServiceWorkerContext } from '../services/context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,7 +34,8 @@ export default function RootLayout({
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
-    const storageEnv = useMemo(() => new SmartStorage('LOCAL_STORAGE'), []);
+    const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
+    const storageEnv = useMemo(() => new SmartStorage('EXTERNAL'), []);
 
     const storage = useMemo(() => {
         return new Storage(storageEnv, keysIndex, signsIndex, gzip);
@@ -44,15 +47,21 @@ export default function RootLayout({
         [keysIndex, signsIndex],
     );
 
-    // useEffect(() => {
-    //     if(location.pathname !== "/login") {
-    //         if(location.pathname === '/invite') {
-    //             router.push(`/login?next=${location.pathname + location.search}`);
-    //         } else {
-    //             router.push(`/login`);
-    //         }
-    //     }
-    // }, [router])
+    useEffect(() => {
+        if(env.NODE_ENV === "development") return;
+
+        if(location.pathname !== "/login") {
+            if(location.pathname === '/invite') {
+                router.push(`/login?next=${location.pathname + location.search}`);
+            } else {
+                router.push(`/login`);
+            }
+        }
+    }, [router])
+
+    useEffect(() => {
+        serviceWorker.init();
+    }, [serviceWorker])
 
     useEffect(() => {
         storage.init('memes');
@@ -67,19 +76,36 @@ export default function RootLayout({
         };
     }, [network, storage, router]);
 
+
+    // useEffect(() => {
+    //     (async () => {
+    //         await Notification.requestPermission();
+    //         await navigator.serviceWorker.register("/service-worker.js")
+    //         const registration = await navigator.serviceWorker.ready;
+    //         const sub = await registration.pushManager.subscribe({
+    //             userVisibleOnly: true,
+    //             applicationServerKey: env.PUSH_PUBLIC_KEY
+    //         })
+    //         console.log(sub.toJSON());
+    //     })()
+
+    // }, [])
+
     return (
         <StorageContext.Provider value={storage}>
             <NetworkContext.Provider value={network}>
                 <SmartStorageContext.Provider value={storageEnv}>
-                    <html lang="en">
-                        <head>
-                            <title>Chat</title>
-                        </head>
-                        <body className={inter.className}>
-                            <Service />
-                            {children}
-                        </body>
-                    </html>
+                    <ServiceWorkerContext.Provider value={serviceWorker}>
+                        <html lang="en">
+                            <head>
+                                <title>Chat</title>
+                            </head>
+                            <body className={inter.className}>
+                                <NetworkStorageBind />
+                                {children}
+                            </body>
+                        </html>
+                    </ServiceWorkerContext.Provider>
                 </SmartStorageContext.Provider>
             </NetworkContext.Provider>
         </StorageContext.Provider>
