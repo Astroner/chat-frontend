@@ -9,7 +9,7 @@ const createEnv = () => {
         API_ADDRESS: serverURL.toString(),
         WS_ADDRESS,
         NODE_ENV: process.env.NODE_ENV,
-        PUSH_PUBLIC_KEY: process.env.NEXT_PUBLIC_PUSH_PUBLIC_KEY ?? "error"
+        PUSH_PUBLIC_KEY: process.env.NEXT_PUBLIC_PUSH_PUBLIC_KEY ?? 'error',
     };
 };
 

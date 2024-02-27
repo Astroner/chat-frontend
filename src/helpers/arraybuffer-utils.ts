@@ -108,4 +108,3 @@ export const base64ToArrayBuffer = (src: string) => {
 
     return bytes.buffer;
 };
-

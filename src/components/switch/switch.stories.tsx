@@ -1,19 +1,19 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from '@storybook/react';
 
-import { Switch } from "./switch.component"
+import { Switch } from './switch.component';
 
 const meta: Meta<typeof Switch> = {
-    title: "Components/Switch",
+    title: 'Components/Switch',
     component: Switch,
     argTypes: {
         size: {
             type: {
                 name: 'enum',
-                value: ['small', 'big']
-            }
-        }
-    }
-}
+                value: ['small', 'big'],
+            },
+        },
+    },
+};
 
 export default meta;
 
@@ -23,6 +23,6 @@ export const Default: Story = {
     args: {
         value: true,
         size: 'big',
-        disabled: false
-    }
-}
+        disabled: false,
+    },
+};

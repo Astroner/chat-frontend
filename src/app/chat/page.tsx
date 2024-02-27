@@ -26,7 +26,8 @@ export default function ChatPage() {
         return params.get('id') ?? null;
     }, [params]);
 
-    const [chatInfo, chats, connections] = useChatInfo(chatID, /*{
+    const [chatInfo, chats, connections] = useChatInfo(
+        chatID /*{
         id: "ASDASD",
         connectionID: "ASDASD",
         messages: new Array(200).fill(null).map((_) => ({
@@ -35,19 +36,14 @@ export default function ChatPage() {
         })).concat([{ origin: "CLIENT", text: "ASDAasdhjgd jasdl;kj agshdjk kal;sdj hjakhlsdlk jjajshdkh kla;sjdhj ahklsdk lajhsdghk asd SD" }]),
         state: "ACTIVE",
         title: "Memes"
-    }*/);
+    }*/,
+    );
 
     const sendMessage = useCallback(
         (text: string) => {
-            if (
-                !chatInfo ||
-                network.type !== 'READY'
-            )
-                return;
+            if (!chatInfo || network.type !== 'READY') return;
 
-            const connection = connections.getConnection(
-                chatInfo.connectionID,
-            );
+            const connection = connections.getConnection(chatInfo.connectionID);
 
             if (!connection?.isEstablished()) return;
 
@@ -65,9 +61,15 @@ export default function ChatPage() {
     return (
         <>
             <header className={cn.header}>
-                <HomeLink className={cn.home} color='purple' />
+                <HomeLink className={cn.home} color="purple" />
                 <h1>{chatInfo.title}</h1>
-                <ButtonLink className={cn.settings} href={`/chat/settings/?id=${chatInfo.id}`} icon='settings' color='purple' size='small' />
+                <ButtonLink
+                    className={cn.settings}
+                    href={`/chat/settings/?id=${chatInfo.id}`}
+                    icon="settings"
+                    color="purple"
+                    size="small"
+                />
             </header>
             <main className={cn.root}>
                 {chatInfo.state === 'PENDING' && (

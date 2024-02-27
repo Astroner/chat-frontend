@@ -103,11 +103,14 @@ export class HTTPClient {
     }
 
     async addPushSubscription(endpoint: string, key: string, auth: string) {
-        const { data } = await this.axios.post<{ id: string }>("/subscription", {
-            endpoint,
-            key,
-            auth
-        })
+        const { data } = await this.axios.post<{ id: string }>(
+            '/subscription',
+            {
+                endpoint,
+                key,
+                auth,
+            },
+        );
 
         return data;
     }

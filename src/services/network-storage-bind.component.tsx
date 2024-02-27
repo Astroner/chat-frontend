@@ -19,7 +19,7 @@ export const NetworkStorageBind: FC = memo(() => {
                         )
                     ) {
                         await network.chat.acceptConnection(ev.id);
-                        const {id} = storage.chats.createChat(ev.from, ev.id);
+                        const { id } = storage.chats.createChat(ev.from, ev.id);
                         router.push(`/chat?id=${id}`);
                     } else {
                         network.chat.declineConnection(ev.id);

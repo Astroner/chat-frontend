@@ -81,7 +81,11 @@ export class RSAEncryptionKey implements EncryptionKey {
     }
 
     async decrypt(bytes: ArrayBuffer) {
-        const data = await crypto.subtle.decrypt(this.key.algorithm, this.key, bytes);
+        const data = await crypto.subtle.decrypt(
+            this.key.algorithm,
+            this.key,
+            bytes,
+        );
 
         return data;
     }

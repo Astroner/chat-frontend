@@ -5,16 +5,16 @@
 
     border: 2px solid var(--black);
 
-    transition: background .3s;
-    
-    &[aria-disabled="false"] {
+    transition: background 0.3s;
+
+    &[aria-disabled='false'] {
         cursor: pointer;
     }
 
-    &[aria-disabled="true"] {
-        opacity: .4;
+    &[aria-disabled='true'] {
+        opacity: 0.4;
     }
-    
+
     &--off {
         background: var(--light-purple);
     }
@@ -26,7 +26,6 @@
     &--small {
         height: 36px;
         width: 65px;
-
 
         .dot--off {
             left: 3px;
@@ -59,7 +58,9 @@
 
     border-radius: 50%;
 
-    transition: left .3s, background .3s;
+    transition:
+        left 0.3s,
+        background 0.3s;
 
     &--off {
         background: var(--dark-purple);

@@ -72,8 +72,7 @@ export class ProtocolClient {
         const cipher = await encryptionKey.encrypt(
             await serializeMessage(message),
         );
-        
-        
+
         if (signingKey) {
             payload.appendBuffer(await signingKey.createSignature(cipher));
         }
@@ -107,11 +106,11 @@ export class ProtocolClient {
         const reader = new BufferReader(buffer);
 
         const hasSignature = reader.readBool();
-        
+
         const signature = hasSignature ? reader.readBytes() : null;
 
         const cipher = reader.readBytes();
-        
+
         const data = await this.keysIndex.tryToDecrypt(cipher);
         if (!data) return;
 

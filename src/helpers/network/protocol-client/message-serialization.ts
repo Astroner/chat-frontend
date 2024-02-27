@@ -20,13 +20,13 @@ export enum ConnectRequestStatus {
     ESTABLISHED,
     ESTABLISHED_CONFIRM,
 
-    ENUM_LENGTH
+    ENUM_LENGTH,
 }
 
 type Serializers = {
     [K in keyof ProtocolMessageDict]: (
         data: ProtocolMessageDict[K],
-        builder: BufferBuilder
+        builder: BufferBuilder,
     ) => Promise<void> | void;
 };
 
@@ -35,7 +35,7 @@ const serializer: Serializers = {
         builder
             .appendByte(PackageType.MESSAGE)
             .appendString(data.message)
-            .getBuffer()
+            .getBuffer();
     },
     connectionRequest: async (data, builder) => {
         if (data.from.length > 30) throw new Error('From is out of range');
@@ -48,10 +48,10 @@ const serializer: Serializers = {
         builder
             .appendByte(PackageType.CONNECT_REQUEST)
             .appendByte(data.from.length)
-            .appendString(data.from, "SKIP_LENGTH")
+            .appendString(data.from, 'SKIP_LENGTH')
             .appendBuffer(ecdh)
             .appendBuffer(rsa)
-            .getBuffer()
+            .getBuffer();
     },
     connectionRequestAccept: async (data, builder) => {
         const ecdh = await data.ecdhPublicKey.toSPKI();
@@ -59,22 +59,22 @@ const serializer: Serializers = {
         builder
             .appendByte(PackageType.CONNECT_REQUEST_STATUS)
             .appendByte(ConnectRequestStatus.ACCEPT)
-            .appendBuffer(ecdh)
+            .appendBuffer(ecdh);
     },
     connectionRequestDecline: (_, builder) => {
         builder
             .appendByte(PackageType.CONNECT_REQUEST_STATUS)
-            .appendByte(ConnectRequestStatus.DECLINE)
+            .appendByte(ConnectRequestStatus.DECLINE);
     },
     connectionEstablished: (_, builder) => {
         builder
             .appendByte(PackageType.CONNECT_REQUEST_STATUS)
-            .appendByte(ConnectRequestStatus.ESTABLISHED)
+            .appendByte(ConnectRequestStatus.ESTABLISHED);
     },
     connectionEstablishedConfirm: async (_, builder) => {
         builder
             .appendByte(PackageType.CONNECT_REQUEST_STATUS)
-            .appendByte(ConnectRequestStatus.ESTABLISHED_CONFIRM)
+            .appendByte(ConnectRequestStatus.ESTABLISHED_CONFIRM);
     },
 };
 
@@ -85,7 +85,7 @@ export const serializeMessage = async (
 
     const status = serializer[message.type](message as any, builder);
 
-    if(status instanceof Promise) {
+    if (status instanceof Promise) {
         await status;
     }
 
@@ -94,59 +94,63 @@ export const serializeMessage = async (
 
 type Deserializer = {
     [K in PackageType]: (
-        reader: BufferReader
+        reader: BufferReader,
     ) => Promise<ProtocolMessage> | ProtocolMessage;
-}
+};
 
 const deserializer: Deserializer = {
-    [PackageType.MESSAGE]: reader => {
+    [PackageType.MESSAGE]: (reader) => {
         return {
-            type: "message",
-            message: reader.readString()
-        }
+            type: 'message',
+            message: reader.readString(),
+        };
     },
-    [PackageType.CONNECT_REQUEST]: async reader => {
+    [PackageType.CONNECT_REQUEST]: async (reader) => {
         const fromLength = reader.readByte();
 
         const from = reader.readString(fromLength);
 
         const [ecdhPublicKey, responseRSA] = await Promise.all([
             ECDHKey.fromSPKI(reader.readBytes()),
-            RSAEncryptionKey.fromSPKI(reader.readBytes())
-        ])
+            RSAEncryptionKey.fromSPKI(reader.readBytes()),
+        ]);
 
         return {
-            type: "connectionRequest",
+            type: 'connectionRequest',
             from,
             ecdhPublicKey,
-            responseRSA
-        }
+            responseRSA,
+        };
     },
-    [PackageType.CONNECT_REQUEST_STATUS]: async reader => {
+    [PackageType.CONNECT_REQUEST_STATUS]: async (reader) => {
         const status: ConnectRequestStatus = reader.readByte();
 
-        switch(status) {
-            case ConnectRequestStatus.ACCEPT: return {
-                type: "connectionRequestAccept",
-                ecdhPublicKey: await ECDHKey.fromSPKI(reader.readBytes())
-            }
+        switch (status) {
+            case ConnectRequestStatus.ACCEPT:
+                return {
+                    type: 'connectionRequestAccept',
+                    ecdhPublicKey: await ECDHKey.fromSPKI(reader.readBytes()),
+                };
 
-            case ConnectRequestStatus.DECLINE: return {
-                type: "connectionRequestDecline"
-            }
+            case ConnectRequestStatus.DECLINE:
+                return {
+                    type: 'connectionRequestDecline',
+                };
 
-            case ConnectRequestStatus.ESTABLISHED: return {
-                type: "connectionEstablished"
-            }
+            case ConnectRequestStatus.ESTABLISHED:
+                return {
+                    type: 'connectionEstablished',
+                };
 
-            case ConnectRequestStatus.ESTABLISHED_CONFIRM: return {
-                type: "connectionEstablishedConfirm"
-            }
+            case ConnectRequestStatus.ESTABLISHED_CONFIRM:
+                return {
+                    type: 'connectionEstablishedConfirm',
+                };
         }
 
-        throw new Error("Unknown type");
-    }
-}
+        throw new Error('Unknown type');
+    },
+};
 
 export const deserializeMessage = async (
     message: ArrayBuffer,
@@ -155,7 +159,7 @@ export const deserializeMessage = async (
 
     const type = reader.readByte();
 
-    if(!(type in deserializer)) return null;
-    
+    if (!(type in deserializer)) return null;
+
     return deserializer[type as PackageType](reader);
 };

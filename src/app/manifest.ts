@@ -1,4 +1,4 @@
-import { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
@@ -17,7 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
                 src: '/hr.webp',
                 sizes: '256x256',
                 type: 'image/webp',
-            }
-        ]
-    }
+            },
+        ],
+    };
 }

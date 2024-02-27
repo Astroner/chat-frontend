@@ -13,7 +13,7 @@ export const IconsDict = {
     'arrow-back': ArrowBackIcon,
     close: CloseIcon,
     send: SendIcon,
-    settings: SettingsIcon
+    settings: SettingsIcon,
 };
 
 export const IconsNames: IconName[] = Object.keys(IconsDict) as IconName[];

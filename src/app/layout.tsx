@@ -48,20 +48,22 @@ export default function RootLayout({
     );
 
     useEffect(() => {
-        if(env.NODE_ENV === "development") return;
+        if (env.NODE_ENV === 'development') return;
 
-        if(location.pathname !== "/login") {
-            if(location.pathname === '/invite') {
-                router.push(`/login?next=${location.pathname + location.search}`);
+        if (location.pathname !== '/login') {
+            if (location.pathname === '/invite') {
+                router.push(
+                    `/login?next=${location.pathname + location.search}`,
+                );
             } else {
                 router.push(`/login`);
             }
         }
-    }, [router])
+    }, [router]);
 
     useEffect(() => {
         serviceWorker.init();
-    }, [serviceWorker])
+    }, [serviceWorker]);
 
     useEffect(() => {
         storage.init('memes');
@@ -75,7 +77,6 @@ export default function RootLayout({
             network.destroy();
         };
     }, [network, storage, router]);
-
 
     // useEffect(() => {
     //     (async () => {

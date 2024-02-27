@@ -37,7 +37,7 @@ export class ChatStorage {
             title,
             connectionID,
             state: 'PENDING',
-            pushNotifications: false
+            pushNotifications: false,
         };
 
         this.connectionIDToChatID.set(connectionID, id);
