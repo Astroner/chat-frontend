@@ -65,20 +65,20 @@ export default function RootLayout({
         serviceWorker.init();
     }, [serviceWorker]);
 
-    useEffect(() => {
-        if (env.NODE_ENV === 'development') return;
+    // useEffect(() => {
+    //     if (env.NODE_ENV !== 'development') return;
 
-        storage.init('memes');
-        // .then(({ connections, published }) => {
-        //     if(!mounted) return;
-        //     network.init(connections, published);
-        // })
+    //     storage.init('memes');
+    //     // .then(({ connections, published }) => {
+    //     //     if(!mounted) return;
+    //     //     network.init(connections, published);
+    //     // })
 
-        return () => {
-            storage.destroy();
-            network.destroy();
-        };
-    }, [network, storage, router]);
+    //     return () => {
+    //         storage.destroy();
+    //         network.destroy();
+    //     };
+    // }, [network, storage, router]);
 
     return (
         <StorageContext.Provider value={storage}>
