@@ -85,7 +85,7 @@ export class Network {
     
                     const isDifferent = messageCodes.find((item, i) => item !== lastMessageCodes[i]);
     
-                    if(!isDifferent) throw new Error("")
+                    if(!!isDifferent) throw new Error("")
     
                     return i;
                 }))
