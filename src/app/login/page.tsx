@@ -27,14 +27,12 @@ export default function Login() {
 
         await storage.init(input);
 
-        debugger;
-
         if (location.search.includes('next')) {
             const [, next] = location.search.split('next');
-
-            redirect(next.slice(1));
+            
+            router.replace(next.slice(1));
         } else {
-            redirect('/');
+            router.replace('/');
         }
     };
 
