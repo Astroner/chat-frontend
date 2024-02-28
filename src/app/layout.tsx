@@ -84,7 +84,7 @@ alert(22)
             storage.destroy();
             network.destroy();
         };
-    }, [network, storage, router]);
+    }, [network, storage]);
 
     return (
         <StorageContext.Provider value={storage}>
