@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { usePromiseCall } from '@dogonis/hooks';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
 
 import { useStorage } from '@/src/model/hooks';
 
@@ -27,12 +27,14 @@ export default function Login() {
 
         await storage.init(input);
 
+        debugger;
+
         if (location.search.includes('next')) {
             const [, next] = location.search.split('next');
 
-            router.push(next.slice(1));
+            redirect(next.slice(1));
         } else {
-            router.push('/');
+            redirect('/');
         }
     };
 

@@ -1,8 +1,5 @@
 'use client';
 
-import { initDevtools, getDevtools } from "../devtools";
-initDevtools();
-
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Inter } from 'next/font/google';
