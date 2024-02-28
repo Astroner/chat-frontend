@@ -53,10 +53,14 @@ export default function RootLayout({
         [keysIndex, signsIndex],
     );
 
+    console.log("RENDER");
+
     useEffect(() => {
         if (env.NODE_ENV === 'development') return;
+        console.log(env);
 
         if (location.pathname !== '/login') {
+            console.log("REDIRECT_NEEDED")
             if (location.pathname === '/invite') {
                 router.push(
                     `/login?next=${location.pathname + location.search}`,
