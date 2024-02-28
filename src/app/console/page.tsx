@@ -7,13 +7,17 @@ import { HomeLink } from "@/src/components/home-link.component";
 import { Button } from "@/src/components/button/button.component";
 
 import cn from "./page.module.scss";
+import { ConsoleEntry } from "@/src/devtools/console.class";
 
 export default function ConsolePage() {
 
-    const [logs, setLogs] = useState(() => getDevtools().console.getEntries());
+    const [logs, setLogs] = useState<ConsoleEntry[]>([]);
 
     useEffect(() => {
-        const sub = getDevtools().console.addEventListener(ev => {
+        const devtools = getDevtools();
+        setLogs([...devtools.console.getEntries()]);
+
+        const sub = devtools.console.addEventListener(ev => {
             switch(ev.type) {
                 case "entry":
                     setLogs((p) => [...p, ev.entry]);
