@@ -55,7 +55,7 @@ export default function RootLayout({
 
     useEffect(() => {
         if (env.NODE_ENV === 'development') return;
-
+alert(22)
         if (location.pathname !== '/login') {
             if (location.pathname === '/invite') {
                 router.push(
