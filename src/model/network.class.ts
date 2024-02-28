@@ -70,9 +70,10 @@ export class Network {
 
         if (lastMessage) {
             const messages = await http.getMessages(
-                lastMessage.timestamp - 500,
+                lastMessage.timestamp - 2000,
                 start,
             );
+            console.log(lastMessage, messages);
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
