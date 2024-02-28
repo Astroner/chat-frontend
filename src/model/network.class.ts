@@ -69,15 +69,10 @@ export class Network {
         
 
         if (lastMessage) {
-            console.log("Has last message entries");
-            console.log(`last message timestamp: ${lastMessage.timestamp}`);
-
             const messages = await http.getMessages(
                 lastMessage.timestamp - 500,
                 start,
             );
-
-            console.log(`Missed messages: ${messages.length}`);
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
@@ -87,9 +82,15 @@ export class Network {
 
                 const messageCodes = new BigUint64Array(hash);
 
-                for (let i = 0; i < lastMessageCodes.length; i++) {
-                    if (lastMessageCodes[i] !== messageCodes[i]) break;
+                let matches = true;
+                for (let j = 0; j < lastMessageCodes.length; j++) {
+                    if (lastMessageCodes[j] !== messageCodes[j]) {
+                        matches = false;
+                        break;
+                    }
                 }
+
+                if(!matches) continue;
 
                 lastMessageIndex = i;
 
