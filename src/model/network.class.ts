@@ -76,55 +76,47 @@ export class Network {
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
-            let lastMessageIndex: null | number = null;
-            for (let i = 0; i < messages.length; i++) {
-                const hash = await getHash(messages[i].data);
+            try {
+                const lastMessageIndex = await Promise.any(messages.map(async (item, i) => {
+                    const hash = await getHash(item.data);
+    
+                    const messageCodes = new BigUint64Array(hash);
+    
+                    const isDifferent = messageCodes.find((item, i) => item !== lastMessageCodes[i]);
+    
+                    if(!isDifferent) throw new Error("")
+    
+                    return i;
+                }))
 
-                const messageCodes = new BigUint64Array(hash);
+                const newMessages = messages.slice(lastMessageIndex + 1);
 
-                let matches = true;
-                for (let j = 0; j < lastMessageCodes.length; j++) {
-                    if (lastMessageCodes[j] !== messageCodes[j]) {
-                        matches = false;
-                        break;
-                    }
+                for (const message of newMessages) {
+                    protocol.dispatchMessage(
+                        Number(message.timestamp),
+                        message.data,
+                    );
                 }
 
-                if(!matches) continue;
-
-                lastMessageIndex = i;
-
-                break;
-            }
-
-            if (lastMessageIndex === null)
+                this.setState({
+                    type: 'READY',
+                    chat: chatClient,
+                    http,
+                    protocol,
+                    socket: connection,
+                });
+        
+                return {
+                    type: 'READY',
+                    chat: chatClient,
+                    http: new HTTPClient(this.httpUrl),
+                    protocol,
+                    socket: connection,
+                };
+            } catch(e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
-
-            const newMessages = messages.slice(lastMessageIndex + 1);
-
-            for (const message of newMessages) {
-                protocol.dispatchMessage(
-                    Number(message.timestamp),
-                    message.data,
-                );
             }
         }
-
-        this.setState({
-            type: 'READY',
-            chat: chatClient,
-            http,
-            protocol,
-            socket: connection,
-        });
-
-        return {
-            type: 'READY',
-            chat: chatClient,
-            http: new HTTPClient(this.httpUrl),
-            protocol,
-            socket: connection,
-        };
     }
 
     getState(): Readonly<NetworkState> {
