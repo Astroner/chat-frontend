@@ -37,6 +37,7 @@ export class Network {
         publishedKeys: PublishedKeysManager,
         common: CommonStorage,
     ) {
+        console.log(common.getData(), connections.getAll(), publishedKeys.getAll())
         const start = Date.now();
 
         this.setState({ type: 'CONNECTING' });
@@ -72,7 +73,7 @@ export class Network {
             console.log(`last message timestamp: ${lastMessage.timestamp}`);
 
             const messages = await http.getMessages(
-                lastMessage.timestamp - 100,
+                lastMessage.timestamp - 500,
                 start,
             );
 
