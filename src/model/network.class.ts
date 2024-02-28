@@ -97,26 +97,26 @@ export class Network {
                         message.data,
                     );
                 }
-
-                this.setState({
-                    type: 'READY',
-                    chat: chatClient,
-                    http,
-                    protocol,
-                    socket: connection,
-                });
-        
-                return {
-                    type: 'READY',
-                    chat: chatClient,
-                    http: new HTTPClient(this.httpUrl),
-                    protocol,
-                    socket: connection,
-                };
             } catch(e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
             }
         }
+
+        this.setState({
+            type: 'READY',
+            chat: chatClient,
+            http,
+            protocol,
+            socket: connection,
+        });
+
+        return {
+            type: 'READY',
+            chat: chatClient,
+            http: new HTTPClient(this.httpUrl),
+            protocol,
+            socket: connection,
+        };
     }
 
     getState(): Readonly<NetworkState> {
