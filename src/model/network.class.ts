@@ -37,7 +37,6 @@ export class Network {
         publishedKeys: PublishedKeysManager,
         common: CommonStorage,
     ) {
-        console.log(common.getData(), connections.getAll(), publishedKeys.getAll())
         const start = Date.now();
 
         this.setState({ type: 'CONNECTING' });
@@ -73,7 +72,6 @@ export class Network {
                 lastMessage.timestamp - 2000,
                 start,
             );
-            console.log(lastMessage, messages);
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
