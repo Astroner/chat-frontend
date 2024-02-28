@@ -34,7 +34,7 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { push } = useRouter();
+    const router = useRouter();
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
@@ -55,17 +55,20 @@ export default function RootLayout({
 
     useEffect(() => {
         if (env.NODE_ENV === 'development') return;
-alert(22)
+
         if (location.pathname !== '/login') {
             if (location.pathname === '/invite') {
-                push(
+                router.push(
                     `/login?next=${location.pathname + location.search}`,
                 );
             } else {
-                push(`/login`);
+                router.push(`/login`);
             }
         }
-    }, [push]);
+
+        // single time relocate to log-in
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         serviceWorker.init();
