@@ -65,12 +65,18 @@ export class Network {
         const http = new HTTPClient(this.httpUrl);
 
         const lastMessage = common.getData().lastMessage;
+        
 
         if (lastMessage) {
+            console.log("Has last message entries");
+            console.log(`last message timestamp: ${lastMessage.timestamp}`);
+
             const messages = await http.getMessages(
                 lastMessage.timestamp - 100,
                 start,
             );
+
+            console.log(`Missed messages: ${messages.length}`);
 
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 

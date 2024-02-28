@@ -1,5 +1,8 @@
 'use client';
 
+import { initDevtools, getDevtools } from "../devtools";
+initDevtools();
+
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Inter } from 'next/font/google';
@@ -14,14 +17,15 @@ import {
     SmartStorageContext,
 } from '../model/context';
 import { Network } from '../model/network.class';
-import { env } from '../env';
-
-import './globals.scss';
 import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 import { NetworkStorageBind } from '../services/network-storage-bind.component';
 import { SmartStorage } from '../model/smart-storage.class';
 import { ServiceWorkerService } from '../services/service-worker.service';
 import { ServiceWorkerContext } from '../services/context';
+
+import { env } from '../env';
+
+import './globals.scss';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,7 +39,9 @@ export default function RootLayout({
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
     const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
-    const storageEnv = useMemo(() => new SmartStorage('LOCAL_STORAGE'), []);
+    const storageEnv = useMemo(() => new SmartStorage(
+        env.NODE_ENV === "development" ? 'EXTERNAL' : 'LOCAL_STORAGE'
+    ), []);
 
     const storage = useMemo(() => {
         return new Storage(storageEnv, keysIndex, signsIndex, gzip);
@@ -65,20 +71,20 @@ export default function RootLayout({
         serviceWorker.init();
     }, [serviceWorker]);
 
-    // useEffect(() => {
-    //     if (env.NODE_ENV !== 'development') return;
+    useEffect(() => {
+        if (env.NODE_ENV !== 'development') return;
 
-    //     storage.init('memes');
-    //     // .then(({ connections, published }) => {
-    //     //     if(!mounted) return;
-    //     //     network.init(connections, published);
-    //     // })
+        storage.init('memes');
+        // .then(({ connections, published }) => {
+        //     if(!mounted) return;
+        //     network.init(connections, published);
+        // })
 
-    //     return () => {
-    //         storage.destroy();
-    //         network.destroy();
-    //     };
-    // }, [network, storage, router]);
+        return () => {
+            storage.destroy();
+            network.destroy();
+        };
+    }, [network, storage, router]);
 
     return (
         <StorageContext.Provider value={storage}>

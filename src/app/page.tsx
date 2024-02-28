@@ -47,69 +47,75 @@ export default function Home() {
     }, [isPanelOpen, storage, network]);
 
     return (
-        <main className={cn.root}>
-            <Chats />
-            <SlidablePanel open={isPanelOpen} onStateChange={setIsPanelOpen}>
-                <div className={cn['panel-container']}>
-                    <div
-                        className={
-                            cn[
-                                'announcement--' +
-                                    (announcementVisible ? 'visible' : 'hidden')
-                            ]
-                        }
-                    >
-                        Pull-up to connect
-                    </div>
-                    <div className={cn['quick-bar']}>
-                        {networkState.type === 'IDLE' && (
-                            <div className={cn['connect-text']}>Not</div>
-                        )}
-                        <SlideAnchor>
-                            <Button
-                                color="orange"
-                                icon={
-                                    networkState.type === 'READY'
-                                        ? 'network'
-                                        : networkState.type === 'CONNECTING'
-                                          ? 'hourglass'
-                                          : 'no-network'
-                                }
-                                onTouchStart={touchButton}
-                                onTouchEnd={releaseButton}
-                            />
-                        </SlideAnchor>
-                        {networkState.type === 'IDLE' && (
-                            <div className={cn['connect-text']}>Connected</div>
-                        )}
-                    </div>
-                    <div className={cn.networking}>
-                        {networkState.type === 'CONNECTING' && (
-                            <DotsLoader
-                                style={{ width: '100%', height: '100%' }}
-                            />
-                        )}
-                        {networkState.type === 'READY' && (
-                            <>
-                                <ButtonLink
-                                    href="/key/generate"
-                                    className={cn['menu-button']}
+        <>
+            <header className={cn.header}>
+                <h1>Chats</h1>
+                <ButtonLink className={cn.settings} href='/settings' color='purple' icon='settings' size='small' />
+            </header>
+            <main className={cn.root}>
+                <Chats />
+                <SlidablePanel open={isPanelOpen} onStateChange={setIsPanelOpen}>
+                    <div className={cn['panel-container']}>
+                        <div
+                            className={
+                                cn[
+                                    'announcement--' +
+                                        (announcementVisible ? 'visible' : 'hidden')
+                                ]
+                            }
+                        >
+                            Pull-up to connect
+                        </div>
+                        <div className={cn['quick-bar']}>
+                            {networkState.type === 'IDLE' && (
+                                <div className={cn['connect-text']}>Not</div>
+                            )}
+                            <SlideAnchor>
+                                <Button
                                     color="orange"
-                                >
-                                    Generate invite QR
-                                </ButtonLink>
-                                <ButtonLink
-                                    href="/keys"
-                                    className={cn['menu-button']}
-                                    color="orange"
-                                >
-                                    Generated Invites
-                                </ButtonLink>
-                            </>
-                        )}
+                                    icon={
+                                        networkState.type === 'READY'
+                                            ? 'network'
+                                            : networkState.type === 'CONNECTING'
+                                            ? 'hourglass'
+                                            : 'no-network'
+                                    }
+                                    onTouchStart={touchButton}
+                                    onTouchEnd={releaseButton}
+                                />
+                            </SlideAnchor>
+                            {networkState.type === 'IDLE' && (
+                                <div className={cn['connect-text']}>Connected</div>
+                            )}
+                        </div>
+                        <div className={cn.networking}>
+                            {networkState.type === 'CONNECTING' && (
+                                <DotsLoader
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            )}
+                            {networkState.type === 'READY' && (
+                                <>
+                                    <ButtonLink
+                                        href="/key/generate"
+                                        className={cn['menu-button']}
+                                        color="orange"
+                                    >
+                                        Generate invite QR
+                                    </ButtonLink>
+                                    <ButtonLink
+                                        href="/keys"
+                                        className={cn['menu-button']}
+                                        color="orange"
+                                    >
+                                        Generated Invites
+                                    </ButtonLink>
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </SlidablePanel>
-        </main>
+                </SlidablePanel>
+            </main>
+        </>
     );
 }

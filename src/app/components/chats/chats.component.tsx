@@ -33,7 +33,7 @@ export const Chats: FC<ChatsProps> = memo((props) => {
     if (!chats) return;
     return (
         <div className={cn.root}>
-            <h1>{chats.length > 0 ? 'Chats' : 'No chats created'}</h1>
+            {chats.length === 0 && <h2>No chats created</h2>}
             <div className={cn.list}>
                 {chats.map((chat) => (
                     <Link
