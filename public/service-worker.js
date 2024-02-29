@@ -203,3 +203,17 @@ self.addEventListener('push', async event => {
 
     self.registration.showNotification("New message");
 })
+
+self.addEventListener('notificationclick', async (event) => {
+    event.notification.close();
+
+    const allClients = await clients.matchAll({
+        includeUncontrolled: true,
+    });
+    
+    if(allClients.length === 0) {
+        await clients.openWindow('/');
+    } else {
+        allClients[0].focus();
+    }
+})
