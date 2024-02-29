@@ -207,14 +207,16 @@ self.addEventListener('push', async event => {
 self.addEventListener('notificationclick', async (event) => {
     event.notification.close();
 
-    const allClients = await clients.matchAll({
-        includeUncontrolled: true,
-    });
-    
-    if(allClients.length === 0) {
-        const window = await clients.openWindow('/');
-        window.focus();
-    } else {
-        allClients[0].focus();
-    }
+    event.waitUntil(
+        clients.matchAll({
+            includeUncontrolled: true,
+        })
+            .then(async allClients => {
+                if(allClients.length === 0) {
+                    await clients.openWindow('/');
+                } else {
+                    allClients[0].focus();
+                }
+            })
+    )  
 })
