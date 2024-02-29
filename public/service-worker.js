@@ -212,7 +212,8 @@ self.addEventListener('notificationclick', async (event) => {
     });
     
     if(allClients.length === 0) {
-        await clients.openWindow('/');
+        const window = await clients.openWindow('/');
+        window.focus();
     } else {
         allClients[0].focus();
     }
