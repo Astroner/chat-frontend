@@ -216,7 +216,7 @@ self.addEventListener('notificationclick', async (event) => {
         ])
             .then(async ([allClients, notifications]) => {
                 if(allClients.length === 0) {
-                    await clients.openWindow('/');
+                    await clients.openWindow('/login');
                 } else {
                     allClients[0].focus();
                 }
