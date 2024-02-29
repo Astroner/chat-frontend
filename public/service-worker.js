@@ -208,14 +208,21 @@ self.addEventListener('notificationclick', async (event) => {
     event.notification.close();
 
     event.waitUntil(
-        clients.matchAll({
-            includeUncontrolled: true,
-        })
-            .then(async allClients => {
+        Promise.all([
+            clients.matchAll({
+                includeUncontrolled: true,
+            }),
+            self.registration.getNotifications()
+        ])
+            .then(async ([allClients, notifications]) => {
                 if(allClients.length === 0) {
                     await clients.openWindow('/');
                 } else {
                     allClients[0].focus();
+                }
+
+                for(const notification of notifications) {
+                    notification.close();
                 }
             })
     )  
