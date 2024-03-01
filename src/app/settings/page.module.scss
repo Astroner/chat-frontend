@@ -31,7 +31,18 @@
 }
 
 .list {
-    button {
-        width: 100%;
+    
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 20px;
+
+    h2 {
+        color: var(--light-purple);
+        margin: 0;
     }
 }

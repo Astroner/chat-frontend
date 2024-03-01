@@ -114,4 +114,12 @@ export class HTTPClient {
 
         return data;
     }
+
+    async deletePushSubscription(id: string) {
+        await this.axios.delete('/subscription', {
+            data: {
+                id
+            }
+        });
+    }
 }

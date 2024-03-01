@@ -3,14 +3,22 @@ import { useNetwork, useStorage } from '../model/hooks';
 import { useRouter } from 'next/navigation';
 
 export const NetworkStorageBind: FC = memo(() => {
-    const [network] = useNetwork();
+    const [networkState, network] = useNetwork();
     const [storage] = useStorage();
     const router = useRouter();
 
     useEffect(() => {
-        if (network.type !== 'READY' || storage.type !== 'READY') return;
+        const nState = network.getState();
+        if(storage.type !== "READY" || nState.type !== "IDLE") return;
+        if(storage.common.getData().onlineOnStartup) {
+            network.init(storage.connections, storage.published, storage.common);
+        }
+    }, [storage, network])
 
-        const sub = network.chat.addEventListener(async (ev) => {
+    useEffect(() => {
+        if (networkState.type !== 'READY' || storage.type !== 'READY') return;
+
+        const sub = networkState.chat.addEventListener(async (ev) => {
             switch (ev.type) {
                 case 'newPendingConnection': {
                     if (
@@ -18,11 +26,11 @@ export const NetworkStorageBind: FC = memo(() => {
                             `New connection request from "${ev.from}"`,
                         )
                     ) {
-                        await network.chat.acceptConnection(ev.id);
+                        await networkState.chat.acceptConnection(ev.id);
                         const { id } = storage.chats.createChat(ev.from, ev.id);
                         router.push(`/chat?id=${id}`);
                     } else {
-                        network.chat.declineConnection(ev.id);
+                        networkState.chat.declineConnection(ev.id);
                     }
 
                     break;
@@ -63,7 +71,7 @@ export const NetworkStorageBind: FC = memo(() => {
         return () => {
             sub.unsubscribe();
         };
-    }, [network, storage, router]);
+    }, [networkState, storage, router]);
 
     return null;
 });

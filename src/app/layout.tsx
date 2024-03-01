@@ -37,7 +37,7 @@ export default function RootLayout({
     const gzip = useMemo(() => new GZip(), []);
     const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
     const storageEnv = useMemo(() => new SmartStorage(
-        env.NODE_ENV === "development" ? 'EXTERNAL' : 'LOCAL_STORAGE'
+        env.NODE_ENV === "development" ? 'LOCAL_STORAGE' : 'LOCAL_STORAGE'
     ), []);
 
     const storage = useMemo(() => {

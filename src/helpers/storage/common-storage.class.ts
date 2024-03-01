@@ -6,29 +6,52 @@ export type CommonStorageData = {
         timestamp: number;
         hash: ArrayBuffer;
     };
+    pushSubscriptionID?: string;
+    onlineOnStartup: boolean;
 };
+
+const DefaultCommonStorageState: CommonStorageData = {
+    onlineOnStartup: false
+}
 
 export class CommonStorage {
     static import(buffer: ArrayBuffer) {
-        const reader = new BufferReader(buffer);
+        try {
+            const reader = new BufferReader(buffer);
+    
+            const hasLastMessage = reader.readByte();
+            let lastMessage: CommonStorageData['lastMessage'];
+            if (hasLastMessage) {
+                lastMessage = {
+                    timestamp: Number(reader.readUint64()),
+                    hash: reader.readBytes(32),
+                };
+            }
+    
+            const hasPushSubscription = reader.readBool();
+            let pushSubscriptionID: CommonStorageData['pushSubscriptionID'];
+            if(hasPushSubscription) {
+                const length = reader.readByte();
+                pushSubscriptionID = reader.readString(length);
+            }
+    
+            const onlineOnStartup = reader.readBool();
+    
+            return new CommonStorage({
+                lastMessage,
+                pushSubscriptionID,
+                onlineOnStartup
+            });
+        } catch(e) {
+            console.error(e)
 
-        const hasLastMessage = reader.readByte();
-        let lastMessage: CommonStorageData['lastMessage'];
-        if (hasLastMessage) {
-            lastMessage = {
-                timestamp: Number(reader.readUint64()),
-                hash: reader.readBytes(32),
-            };
+            return new CommonStorage();
         }
-
-        return new CommonStorage({
-            lastMessage,
-        });
     }
 
     private listeners = new Set<VoidFunction>();
 
-    constructor(private data: CommonStorageData = {}) {}
+    constructor(private data: CommonStorageData = DefaultCommonStorageState) {}
 
     updateLastMessage(timestamp: number, hash: ArrayBuffer) {
         if (
@@ -70,6 +93,14 @@ export class CommonStorage {
      *  if exists:
      *      timestamp Uint64 - timestamp
      *      hash - 32bytes SHA-256 hash
+     * 
+     * [pushSubscriptionID]
+     * pushSubscriptionID exists - 1 byte
+     *  id exists:
+     *      length: 1 byte
+     *      string data
+     * 
+     * [onlineOnStartup] - 1 byte boolean
      */
     export() {
         const builder = new BufferBuilder();
@@ -79,6 +110,14 @@ export class CommonStorage {
             builder.appendUint64(this.data.lastMessage.timestamp);
             builder.appendBuffer(this.data.lastMessage.hash, 'SKIP_LENGTH');
         }
+
+        builder.appendBoolean(!!this.data.pushSubscriptionID);
+        if(this.data.pushSubscriptionID) {
+            builder.appendByte(this.data.pushSubscriptionID.length);
+            builder.appendString(this.data.pushSubscriptionID, "SKIP_LENGTH");
+        }
+
+        builder.appendBoolean(this.data.onlineOnStartup);
 
         return builder.getBuffer();
     }

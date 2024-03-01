@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/src/components/button/button.component';
 import { Switch } from '@/src/components/switch/switch.component';
 import { useServiceWorker } from '@/src/services/hooks';
-import { useNetwork } from '@/src/model/hooks';
+import { useNetwork, useStorage } from '@/src/model/hooks';
 
 import { useChatInfo } from '../helpers/use-chat-info';
 
@@ -17,6 +17,7 @@ export default function ChatSettingsPage() {
     const router = useRouter();
     const [serviceWorkerState, serviceWorker] = useServiceWorker();
     const [network] = useNetwork();
+    const [storage] = useStorage();
 
     const chatID = useMemo(() => {
         return params.get('id') ?? null;
@@ -46,7 +47,8 @@ export default function ChatSettingsPage() {
                 !chats ||
                 serviceWorkerState.type !== 'ACTIVE' ||
                 serviceWorkerState.pushNotifications.type === 'denied' ||
-                network.type !== 'READY'
+                network.type !== 'READY' ||
+                storage.type !== "READY"
             )
                 return;
             chats.setChatData(chatInfo.id, (p) => ({
@@ -66,12 +68,16 @@ export default function ChatSettingsPage() {
 
                     if (!result.endpoint || !result.keys) return;
 
-                    // TODO: SAVE SUB ID TO USE IT IN FUTURE
-                    await network.http.addPushSubscription(
+                    const { id: pushSubscriptionID } = await network.http.addPushSubscription(
                         result.endpoint,
                         result.keys.p256dh,
                         result.keys.auth,
                     );
+                    
+                    storage.common.setData({
+                        ...storage.common.getData(),
+                        pushSubscriptionID
+                    })
                 }
 
                 serviceWorker.addKey(chatInfo.id, connection.hmacKey.getKey());
@@ -86,6 +92,7 @@ export default function ChatSettingsPage() {
             serviceWorker,
             connections,
             network,
+            storage
         ],
     );
 
@@ -107,7 +114,7 @@ export default function ChatSettingsPage() {
             </header>
             <main className={cn.root}>
                 <div className={cn.item}>
-                    <div className={cn.item__label}>Push Notifications</div>
+                    <div className={cn.item__label}>Send notifications</div>
                     <Switch
                         disabled={
                             serviceWorkerState.type !== 'ACTIVE' ||
