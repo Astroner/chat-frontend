@@ -14,7 +14,8 @@ export type PortableConnections = Array<{
 
 export class ConnectionsManager {
     static async import(buffer: ArrayBuffer): Promise<ConnectionsManager> {
-        const reader = new BufferReader(buffer);
+        try {
+            const reader = new BufferReader(buffer);
 
         const connectionsNumber = reader.readByte();
 
@@ -164,7 +165,11 @@ export class ConnectionsManager {
                 ),
         );
 
-        return new ConnectionsManager(data);
+        return new ConnectionsManager(data);   
+        } catch(e) {
+            console.error(e);
+            return new ConnectionsManager();
+        }
     }
 
     private listeners = new Set<VoidFunction>();

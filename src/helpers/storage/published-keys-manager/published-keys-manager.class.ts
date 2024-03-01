@@ -17,7 +17,8 @@ export class PublishedKeysManager {
         data: ArrayBuffer,
         keysIndex: KeysIndex,
     ): Promise<PublishedKeysManager> {
-        const reader = new BufferReader(data);
+        try {
+            const reader = new BufferReader(data);
 
         const entitiesNumber = reader.readByte();
 
@@ -59,6 +60,10 @@ export class PublishedKeysManager {
         );
 
         return new PublishedKeysManager(keysIndex, entities);
+        } catch(e) {
+            console.error(e);
+            return new PublishedKeysManager(keysIndex);
+        }
     }
 
     private listeners = new Set<VoidFunction>();
