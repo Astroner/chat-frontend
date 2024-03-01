@@ -10,6 +10,7 @@ export type ChatInputProps = {
     initialValue?: string;
     onSubmit?: (value: string) => void;
 
+    offline?: boolean;
     className?: string;
 };
 
@@ -27,9 +28,16 @@ export const ChatInput: FC<ChatInputProps> = memo((props) => {
 
     return (
         <form className={root} onSubmit={(e) => (e.preventDefault(), submit())}>
-            <Input className={cn.input} value={value} onChange={setValue} />
+            <Input
+                placeholder={props.offline ? 'Offline' : 'Message'}
+                disabled={props.offline}
+                className={cn.input}
+                value={value}
+                onChange={setValue}
+            />
             <Button
                 submit
+                disabled={props.offline}
                 margin="0 0 0 10px"
                 color="orange"
                 icon="send"

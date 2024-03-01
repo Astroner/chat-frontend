@@ -16,6 +16,10 @@
 
     min-width: 0;
 
+    &:disabled {
+        opacity: 0.4;
+    }
+
     &:focus {
         border: 2px solid var(--black);
     }

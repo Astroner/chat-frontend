@@ -10,6 +10,7 @@ export type InputProps = {
     className?: string;
     placeholder?: string;
     password?: boolean;
+    disabled?: boolean;
 };
 
 export const Input: FC<InputProps> = memo((props) => {
@@ -20,6 +21,7 @@ export const Input: FC<InputProps> = memo((props) => {
             placeholder={props.placeholder}
             value={props.value}
             onChange={(e) => props.onChange && props.onChange(e.target.value)}
+            disabled={props.disabled}
             className={rootClass}
             type={props.password ? 'password' : 'text'}
         />

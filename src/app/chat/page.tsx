@@ -27,7 +27,7 @@ export default function ChatPage() {
     }, [params]);
 
     const [chatInfo, chats, connections] = useChatInfo(
-        chatID /*{
+        chatID /*, {
         id: "ASDASD",
         connectionID: "ASDASD",
         messages: new Array(200).fill(null).map((_) => ({
@@ -85,7 +85,10 @@ export default function ChatPage() {
                             }))}
                         />
                         <div className={cn.input}>
-                            <ChatInput onSubmit={sendMessage} />
+                            <ChatInput
+                                offline={network.type !== 'READY'}
+                                onSubmit={sendMessage}
+                            />
                         </div>
                     </>
                 )}

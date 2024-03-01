@@ -13,5 +13,6 @@ type Story = StoryObj<typeof Input>;
 export const Default: Story = {
     args: {
         value: 'text',
+        disabled: false,
     },
 };
