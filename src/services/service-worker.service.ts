@@ -50,13 +50,17 @@ export class ServiceWorkerService {
                 break;
 
             case 'granted': {
-                const subscription =
-                    (await this.registration.pushManager.getSubscription())!;
-
-                pushNotifications = {
-                    type: 'granted',
-                    subscription: subscription,
-                };
+                const subscription = await this.registration.pushManager.getSubscription();
+                if(subscription) {
+                    pushNotifications = {
+                        type: 'granted',
+                        subscription
+                    }
+                } else {
+                    pushNotifications = {
+                        type: 'not-asked',
+                    }
+                }
             }
         }
 
