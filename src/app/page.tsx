@@ -50,17 +50,28 @@ export default function Home() {
         <>
             <header className={cn.header}>
                 <h1>Chats</h1>
-                <ButtonLink className={cn.settings} href='/settings' color='purple' icon='settings' size='small' />
+                <ButtonLink
+                    className={cn.settings}
+                    href="/settings"
+                    color="purple"
+                    icon="settings"
+                    size="small"
+                />
             </header>
             <main className={cn.root}>
                 <Chats />
-                <SlidablePanel open={isPanelOpen} onStateChange={setIsPanelOpen}>
+                <SlidablePanel
+                    open={isPanelOpen}
+                    onStateChange={setIsPanelOpen}
+                >
                     <div className={cn['panel-container']}>
                         <div
                             className={
                                 cn[
                                     'announcement--' +
-                                        (announcementVisible ? 'visible' : 'hidden')
+                                        (announcementVisible
+                                            ? 'visible'
+                                            : 'hidden')
                                 ]
                             }
                         >
@@ -77,15 +88,17 @@ export default function Home() {
                                         networkState.type === 'READY'
                                             ? 'network'
                                             : networkState.type === 'CONNECTING'
-                                            ? 'hourglass'
-                                            : 'no-network'
+                                              ? 'hourglass'
+                                              : 'no-network'
                                     }
                                     onTouchStart={touchButton}
                                     onTouchEnd={releaseButton}
                                 />
                             </SlideAnchor>
                             {networkState.type === 'IDLE' && (
-                                <div className={cn['connect-text']}>Connected</div>
+                                <div className={cn['connect-text']}>
+                                    Connected
+                                </div>
                             )}
                         </div>
                         <div className={cn.networking}>

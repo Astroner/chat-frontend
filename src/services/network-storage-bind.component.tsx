@@ -9,11 +9,15 @@ export const NetworkStorageBind: FC = memo(() => {
 
     useEffect(() => {
         const nState = network.getState();
-        if(storage.type !== "READY" || nState.type !== "IDLE") return;
-        if(storage.common.getData().onlineOnStartup) {
-            network.init(storage.connections, storage.published, storage.common);
+        if (storage.type !== 'READY' || nState.type !== 'IDLE') return;
+        if (storage.common.getData().onlineOnStartup) {
+            network.init(
+                storage.connections,
+                storage.published,
+                storage.common,
+            );
         }
-    }, [storage, network])
+    }, [storage, network]);
 
     useEffect(() => {
         if (networkState.type !== 'READY' || storage.type !== 'READY') return;

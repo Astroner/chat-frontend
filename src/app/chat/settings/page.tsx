@@ -48,7 +48,7 @@ export default function ChatSettingsPage() {
                 serviceWorkerState.type !== 'ACTIVE' ||
                 serviceWorkerState.pushNotifications.type === 'denied' ||
                 network.type !== 'READY' ||
-                storage.type !== "READY"
+                storage.type !== 'READY'
             )
                 return;
             chats.setChatData(chatInfo.id, (p) => ({
@@ -68,16 +68,17 @@ export default function ChatSettingsPage() {
 
                     if (!result.endpoint || !result.keys) return;
 
-                    const { id: pushSubscriptionID } = await network.http.addPushSubscription(
-                        result.endpoint,
-                        result.keys.p256dh,
-                        result.keys.auth,
-                    );
-                    
+                    const { id: pushSubscriptionID } =
+                        await network.http.addPushSubscription(
+                            result.endpoint,
+                            result.keys.p256dh,
+                            result.keys.auth,
+                        );
+
                     storage.common.setData({
                         ...storage.common.getData(),
-                        pushSubscriptionID
-                    })
+                        pushSubscriptionID,
+                    });
                 }
 
                 serviceWorker.addKey(chatInfo.id, connection.hmacKey.getKey());
@@ -92,7 +93,7 @@ export default function ChatSettingsPage() {
             serviceWorker,
             connections,
             network,
-            storage
+            storage,
         ],
     );
 

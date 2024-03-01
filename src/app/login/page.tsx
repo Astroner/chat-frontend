@@ -29,7 +29,7 @@ export default function Login() {
 
         if (location.search.includes('next')) {
             const [, next] = location.search.split('next');
-            
+
             router.replace(next.slice(1));
         } else {
             router.replace('/');

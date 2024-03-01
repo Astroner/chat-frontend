@@ -17,156 +17,165 @@ export class ConnectionsManager {
         try {
             const reader = new BufferReader(buffer);
 
-        const connectionsNumber = reader.readByte();
+            const connectionsNumber = reader.readByte();
 
-        const data: PortableConnections = await Promise.all(
-            new Array(connectionsNumber)
-                .fill(null)
-                .map(() => {
-                    const key = reader.readString();
-                    const status = reader.readByte();
-                    const date = new Date(reader.readString());
+            const data: PortableConnections = await Promise.all(
+                new Array(connectionsNumber)
+                    .fill(null)
+                    .map(() => {
+                        const key = reader.readString();
+                        const status = reader.readByte();
+                        const date = new Date(reader.readString());
 
-                    switch (status) {
-                        case 0:
-                            return {
-                                key,
-                                date,
-                                data: {
-                                    type: 'requested' as 'requested',
-                                    ecdhPrivateKey: reader.readBytes(),
-                                    responseRSAPrivateKey: reader.readBytes(),
-                                },
-                            };
+                        switch (status) {
+                            case 0:
+                                return {
+                                    key,
+                                    date,
+                                    data: {
+                                        type: 'requested' as 'requested',
+                                        ecdhPrivateKey: reader.readBytes(),
+                                        responseRSAPrivateKey:
+                                            reader.readBytes(),
+                                    },
+                                };
 
-                        case 1:
-                            return {
-                                key,
-                                date,
-                                data: {
-                                    type: 'pending' as 'pending',
-                                    from: reader.readString(),
-                                    ecdhPublicKey: reader.readBytes(),
-                                    responseRSA: reader.readBytes(),
-                                },
-                            };
+                            case 1:
+                                return {
+                                    key,
+                                    date,
+                                    data: {
+                                        type: 'pending' as 'pending',
+                                        from: reader.readString(),
+                                        ecdhPublicKey: reader.readBytes(),
+                                        responseRSA: reader.readBytes(),
+                                    },
+                                };
 
-                        case 2:
-                            return {
-                                key,
-                                date,
-                                data: {
-                                    type: 'preEstablished' as 'preEstablished',
-                                    aesKey: reader.readBytes(),
-                                    hmacKey: reader.readBytes(),
-                                },
-                            };
+                            case 2:
+                                return {
+                                    key,
+                                    date,
+                                    data: {
+                                        type: 'preEstablished' as 'preEstablished',
+                                        aesKey: reader.readBytes(),
+                                        hmacKey: reader.readBytes(),
+                                    },
+                                };
 
-                        case 3:
-                            return {
-                                key,
-                                date,
-                                data: {
-                                    type: 'established' as 'established',
-                                    aesKey: reader.readBytes(),
-                                    hmacKey: reader.readBytes(),
-                                },
-                            };
-                    }
+                            case 3:
+                                return {
+                                    key,
+                                    date,
+                                    data: {
+                                        type: 'established' as 'established',
+                                        aesKey: reader.readBytes(),
+                                        hmacKey: reader.readBytes(),
+                                    },
+                                };
+                        }
 
-                    throw new Error('Unexpected connection type');
-                })
-                .map(
-                    async ({
-                        key,
-                        date,
-                        data,
-                    }): Promise<PortableConnections[0]> => {
-                        let connection: ConnectionData[keyof ConnectionData];
+                        throw new Error('Unexpected connection type');
+                    })
+                    .map(
+                        async ({
+                            key,
+                            date,
+                            data,
+                        }): Promise<PortableConnections[0]> => {
+                            let connection: ConnectionData[keyof ConnectionData];
 
-                        switch (data.type) {
-                            case 'requested': {
-                                const [ecdhPrivateKey, responseRSAPrivateKey] =
-                                    await Promise.all([
+                            switch (data.type) {
+                                case 'requested': {
+                                    const [
+                                        ecdhPrivateKey,
+                                        responseRSAPrivateKey,
+                                    ] = await Promise.all([
                                         ECDHKey.fromPKCS8(data.ecdhPrivateKey),
                                         RSAEncryptionKey.fromPKCS8(
                                             data.responseRSAPrivateKey,
                                         ),
                                     ]);
 
-                                connection = {
-                                    status: 'requested',
-                                    createdAt: date,
-                                    ecdhPrivateKey,
-                                    responseRSAPrivateKey,
-                                };
+                                    connection = {
+                                        status: 'requested',
+                                        createdAt: date,
+                                        ecdhPrivateKey,
+                                        responseRSAPrivateKey,
+                                    };
 
-                                break;
+                                    break;
+                                }
+
+                                case 'pending': {
+                                    const [ecdhPublicKey, responseRSA] =
+                                        await Promise.all([
+                                            ECDHKey.fromSPKI(
+                                                data.ecdhPublicKey,
+                                            ),
+                                            RSAEncryptionKey.fromPKCS8(
+                                                data.responseRSA,
+                                            ),
+                                        ]);
+
+                                    connection = {
+                                        status: 'pending',
+                                        from: data.from,
+                                        registeredAt: date,
+                                        ecdhPublicKey,
+                                        responseRSA,
+                                    };
+
+                                    break;
+                                }
+
+                                case 'preEstablished': {
+                                    const [aesKey, hmacKey] = await Promise.all(
+                                        [
+                                            AesGcmKey.fromRawBytes(data.aesKey),
+                                            HMACKey.fromRawBytes(data.hmacKey),
+                                        ],
+                                    );
+
+                                    connection = {
+                                        status: 'preEstablished',
+                                        aesKey,
+                                        hmacKey,
+                                        confirmedAt: date,
+                                    };
+
+                                    break;
+                                }
+
+                                case 'established': {
+                                    const [aesKey, hmacKey] = await Promise.all(
+                                        [
+                                            AesGcmKey.fromRawBytes(data.aesKey),
+                                            HMACKey.fromRawBytes(data.hmacKey),
+                                        ],
+                                    );
+
+                                    connection = {
+                                        status: 'established',
+                                        aesKey,
+                                        hmacKey,
+                                        establishedAt: date,
+                                    };
+
+                                    break;
+                                }
                             }
 
-                            case 'pending': {
-                                const [ecdhPublicKey, responseRSA] =
-                                    await Promise.all([
-                                        ECDHKey.fromSPKI(data.ecdhPublicKey),
-                                        RSAEncryptionKey.fromPKCS8(
-                                            data.responseRSA,
-                                        ),
-                                    ]);
+                            return {
+                                key,
+                                connection,
+                            };
+                        },
+                    ),
+            );
 
-                                connection = {
-                                    status: 'pending',
-                                    from: data.from,
-                                    registeredAt: date,
-                                    ecdhPublicKey,
-                                    responseRSA,
-                                };
-
-                                break;
-                            }
-
-                            case 'preEstablished': {
-                                const [aesKey, hmacKey] = await Promise.all([
-                                    AesGcmKey.fromRawBytes(data.aesKey),
-                                    HMACKey.fromRawBytes(data.hmacKey),
-                                ]);
-
-                                connection = {
-                                    status: 'preEstablished',
-                                    aesKey,
-                                    hmacKey,
-                                    confirmedAt: date,
-                                };
-
-                                break;
-                            }
-
-                            case 'established': {
-                                const [aesKey, hmacKey] = await Promise.all([
-                                    AesGcmKey.fromRawBytes(data.aesKey),
-                                    HMACKey.fromRawBytes(data.hmacKey),
-                                ]);
-
-                                connection = {
-                                    status: 'established',
-                                    aesKey,
-                                    hmacKey,
-                                    establishedAt: date,
-                                };
-
-                                break;
-                            }
-                        }
-
-                        return {
-                            key,
-                            connection,
-                        };
-                    },
-                ),
-        );
-
-        return new ConnectionsManager(data);   
-        } catch(e) {
+            return new ConnectionsManager(data);
+        } catch (e) {
             console.error(e);
             return new ConnectionsManager();
         }

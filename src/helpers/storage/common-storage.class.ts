@@ -11,14 +11,14 @@ export type CommonStorageData = {
 };
 
 const DefaultCommonStorageState: CommonStorageData = {
-    onlineOnStartup: false
-}
+    onlineOnStartup: false,
+};
 
 export class CommonStorage {
     static import(buffer: ArrayBuffer) {
         try {
             const reader = new BufferReader(buffer);
-    
+
             const hasLastMessage = reader.readByte();
             let lastMessage: CommonStorageData['lastMessage'];
             if (hasLastMessage) {
@@ -27,23 +27,23 @@ export class CommonStorage {
                     hash: reader.readBytes(32),
                 };
             }
-    
+
             const hasPushSubscription = reader.readBool();
             let pushSubscriptionID: CommonStorageData['pushSubscriptionID'];
-            if(hasPushSubscription) {
+            if (hasPushSubscription) {
                 const length = reader.readByte();
                 pushSubscriptionID = reader.readString(length);
             }
-    
+
             const onlineOnStartup = reader.readBool();
-    
+
             return new CommonStorage({
                 lastMessage,
                 pushSubscriptionID,
-                onlineOnStartup
+                onlineOnStartup,
             });
-        } catch(e) {
-            console.error(e)
+        } catch (e) {
+            console.error(e);
 
             return new CommonStorage();
         }
@@ -93,13 +93,13 @@ export class CommonStorage {
      *  if exists:
      *      timestamp Uint64 - timestamp
      *      hash - 32bytes SHA-256 hash
-     * 
+     *
      * [pushSubscriptionID]
      * pushSubscriptionID exists - 1 byte
      *  id exists:
      *      length: 1 byte
      *      string data
-     * 
+     *
      * [onlineOnStartup] - 1 byte boolean
      */
     export() {
@@ -112,9 +112,9 @@ export class CommonStorage {
         }
 
         builder.appendBoolean(!!this.data.pushSubscriptionID);
-        if(this.data.pushSubscriptionID) {
+        if (this.data.pushSubscriptionID) {
             builder.appendByte(this.data.pushSubscriptionID.length);
-            builder.appendString(this.data.pushSubscriptionID, "SKIP_LENGTH");
+            builder.appendString(this.data.pushSubscriptionID, 'SKIP_LENGTH');
         }
 
         builder.appendBoolean(this.data.onlineOnStartup);

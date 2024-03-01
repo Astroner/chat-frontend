@@ -20,47 +20,47 @@ export class PublishedKeysManager {
         try {
             const reader = new BufferReader(data);
 
-        const entitiesNumber = reader.readByte();
+            const entitiesNumber = reader.readByte();
 
-        const entities: PublishedKeyInfo[] = await Promise.all(
-            new Array(entitiesNumber)
-                .fill(null)
-                .map(() => {
-                    const id = reader.readString();
-                    const name = reader.readString();
-                    const timesUsed = reader.readUint16();
-                    const issuedAtISO = reader.readString();
-                    const publicRsaKey = reader.readBytes();
-                    const privateRsaKey = reader.readBytes();
+            const entities: PublishedKeyInfo[] = await Promise.all(
+                new Array(entitiesNumber)
+                    .fill(null)
+                    .map(() => {
+                        const id = reader.readString();
+                        const name = reader.readString();
+                        const timesUsed = reader.readUint16();
+                        const issuedAtISO = reader.readString();
+                        const publicRsaKey = reader.readBytes();
+                        const privateRsaKey = reader.readBytes();
 
-                    return {
-                        id,
-                        timesUsed,
-                        name,
-                        issuedAtISO,
-                        publicRsaKey,
-                        privateRsaKey,
-                    };
-                })
-                .map(async (entry): Promise<PublishedKeyInfo> => {
-                    const [publicKey, privateKey] = await Promise.all([
-                        RSAEncryptionKey.fromSPKI(entry.publicRsaKey),
-                        RSAEncryptionKey.fromPKCS8(entry.privateRsaKey),
-                    ]);
+                        return {
+                            id,
+                            timesUsed,
+                            name,
+                            issuedAtISO,
+                            publicRsaKey,
+                            privateRsaKey,
+                        };
+                    })
+                    .map(async (entry): Promise<PublishedKeyInfo> => {
+                        const [publicKey, privateKey] = await Promise.all([
+                            RSAEncryptionKey.fromSPKI(entry.publicRsaKey),
+                            RSAEncryptionKey.fromPKCS8(entry.privateRsaKey),
+                        ]);
 
-                    return {
-                        id: entry.id,
-                        name: entry.name,
-                        issuedAt: new Date(entry.issuedAtISO),
-                        timesUsed: entry.timesUsed,
-                        privateKey,
-                        publicKey,
-                    };
-                }),
-        );
+                        return {
+                            id: entry.id,
+                            name: entry.name,
+                            issuedAt: new Date(entry.issuedAtISO),
+                            timesUsed: entry.timesUsed,
+                            privateKey,
+                            publicKey,
+                        };
+                    }),
+            );
 
-        return new PublishedKeysManager(keysIndex, entities);
-        } catch(e) {
+            return new PublishedKeysManager(keysIndex, entities);
+        } catch (e) {
             console.error(e);
             return new PublishedKeysManager(keysIndex);
         }

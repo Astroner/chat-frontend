@@ -65,7 +65,6 @@ export class Network {
         const http = new HTTPClient(this.httpUrl);
 
         const lastMessage = common.getData().lastMessage;
-        
 
         if (lastMessage) {
             const messages = await http.getMessages(
@@ -76,17 +75,21 @@ export class Network {
             const lastMessageCodes = new BigUint64Array(lastMessage.hash);
 
             try {
-                const lastMessageIndex = await Promise.any(messages.map(async (item, i) => {
-                    const hash = await getHash(item.data);
-    
-                    const messageCodes = new BigUint64Array(hash);
-    
-                    const isDifferent = messageCodes.find((item, i) => item !== lastMessageCodes[i]);
-    
-                    if(!!isDifferent) throw new Error("")
-    
-                    return i;
-                }))
+                const lastMessageIndex = await Promise.any(
+                    messages.map(async (item, i) => {
+                        const hash = await getHash(item.data);
+
+                        const messageCodes = new BigUint64Array(hash);
+
+                        const isDifferent = messageCodes.find(
+                            (item, i) => item !== lastMessageCodes[i],
+                        );
+
+                        if (!!isDifferent) throw new Error('');
+
+                        return i;
+                    }),
+                );
 
                 const newMessages = messages.slice(lastMessageIndex + 1);
 
@@ -96,7 +99,7 @@ export class Network {
                         message.data,
                     );
                 }
-            } catch(e) {
+            } catch (e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
             }
         }
