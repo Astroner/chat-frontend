@@ -61,6 +61,8 @@ export class ServiceWorkerService {
                         type: 'not-asked',
                     }
                 }
+
+                break;
             }
         }
 
