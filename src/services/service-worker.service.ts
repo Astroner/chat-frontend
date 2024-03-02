@@ -1,5 +1,6 @@
 import { env } from '../env';
 import { Subscription } from '../helpers/types';
+import { WindowFocusService } from './window-focus.service';
 
 export type PushNotificationsState =
     | { type: 'denied' }
@@ -24,7 +25,13 @@ export class ServiceWorkerService {
 
     private registration: ServiceWorkerRegistration | null = null;
 
-    async init() {
+    private sendingSignalInterval: NodeJS.Timeout | null = null;
+
+    private focusSub: Subscription | null = null;
+
+    async init(
+        windowFocus: WindowFocusService
+    ) {
         this.setState({ type: 'LOADING' });
 
         await navigator.serviceWorker.register('/service-worker.js');
@@ -51,6 +58,7 @@ export class ServiceWorkerService {
 
             case 'granted': {
                 const subscription = await this.registration.pushManager.getSubscription();
+                // the permission might be granted but no subscription exists currently
                 if(subscription) {
                     pushNotifications = {
                         type: 'granted',
@@ -66,15 +74,34 @@ export class ServiceWorkerService {
             }
         }
 
+        if(windowFocus.getState()) {
+            this.disableNotifications()
+        } else {
+            this.enableNotifications();
+        }
+
+        this.focusSub = windowFocus.subscribe(() => {
+            if(windowFocus.getState()) {
+                this.disableNotifications()
+            } else {
+                this.enableNotifications();
+            }
+        })
+
         this.setState({
             type: 'ACTIVE',
             pushNotifications,
         });
 
+
         return {
             type: 'ACTIVE',
             pushNotifications,
         };
+    }
+
+    destroy() {
+        this.focusSub?.unsubscribe();
     }
 
     getState(): Readonly<ServiceWorkerServiceState> {
@@ -167,5 +194,24 @@ export class ServiceWorkerService {
         this.state = state;
 
         this.listeners.forEach((cb) => cb());
+    }
+
+    private disableNotifications() {
+        this.registration?.active?.postMessage({
+            type: 'disable-notifications'
+        })
+        this.sendingSignalInterval = setInterval(() => {
+            this.registration?.active?.postMessage({
+                type: 'disable-notifications'
+            })
+        }, 20)
+    }
+
+    private enableNotifications() {
+        this.sendingSignalInterval && clearInterval(this.sendingSignalInterval);
+
+        this.registration?.active?.postMessage({
+            type: 'enable-notifications'
+        })
     }
 }

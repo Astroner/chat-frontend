@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
-import { ServiceWorkerContext } from './context';
+import { ServiceWorkerContext, WindowFocusContext } from './context';
 import {
     ServiceWorkerService,
     ServiceWorkerServiceState,
@@ -24,3 +24,19 @@ export const useServiceWorker = (): [
 
     return [state, service];
 };
+
+export const useWindowFocus = () => {
+    const service = useContext(WindowFocusContext);
+
+    const [state, setState] = useState(() => service.getState());
+
+    useEffect(() => {
+        const sub = service.subscribe(() => setState(service.getState()))
+
+        return () => {
+            sub.unsubscribe()
+        }
+    }, [service])
+
+    return state;
+}

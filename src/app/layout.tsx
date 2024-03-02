@@ -18,11 +18,12 @@ import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 import { NetworkStorageBind } from '../services/network-storage-bind.component';
 import { SmartStorage } from '../model/smart-storage.class';
 import { ServiceWorkerService } from '../services/service-worker.service';
-import { ServiceWorkerContext } from '../services/context';
+import { ServiceWorkerContext, WindowFocusContext } from '../services/context';
 
 import { env } from '../env';
 
 import './globals.scss';
+import { WindowFocusService } from '../services/window-focus.service';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
     const signsIndex = useMemo(() => new SignsIndex(), []);
     const gzip = useMemo(() => new GZip(), []);
     const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
+    const windowFocus = useMemo(() => new WindowFocusService(), []);
     const storageEnv = useMemo(
         () =>
             new SmartStorage(
@@ -72,8 +74,14 @@ export default function RootLayout({
     }, []);
 
     useEffect(() => {
-        serviceWorker.init();
-    }, [serviceWorker]);
+        windowFocus.init();
+        serviceWorker.init(windowFocus);
+
+        return () => {
+            windowFocus.destroy();
+            serviceWorker.destroy();
+        }
+    }, [serviceWorker, windowFocus]);
 
     useEffect(() => {
         if (env.NODE_ENV !== 'development') return;
@@ -95,15 +103,17 @@ export default function RootLayout({
             <NetworkContext.Provider value={network}>
                 <SmartStorageContext.Provider value={storageEnv}>
                     <ServiceWorkerContext.Provider value={serviceWorker}>
-                        <html lang="en">
-                            <head>
-                                <title>Chat</title>
-                            </head>
-                            <body className={inter.className}>
-                                <NetworkStorageBind />
-                                {children}
-                            </body>
-                        </html>
+                        <WindowFocusContext.Provider value={windowFocus}>
+                            <html lang="en">
+                                <head>
+                                    <title>Chat</title>
+                                </head>
+                                <body className={inter.className}>
+                                    <NetworkStorageBind />
+                                    {children}
+                                </body>
+                            </html>
+                        </WindowFocusContext.Provider>
                     </ServiceWorkerContext.Provider>
                 </SmartStorageContext.Provider>
             </NetworkContext.Provider>

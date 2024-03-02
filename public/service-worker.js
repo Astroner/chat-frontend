@@ -125,6 +125,9 @@ const updateStorage = async () => {
     storage.put("memes", new Response(bytes))
 }
 
+let notificationsEnabled = true;
+let notificationResetTimeout = null;
+
 self.addEventListener('message', async ({ data }) => {
     await initialize();
 
@@ -136,7 +139,6 @@ self.addEventListener('message', async ({ data }) => {
                 key: data.key,
                 bytes: new Uint8Array(bytes)
             })
-
             break;
 
         case "delete-key":
@@ -148,6 +150,25 @@ self.addEventListener('message', async ({ data }) => {
             keys.clear();
 
             break;
+
+        case "disable-notifications":
+            notificationsEnabled = false;
+            if(notificationResetTimeout) {
+                clearInterval(notificationResetTimeout);
+                notificationResetTimeout = null;
+            }
+            notificationResetTimeout = setInterval(() => notificationsEnabled = true, 22);
+
+            break;
+
+        case "enable-notifications":
+            notificationsEnabled = true;
+            if(notificationResetTimeout) {
+                clearInterval(notificationResetTimeout);
+                notificationResetTimeout = null;
+            }
+
+            break;
     }
 
 
@@ -155,9 +176,10 @@ self.addEventListener('message', async ({ data }) => {
 })   
 
 self.addEventListener('push', async event => {
+    if(!notificationsEnabled) return;
     await initialize();
 
-    if(keys.size === 0) return;
+    if(keys.size === 0) return;;
 
     const message = event.data?.text();
 
@@ -168,7 +190,6 @@ self.addEventListener('push', async event => {
     if(!buffer) return;
 
     const hasSignature = buffer[0];
-
 
     if(!hasSignature) return;
 
