@@ -1,4 +1,4 @@
-import { Subscription } from "../helpers/types";
+import { Subscription } from '../helpers/types';
 
 export class WindowFocusService {
     private listeners = new Set<VoidFunction>();
@@ -6,10 +6,10 @@ export class WindowFocusService {
     private state: DocumentVisibilityState;
 
     constructor() {
-        if(global.document) {
+        if (global.document) {
             this.state = document.visibilityState;
         } else {
-            this.state = "hidden";
+            this.state = 'hidden';
         }
     }
 
@@ -30,12 +30,12 @@ export class WindowFocusService {
         this.listeners.add(cb);
 
         return {
-            unsubscribe: () => this.listeners.delete(cb)
-        }
+            unsubscribe: () => this.listeners.delete(cb),
+        };
     }
 
     private handleChange = () => {
         this.state = document.visibilityState;
-        this.listeners.forEach(cb => cb());
-    }
+        this.listeners.forEach((cb) => cb());
+    };
 }

@@ -80,7 +80,7 @@ export default function RootLayout({
         return () => {
             windowFocus.destroy();
             serviceWorker.destroy();
-        }
+        };
     }, [serviceWorker, windowFocus]);
 
     useEffect(() => {

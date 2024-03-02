@@ -31,12 +31,12 @@ export const useWindowFocus = () => {
     const [state, setState] = useState(() => service.getState());
 
     useEffect(() => {
-        const sub = service.subscribe(() => setState(service.getState()))
+        const sub = service.subscribe(() => setState(service.getState()));
 
         return () => {
-            sub.unsubscribe()
-        }
-    }, [service])
+            sub.unsubscribe();
+        };
+    }, [service]);
 
     return state;
-}
+};

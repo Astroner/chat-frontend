@@ -6,4 +6,6 @@ export const ServiceWorkerContext = createContext<ServiceWorkerService>(
     null as any,
 );
 
-export const WindowFocusContext = createContext<WindowFocusService>(null as any);
+export const WindowFocusContext = createContext<WindowFocusService>(
+    null as any,
+);

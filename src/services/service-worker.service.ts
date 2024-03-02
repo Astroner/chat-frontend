@@ -29,9 +29,7 @@ export class ServiceWorkerService {
 
     private focusSub: Subscription | null = null;
 
-    async init(
-        windowFocus: WindowFocusService
-    ) {
+    async init(windowFocus: WindowFocusService) {
         this.setState({ type: 'LOADING' });
 
         await navigator.serviceWorker.register('/service-worker.js');
@@ -57,42 +55,42 @@ export class ServiceWorkerService {
                 break;
 
             case 'granted': {
-                const subscription = await this.registration.pushManager.getSubscription();
+                const subscription =
+                    await this.registration.pushManager.getSubscription();
                 // the permission might be granted but no subscription exists currently
-                if(subscription) {
+                if (subscription) {
                     pushNotifications = {
                         type: 'granted',
-                        subscription
-                    }
+                        subscription,
+                    };
                 } else {
                     pushNotifications = {
                         type: 'not-asked',
-                    }
+                    };
                 }
 
                 break;
             }
         }
 
-        if(windowFocus.getState()) {
-            this.disableNotifications()
+        if (windowFocus.getState()) {
+            this.disableNotifications();
         } else {
             this.enableNotifications();
         }
 
         this.focusSub = windowFocus.subscribe(() => {
-            if(windowFocus.getState()) {
-                this.disableNotifications()
+            if (windowFocus.getState()) {
+                this.disableNotifications();
             } else {
                 this.enableNotifications();
             }
-        })
+        });
 
         this.setState({
             type: 'ACTIVE',
             pushNotifications,
         });
-
 
         return {
             type: 'ACTIVE',
@@ -198,20 +196,20 @@ export class ServiceWorkerService {
 
     private disableNotifications() {
         this.registration?.active?.postMessage({
-            type: 'disable-notifications'
-        })
+            type: 'disable-notifications',
+        });
         this.sendingSignalInterval = setInterval(() => {
             this.registration?.active?.postMessage({
-                type: 'disable-notifications'
-            })
-        }, 20)
+                type: 'disable-notifications',
+            });
+        }, 20);
     }
 
     private enableNotifications() {
         this.sendingSignalInterval && clearInterval(this.sendingSignalInterval);
 
         this.registration?.active?.postMessage({
-            type: 'enable-notifications'
-        })
+            type: 'enable-notifications',
+        });
     }
 }
