@@ -46,7 +46,7 @@ export class NotificationsService {
     }
 
     addNotification(text: string) {
-        if(this.notificationsDisabled) return;
+        if (this.notificationsDisabled) return;
 
         const id = '' + this.COUNTER++;
 

@@ -47,9 +47,10 @@ export const Chats: FC<ChatsProps> = memo((props) => {
                         <div
                             className={
                                 cn[
-                                    'dot--' + (chat.hasUnreadMessages
-                                        ? 'visible'
-                                        : 'hidden')
+                                    'dot--' +
+                                        (chat.hasUnreadMessages
+                                            ? 'visible'
+                                            : 'hidden')
                                 ]
                             }
                         />

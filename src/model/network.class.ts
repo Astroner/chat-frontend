@@ -31,7 +31,7 @@ export class Network {
         private httpUrl: string,
         private keysIndex: KeysIndex,
         private signsIndex: SignsIndex,
-        private notifications: NotificationsService
+        private notifications: NotificationsService,
     ) {}
 
     async init(
@@ -104,7 +104,6 @@ export class Network {
                     );
                 }
                 this.notifications.enableNotifications();
-
             } catch (e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
             }

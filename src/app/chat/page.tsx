@@ -67,8 +67,7 @@ export default function ChatPage() {
         chats.setChatData(chatID, {
             hasUnreadMessages: false,
         });
-
-    }, [network, chats, chatID])
+    }, [network, chats, chatID]);
 
     if (!chatInfo) return null;
 

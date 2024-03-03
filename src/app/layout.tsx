@@ -59,7 +59,13 @@ export default function RootLayout({
 
     const network = useMemo(
         () =>
-            new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex, notifications),
+            new Network(
+                env.WS_ADDRESS,
+                env.API_ADDRESS,
+                keysIndex,
+                signsIndex,
+                notifications,
+            ),
         [keysIndex, signsIndex, notifications],
     );
 
