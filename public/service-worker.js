@@ -170,13 +170,10 @@ self.addEventListener('message', async ({ data }) => {
                 clearTimeout(notificationResetTimeout);
                 notificationResetTimeout = null;
             }
-            notificationResetTimeout = setTimeout(
-                () => {
-                    notificationsEnabled = true
-                    notificationResetTimeout = null;
-                },
-                22,
-            );
+            notificationResetTimeout = setTimeout(() => {
+                notificationsEnabled = true;
+                notificationResetTimeout = null;
+            }, 22);
 
             break;
 
@@ -220,10 +217,7 @@ self.addEventListener('push', async (event) => {
 
     if (cursor + signatureLength >= buffer.byteLength) return;
 
-    const signature = buffer.buffer.slice(
-        cursor,
-        cursor + signatureLength,
-    );
+    const signature = buffer.buffer.slice(cursor, cursor + signatureLength);
     cursor += signatureLength;
 
     const dataLength = new Uint16Array(

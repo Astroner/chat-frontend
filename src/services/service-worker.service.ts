@@ -198,7 +198,8 @@ export class ServiceWorkerService {
         this.registration?.active?.postMessage({
             type: 'disable-notifications',
         });
-        if(this.sendingSignalInterval) clearInterval(this.sendingSignalInterval);
+        if (this.sendingSignalInterval)
+            clearInterval(this.sendingSignalInterval);
         this.sendingSignalInterval = setInterval(() => {
             this.registration?.active?.postMessage({
                 type: 'disable-notifications',
