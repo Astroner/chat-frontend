@@ -46,7 +46,7 @@
 
     background-color: var(--orange);
 
-    transition: opacity .3s;
+    transition: opacity 0.3s;
 
     &--visible {
         composes: dot;

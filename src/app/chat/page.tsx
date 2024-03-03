@@ -58,14 +58,14 @@ export default function ChatPage() {
     );
 
     useEffect(() => {
-        if(!chatInfo) return router.push('/')
+        if (!chatInfo) return router.push('/');
 
-        if(!chats || network.type !== "READY") return;
+        if (!chats || network.type !== 'READY') return;
 
         chats.setChatData(chatInfo.id, {
-            hasUnreadMessages: false
-        })
-    }, [chatInfo, chats, router, network])
+            hasUnreadMessages: false,
+        });
+    }, [chatInfo, chats, router, network]);
 
     if (!chatInfo) return null;
 

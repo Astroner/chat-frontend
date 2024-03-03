@@ -7,7 +7,7 @@ export const NetworkStorageBind: FC = memo(() => {
     const [networkState, network] = useNetwork();
     const [storage] = useStorage();
     const router = useRouter();
-    const [, notifications] = useNotifications("NO_UPDATES");
+    const [, notifications] = useNotifications('NO_UPDATES');
 
     useEffect(() => {
         const nState = network.getState();
@@ -27,7 +27,9 @@ export const NetworkStorageBind: FC = memo(() => {
         const sub = networkState.chat.addEventListener(async (ev) => {
             switch (ev.type) {
                 case 'newPendingConnection': {
-                    notifications.addNotification(`New connection request from "${ev.from}"`);
+                    notifications.addNotification(
+                        `New connection request from "${ev.from}"`,
+                    );
                     break;
                 }
 
@@ -35,7 +37,9 @@ export const NetworkStorageBind: FC = memo(() => {
                     const chat = storage.chats.getByConnectionID(ev.id);
                     if (chat) {
                         storage.chats.deleteChat(chat.id);
-                        notifications.addNotification(`Request to "${chat.title}" was declined`);
+                        notifications.addNotification(
+                            `Request to "${chat.title}" was declined`,
+                        );
                     }
 
                     break;
@@ -55,14 +59,20 @@ export const NetworkStorageBind: FC = memo(() => {
                     const chat = storage.chats.getByConnectionID(ev.id);
                     if (chat) {
                         const search = new URLSearchParams(location.search);
-                        const currentChatID = search.get("id");
+                        const currentChatID = search.get('id');
 
-                        if(location.pathname !== '/chat' || !currentChatID || currentChatID !== chat.id) {
-                            notifications.addNotification(`${chat.title}: ${ev.message}`);
-                            
+                        if (
+                            location.pathname !== '/chat' ||
+                            !currentChatID ||
+                            currentChatID !== chat.id
+                        ) {
+                            notifications.addNotification(
+                                `${chat.title}: ${ev.message}`,
+                            );
+
                             storage.chats.setChatData(chat.id, {
-                                hasUnreadMessages: true
-                            })
+                                hasUnreadMessages: true,
+                            });
                         }
 
                         storage.chats.setChatData(chat.id, (p) => ({

@@ -11,4 +11,6 @@ export const WindowFocusContext = createContext<WindowFocusService>(
     null as any,
 );
 
-export const NotificationsContext = createContext<NotificationsService>(null as any)
+export const NotificationsContext = createContext<NotificationsService>(
+    null as any,
+);

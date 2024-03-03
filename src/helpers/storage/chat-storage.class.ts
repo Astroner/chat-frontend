@@ -39,7 +39,7 @@ export class ChatStorage {
             connectionID,
             state: 'PENDING',
             pushNotifications: false,
-            hasUnreadMessages: false
+            hasUnreadMessages: false,
         };
 
         this.connectionIDToChatID.set(connectionID, id);

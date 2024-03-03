@@ -18,7 +18,11 @@ import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 import { NetworkStorageBind } from '../services/network-storage-bind.component';
 import { SmartStorage } from '../model/smart-storage.class';
 import { ServiceWorkerService } from '../services/service-worker.service';
-import { NotificationsContext, ServiceWorkerContext, WindowFocusContext } from '../services/context';
+import {
+    NotificationsContext,
+    ServiceWorkerContext,
+    WindowFocusContext,
+} from '../services/context';
 
 import { env } from '../env';
 
@@ -107,7 +111,9 @@ export default function RootLayout({
                 <SmartStorageContext.Provider value={storageEnv}>
                     <ServiceWorkerContext.Provider value={serviceWorker}>
                         <WindowFocusContext.Provider value={windowFocus}>
-                            <NotificationsContext.Provider value={notifications}>
+                            <NotificationsContext.Provider
+                                value={notifications}
+                            >
                                 <html lang="en">
                                     <head>
                                         <title>Chat</title>
