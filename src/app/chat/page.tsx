@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { useNetwork, useStorage } from '@/src/model/hooks';
+import { useNetwork } from '@/src/model/hooks';
 import { HomeLink } from '@/src/components/home-link.component';
 import { DotsLoader } from '@/src/components/dots-loader/dots-loader.component';
 
