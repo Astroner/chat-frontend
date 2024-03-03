@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/src/components/button/button.component';
@@ -41,6 +41,7 @@ export default function ChatSettingsPage() {
         router.back();
     }, [router]);
 
+    // BAD: the process of push notifications enabling should be moved into separate entity
     const toggleNotifications = useCallback(
         async (value: boolean) => {
             if (

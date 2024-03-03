@@ -1,7 +1,7 @@
 import { FC, memo, useEffect } from 'react';
 import { useNetwork, useStorage } from '../model/hooks';
 import { useRouter } from 'next/navigation';
-import { useNotifications, useServiceWorker, useWindowFocus } from './hooks';
+import { useNotifications } from './hooks';
 
 export const NetworkStorageBind: FC = memo(() => {
     const [networkState, network] = useNetwork();

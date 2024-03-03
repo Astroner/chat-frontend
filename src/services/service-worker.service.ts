@@ -73,14 +73,14 @@ export class ServiceWorkerService {
             }
         }
 
-        if (windowFocus.getState()) {
+        if (windowFocus.getState() === 'visible') {
             this.disableNotifications();
         } else {
             this.enableNotifications();
         }
 
         this.focusSub = windowFocus.subscribe(() => {
-            if (windowFocus.getState()) {
+            if (windowFocus.getState() === 'visible') {
                 this.disableNotifications();
             } else {
                 this.enableNotifications();
@@ -198,6 +198,7 @@ export class ServiceWorkerService {
         this.registration?.active?.postMessage({
             type: 'disable-notifications',
         });
+        if(this.sendingSignalInterval) clearInterval(this.sendingSignalInterval);
         this.sendingSignalInterval = setInterval(() => {
             this.registration?.active?.postMessage({
                 type: 'disable-notifications',
