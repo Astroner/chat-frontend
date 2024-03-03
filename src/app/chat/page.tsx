@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useNetwork, useStorage } from '@/src/model/hooks';
 import { HomeLink } from '@/src/components/home-link.component';
@@ -20,6 +20,7 @@ const dotsLoaderStyle = {
 
 export default function ChatPage() {
     const params = useSearchParams();
+    const router = useRouter();
     const [network] = useNetwork();
 
     const chatID = useMemo(() => {
@@ -55,6 +56,10 @@ export default function ChatPage() {
         },
         [chatInfo, network, chats, connections],
     );
+
+    useEffect(() => {
+        if(!chatInfo) router.push('/')
+    })
 
     if (!chatInfo) return null;
 

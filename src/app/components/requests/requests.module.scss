@@ -1,0 +1,48 @@
+.root {
+    margin-top: 20px;
+
+    padding: 20px;
+
+    h2 {
+        margin: 0;
+        color: var(--light-purple);
+        text-align: center;
+    }
+}
+
+.list {
+    margin-top: 20px;
+}
+
+.invite {
+    width: 100%;
+
+    background-color: var(--light-purple);
+
+    padding: 15px 20px;
+
+    border-radius: var(--border-radius);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+        margin: 0;
+
+        color: var(--dark-purple);
+        font-size: var(--text-font-size);
+    }
+
+    &:not(:last-child) {
+        margin-bottom: 10px;
+    }
+}
+
+.buttons {
+    display: flex;
+
+    button:last-child {
+        margin-left: 10px;
+    }
+}

@@ -10,6 +10,7 @@ export type ChatInfo = {
     state: 'ACTIVE' | 'PENDING';
     messages: ChatMessage[];
     pushNotifications: boolean;
+    hasUnreadMessages: boolean;
 };
 
 export class ChatStorage {
@@ -38,6 +39,7 @@ export class ChatStorage {
             connectionID,
             state: 'PENDING',
             pushNotifications: false,
+            hasUnreadMessages: false
         };
 
         this.connectionIDToChatID.set(connectionID, id);

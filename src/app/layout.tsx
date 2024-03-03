@@ -18,12 +18,14 @@ import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 import { NetworkStorageBind } from '../services/network-storage-bind.component';
 import { SmartStorage } from '../model/smart-storage.class';
 import { ServiceWorkerService } from '../services/service-worker.service';
-import { ServiceWorkerContext, WindowFocusContext } from '../services/context';
+import { NotificationsContext, ServiceWorkerContext, WindowFocusContext } from '../services/context';
 
 import { env } from '../env';
 
 import './globals.scss';
 import { WindowFocusService } from '../services/window-focus.service';
+import { NotificationsService } from '../services/notifications/notifications.service';
+import { NotificationsView } from './components/notifications-view/notifications-view.component';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,6 +40,7 @@ export default function RootLayout({
     const gzip = useMemo(() => new GZip(), []);
     const serviceWorker = useMemo(() => new ServiceWorkerService(), []);
     const windowFocus = useMemo(() => new WindowFocusService(), []);
+    const notifications = useMemo(() => new NotificationsService(), []);
     const storageEnv = useMemo(
         () =>
             new SmartStorage(
@@ -104,15 +107,18 @@ export default function RootLayout({
                 <SmartStorageContext.Provider value={storageEnv}>
                     <ServiceWorkerContext.Provider value={serviceWorker}>
                         <WindowFocusContext.Provider value={windowFocus}>
-                            <html lang="en">
-                                <head>
-                                    <title>Chat</title>
-                                </head>
-                                <body className={inter.className}>
-                                    <NetworkStorageBind />
-                                    {children}
-                                </body>
-                            </html>
+                            <NotificationsContext.Provider value={notifications}>
+                                <html lang="en">
+                                    <head>
+                                        <title>Chat</title>
+                                    </head>
+                                    <body className={inter.className}>
+                                        <NotificationsView />
+                                        <NetworkStorageBind />
+                                        {children}
+                                    </body>
+                                </html>
+                            </NotificationsContext.Provider>
                         </WindowFocusContext.Provider>
                     </ServiceWorkerContext.Provider>
                 </SmartStorageContext.Provider>

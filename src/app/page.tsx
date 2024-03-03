@@ -10,6 +10,7 @@ import { SlidablePanel } from './components/slidable-panel/slidable-panel.compon
 import { SlideAnchor } from './components/slidable-panel/slide-anchor.component';
 import { DotsLoader } from '../components/dots-loader/dots-loader.component';
 import { Chats } from './components/chats/chats.component';
+import { Requests } from './components/requests/requests.components';
 
 import cn from './page.module.scss';
 
@@ -60,6 +61,7 @@ export default function Home() {
             </header>
             <main className={cn.root}>
                 <Chats />
+                <Requests />
                 <SlidablePanel
                     open={isPanelOpen}
                     onStateChange={setIsPanelOpen}
