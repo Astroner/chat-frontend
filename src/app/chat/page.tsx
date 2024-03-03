@@ -58,6 +58,7 @@ export default function ChatPage() {
     );
 
     useEffect(() => {
+        // No chat or chat was deleted
         if (!chatInfo) return router.push('/');
     }, [chatInfo, chats, router, network]);
 

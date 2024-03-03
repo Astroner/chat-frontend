@@ -191,62 +191,69 @@ self.addEventListener('message', async ({ data }) => {
 });
 
 self.addEventListener('push', async (event) => {
-    if (!notificationsEnabled) return;
+    event.waitUntil(
+        Promise.resolve().then(async () => {
+            if (!notificationsEnabled) return;
 
-    await initialize();
+            await initialize();
 
-    if (keys.size === 0) return;
+            if (keys.size === 0) return;
 
-    const message = event.data?.text();
+            const message = event.data?.text();
 
-    if (!message) return;
+            if (!message) return;
 
-    const buffer = base64ToArrayBuffer(message);
+            const buffer = base64ToArrayBuffer(message);
 
-    if (!buffer) return;
+            if (!buffer) return;
 
-    const hasSignature = buffer[0];
+            const hasSignature = buffer[0];
 
-    if (!hasSignature) return;
+            if (!hasSignature) return;
 
-    let cursor = 1;
-    const signatureLength = new Uint16Array(
-        buffer.buffer.slice(cursor, cursor + 2),
-    )[0];
-    cursor += 2;
+            let cursor = 1;
+            const signatureLength = new Uint16Array(
+                buffer.buffer.slice(cursor, cursor + 2),
+            )[0];
+            cursor += 2;
 
-    if (cursor + signatureLength >= buffer.byteLength) return;
+            if (cursor + signatureLength >= buffer.byteLength) return;
 
-    const signature = buffer.buffer.slice(cursor, cursor + signatureLength);
-    cursor += signatureLength;
+            const signature = buffer.buffer.slice(
+                cursor,
+                cursor + signatureLength,
+            );
+            cursor += signatureLength;
 
-    const dataLength = new Uint16Array(
-        buffer.buffer.slice(cursor, cursor + 2),
-    )[0];
-    cursor += 2;
+            const dataLength = new Uint16Array(
+                buffer.buffer.slice(cursor, cursor + 2),
+            )[0];
+            cursor += 2;
 
-    if (cursor + dataLength > buffer.byteLength) return;
+            if (cursor + dataLength > buffer.byteLength) return;
 
-    const data = buffer.buffer.slice(cursor, cursor + dataLength);
+            const data = buffer.buffer.slice(cursor, cursor + dataLength);
 
-    try {
-        await Promise.any(
-            Array.from(keys.values()).map(async ({ key }) => {
-                const result = await crypto.subtle.verify(
-                    'HMAC',
-                    key,
-                    signature,
-                    data,
+            try {
+                await Promise.any(
+                    Array.from(keys.values()).map(async ({ key }) => {
+                        const result = await crypto.subtle.verify(
+                            'HMAC',
+                            key,
+                            signature,
+                            data,
+                        );
+
+                        if (!result) throw new Error('Failed');
+                    }),
                 );
+            } catch {
+                return;
+            }
 
-                if (!result) throw new Error('Failed');
-            }),
-        );
-    } catch {
-        return;
-    }
-
-    self.registration.showNotification('New message');
+            self.registration.showNotification('New message');
+        }),
+    );
 });
 
 self.addEventListener('notificationclick', async (event) => {
