@@ -208,7 +208,10 @@ const ClientView: FC<{
 export const Default: StoryFn = () => {
     const keysIndex = useMemo(() => new KeysIndex(), []);
     const signsIndex = useMemo(() => new SignsIndex(), []);
-    const connectionsManager = useMemo(() => new ConnectionsManager(), []);
+    const connectionsManager = useMemo(
+        () => new ConnectionsManager(keysIndex, signsIndex),
+        [keysIndex, signsIndex],
+    );
     const commons = useMemo(() => new CommonStorage(), []);
     const publishedManager = useMemo(
         () => new PublishedKeysManager(keysIndex),

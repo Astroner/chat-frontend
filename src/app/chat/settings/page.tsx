@@ -19,6 +19,8 @@ export default function ChatSettingsPage() {
     const [network] = useNetwork();
     const [storage] = useStorage();
 
+    const [deletePressed, setDeletePressed] = useState(false);
+
     const chatID = useMemo(() => {
         return params.get('id') ?? null;
     }, [params]);
@@ -98,6 +100,19 @@ export default function ChatSettingsPage() {
         ],
     );
 
+    // BAD: Should also be moved somewhere
+    const deleteChat = useCallback(() => {
+        if (!deletePressed) return setDeletePressed(true);
+
+        if (storage.type !== 'READY' || !chatInfo) return;
+
+        storage.connections.deleteConnection(chatInfo.connectionID);
+        serviceWorker.deleteKey(chatInfo.id);
+        storage.chats.deleteChat(chatInfo.id);
+
+        router.push('/');
+    }, [deletePressed, storage, chatInfo, router, serviceWorker]);
+
     if (!chatInfo) return null;
 
     return (
@@ -132,6 +147,13 @@ export default function ChatSettingsPage() {
                     serviceWorkerState.pushNotifications.type === 'denied' && (
                         <div>Push notifications were disabled</div>
                     )}
+                <Button
+                    className={cn.delete}
+                    color="orange"
+                    onClick={deleteChat}
+                >
+                    {deletePressed ? 'Confirm' : 'Delete chat'}
+                </Button>
             </main>
         </>
     );

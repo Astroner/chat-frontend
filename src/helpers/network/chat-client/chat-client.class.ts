@@ -70,8 +70,6 @@ export class ChatClient {
         const request =
             await this.connectionsManager.createNewConnectionRequest();
 
-        this.keysIndex.addKey(request.id, request.rsaPrivateKey);
-
         this.protocolClient.postMessage(
             {
                 type: 'connectionRequest',
@@ -104,10 +102,7 @@ export class ChatClient {
 
         const { privateKey, publicKey } = await ECDHKey.generatePair();
 
-        const { aes, hmacKey } = await connection.accept(privateKey);
-
-        this.keysIndex.addKey(connectionID, aes);
-        this.signsIndex.addKey(connectionID, hmacKey);
+        await connection.accept(privateKey);
 
         this.protocolClient.postMessage(
             {
@@ -173,10 +168,6 @@ export class ChatClient {
                 const { aesKey, hmacKey } = await connection.confirm(
                     event.ecdhPublicKey,
                 );
-
-                this.keysIndex.removeKey(event.keyID);
-                this.keysIndex.addKey(event.keyID, aesKey);
-                this.signsIndex.addKey(event.keyID, hmacKey);
 
                 this.protocolClient.postMessage(
                     {

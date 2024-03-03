@@ -1,7 +1,9 @@
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
 import { HMACKey } from '../../crypto/hmac/hmac-key.class';
+import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
+import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 import {
     ConnectionData,
     ConnectionMix,
@@ -11,6 +13,8 @@ import {
 export type ConnectionEntityDependencies = {
     onChange: VoidFunction;
     onDestroy: (id: string) => void;
+    keysIndex: KeysIndex;
+    signsIndex: SignsIndex;
 };
 
 export class ConnectionEntry implements ConnectionMix {
@@ -81,6 +85,9 @@ export class ConnectionEntry implements ConnectionMix {
             this.ecdhPrivateKey,
         );
 
+        this.api.keysIndex.addKey(this.id, aesKey);
+        this.api.signsIndex.addKey(this.id, hmacKey);
+
         this.updateState({
             status: 'preEstablished',
             aesKey,
@@ -104,6 +111,9 @@ export class ConnectionEntry implements ConnectionMix {
             this.ecdhPublicKey,
             ecdhPrivateKey,
         );
+
+        this.api.keysIndex.addKey(this.id, aes);
+        this.api.signsIndex.addKey(this.id, hmacKey);
 
         this.updateState({
             status: 'preEstablished',

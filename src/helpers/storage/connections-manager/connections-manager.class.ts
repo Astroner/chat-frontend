@@ -3,7 +3,9 @@ import { BufferReader } from '../../buffer-read-write/buffer-reader.class';
 import { AesGcmKey } from '../../crypto/aes-gcm/aes-gcm-key.class';
 import { ECDHKey } from '../../crypto/ecdh/ecdh-key.class';
 import { HMACKey } from '../../crypto/hmac/hmac-key.class';
+import { KeysIndex } from '../../crypto/keys-index/keys-index.class';
 import { RSAEncryptionKey } from '../../crypto/rsa/rsa-encryption-key.class';
+import { SignsIndex } from '../../crypto/signs-index/signs-index.class';
 import { ConnectionEntry } from './connection-entity.class';
 import { ConnectionData } from './connections-manager.types';
 
@@ -13,7 +15,11 @@ export type PortableConnections = Array<{
 }>;
 
 export class ConnectionsManager {
-    static async import(buffer: ArrayBuffer): Promise<ConnectionsManager> {
+    static async import(
+        keysIndex: KeysIndex,
+        signsIndex: SignsIndex,
+        buffer: ArrayBuffer,
+    ): Promise<ConnectionsManager> {
         try {
             const reader = new BufferReader(buffer);
 
@@ -174,10 +180,10 @@ export class ConnectionsManager {
                     ),
             );
 
-            return new ConnectionsManager(data);
+            return new ConnectionsManager(keysIndex, signsIndex, data);
         } catch (e) {
             console.error(e);
-            return new ConnectionsManager();
+            return new ConnectionsManager(keysIndex, signsIndex);
         }
     }
 
@@ -185,11 +191,17 @@ export class ConnectionsManager {
 
     private connections = new Map<string, ConnectionEntry>();
 
-    constructor(inits?: PortableConnections) {
+    constructor(
+        private keysIndex: KeysIndex,
+        private signsIndex: SignsIndex,
+        inits?: PortableConnections,
+    ) {
         if (inits) {
             const api = {
                 onChange: this.sendUpdate,
                 onDestroy: this.deleteConnection,
+                keysIndex,
+                signsIndex,
             };
 
             for (const { key, connection } of inits)
@@ -220,10 +232,14 @@ export class ConnectionsManager {
             {
                 onChange: this.sendUpdate,
                 onDestroy: this.deleteConnection,
+                keysIndex: this.keysIndex,
+                signsIndex: this.signsIndex,
             },
         );
 
         this.connections.set(id, entry);
+
+        this.keysIndex.addKey(id, rsaPrivateKey);
 
         return {
             id,
@@ -252,6 +268,8 @@ export class ConnectionsManager {
             {
                 onChange: this.sendUpdate,
                 onDestroy: this.deleteConnection,
+                keysIndex: this.keysIndex,
+                signsIndex: this.signsIndex,
             },
         );
 
@@ -267,7 +285,14 @@ export class ConnectionsManager {
     }
 
     deleteConnection = (id: string) => {
+        const item = this.connections.get(id);
+        if (!item) return;
+
+        this.keysIndex.removeKey(id);
+        this.signsIndex.deleteKey(id);
+
         this.connections.delete(id);
+
         this.sendUpdate();
     };
 

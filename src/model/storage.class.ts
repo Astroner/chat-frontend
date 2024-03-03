@@ -83,7 +83,11 @@ export class Storage {
                                 JSON.parse(arrayBufferToString(data)),
                             ),
                     ),
-                ConnectionsManager.import(connectionsData),
+                ConnectionsManager.import(
+                    this.keysIndex,
+                    this.signsIndex,
+                    connectionsData,
+                ),
                 PublishedKeysManager.import(publishedData, this.keysIndex),
                 CommonStorage.import(commonData),
             ]);
@@ -94,7 +98,10 @@ export class Storage {
             common = com;
         } else {
             chats = new ChatStorage();
-            connections = new ConnectionsManager();
+            connections = new ConnectionsManager(
+                this.keysIndex,
+                this.signsIndex,
+            );
             published = new PublishedKeysManager(this.keysIndex);
             common = new CommonStorage();
         }
