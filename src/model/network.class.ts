@@ -95,15 +95,18 @@ export class Network {
 
                 const newMessages = messages.slice(lastMessageIndex + 1);
 
+                // BAD: We have to do microtask because with just await network will not be ready 
+                // and network-storage-bind will not be able to handle the messages and store them in the chat storage(Huge architectural mistake)
                 // BAD: We have to disable notifications while fetching missed messages
-                this.notifications.disableNotifications();
-                for (const message of newMessages) {
-                    protocol.dispatchMessage(
+                queueMicrotask(async () => {
+                    this.notifications.disableNotifications();
+                    await Promise.all(newMessages.map(message => protocol.dispatchMessage(
                         Number(message.timestamp),
                         message.data,
-                    );
-                }
-                this.notifications.enableNotifications();
+                    )))
+                    this.notifications.enableNotifications();
+                })
+
             } catch (e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
             }

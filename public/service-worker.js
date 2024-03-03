@@ -154,17 +154,17 @@ self.addEventListener('message', async ({ data }) => {
         case "disable-notifications":
             notificationsEnabled = false;
             if(notificationResetTimeout) {
-                clearInterval(notificationResetTimeout);
+                clearTimeout(notificationResetTimeout);
                 notificationResetTimeout = null;
             }
-            notificationResetTimeout = setInterval(() => notificationsEnabled = true, 22);
+            notificationResetTimeout = setTimeout(() => notificationsEnabled = true, 22);
 
             break;
 
         case "enable-notifications":
             notificationsEnabled = true;
             if(notificationResetTimeout) {
-                clearInterval(notificationResetTimeout);
+                clearTimeout(notificationResetTimeout);
                 notificationResetTimeout = null;
             }
 
@@ -176,53 +176,59 @@ self.addEventListener('message', async ({ data }) => {
 })   
 
 self.addEventListener('push', async event => {
-    if(!notificationsEnabled) return;
-    await initialize();
 
-    if(keys.size === 0) return;;
+    event.waitUntil(Promise.resolve(
+        async () => {
+            if(!notificationsEnabled) return;
 
-    const message = event.data?.text();
-
-    if(!message) return;
-
-    const buffer = base64ToArrayBuffer(message);
-
-    if(!buffer) return;
-
-    const hasSignature = buffer[0];
-
-    if(!hasSignature) return;
-
-    let cursor = 1;
-    const signatureLength = new Uint16Array(buffer.buffer.slice(cursor, cursor + 2))[0];
-    cursor += 2;
-
-    if(cursor + signatureLength >= buffer.byteLength) return;
-
-    const signature = buffer.buffer.slice(cursor, cursor + signatureLength);
-    cursor += signatureLength;
-
-    const dataLength = new Uint16Array(buffer.buffer.slice(cursor, cursor + 2))[0];
-    cursor += 2;
-
-    if(cursor + dataLength > buffer.byteLength) return;
-
-    const data = buffer.buffer.slice(cursor, cursor + dataLength);
-
-    try {
-        await Promise.any(
-            Array.from(keys.values())
-                .map(async ({ key }) => {
-                    const result = await crypto.subtle.verify('HMAC', key, signature, data);
-
-                    if(!result) throw new Error("Failed");
-                })
-        )
-    } catch {
-        return;
-    }
-
-    self.registration.showNotification("New message");
+            await initialize();
+        
+            if(keys.size === 0) return;;
+        
+            const message = event.data?.text();
+        
+            if(!message) return;
+        
+            const buffer = base64ToArrayBuffer(message);
+        
+            if(!buffer) return;
+        
+            const hasSignature = buffer[0];
+        
+            if(!hasSignature) return;
+        
+            let cursor = 1;
+            const signatureLength = new Uint16Array(buffer.buffer.slice(cursor, cursor + 2))[0];
+            cursor += 2;
+        
+            if(cursor + signatureLength >= buffer.byteLength) return;
+        
+            const signature = buffer.buffer.slice(cursor, cursor + signatureLength);
+            cursor += signatureLength;
+        
+            const dataLength = new Uint16Array(buffer.buffer.slice(cursor, cursor + 2))[0];
+            cursor += 2;
+        
+            if(cursor + dataLength > buffer.byteLength) return;
+        
+            const data = buffer.buffer.slice(cursor, cursor + dataLength);
+        
+            try {
+                await Promise.any(
+                    Array.from(keys.values())
+                        .map(async ({ key }) => {
+                            const result = await crypto.subtle.verify('HMAC', key, signature, data);
+        
+                            if(!result) throw new Error("Failed");
+                        })
+                )
+            } catch {
+                return;
+            }
+        
+            self.registration.showNotification("New message");
+        }
+    ))
 })
 
 self.addEventListener('notificationclick', async (event) => {

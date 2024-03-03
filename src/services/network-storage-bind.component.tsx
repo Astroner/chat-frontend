@@ -35,22 +35,25 @@ export const NetworkStorageBind: FC = memo(() => {
 
                 case 'connectionDeclined': {
                     const chat = storage.chats.getByConnectionID(ev.id);
-                    if (chat) {
-                        storage.chats.deleteChat(chat.id);
-                        notifications.addNotification(
-                            `Request to "${chat.title}" was declined`,
-                        );
-                    }
+                    if (!chat) break;
+
+                    storage.chats.deleteChat(chat.id);
+                    notifications.addNotification(
+                        `Request to "${chat.title}" was declined`,
+                    );
 
                     break;
                 }
 
                 case 'connectionEstablished': {
                     const chat = storage.chats.getByConnectionID(ev.id);
-                    if (chat)
-                        storage.chats.setChatData(chat.id, {
-                            state: 'ACTIVE',
-                        });
+                    if (!chat) break;
+
+                    storage.chats.setChatData(chat.id, {
+                        state: 'ACTIVE',
+                    });
+
+                    notifications.addNotification(`Established connection with "${chat.title}"`);
 
                     break;
                 }
