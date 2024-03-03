@@ -48,7 +48,9 @@ export default function RootLayout({
     const storageEnv = useMemo(
         () =>
             new SmartStorage(
-                env.NODE_ENV === 'development' ? 'LOCAL_STORAGE' : 'LOCAL_STORAGE',
+                env.NODE_ENV === 'development'
+                    ? 'LOCAL_STORAGE'
+                    : 'LOCAL_STORAGE',
             ),
         [],
     );

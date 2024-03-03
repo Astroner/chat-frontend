@@ -101,7 +101,7 @@ export class ProtocolClient {
     private sendEvent(ev: ProtocolClientEvent) {
         queueMicrotask(() => {
             this.listeners.forEach((cb) => cb(ev));
-        })
+        });
     }
 
     private async handleMessage(buffer: ArrayBuffer, timestamp: number) {

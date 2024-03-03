@@ -53,7 +53,9 @@ export const NetworkStorageBind: FC = memo(() => {
                         state: 'ACTIVE',
                     });
 
-                    notifications.addNotification(`Established connection with "${chat.title}"`);
+                    notifications.addNotification(
+                        `Established connection with "${chat.title}"`,
+                    );
 
                     break;
                 }
