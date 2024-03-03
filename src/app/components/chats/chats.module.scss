@@ -15,6 +15,8 @@
 .chat {
     display: block;
 
+    position: relative;
+
     width: 100%;
 
     text-decoration: none;
@@ -29,5 +31,30 @@
 
     &:not(:last-child) {
         margin-bottom: 10px;
+    }
+}
+
+.dot {
+    position: absolute;
+    right: -5px;
+    top: -2px;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    background-color: var(--orange);
+
+    transition: opacity .3s;
+
+    &--visible {
+        composes: dot;
+        opacity: 1;
+    }
+
+    &--hidden {
+        composes: dot;
+        opacity: 0;
     }
 }

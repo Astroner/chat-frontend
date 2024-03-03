@@ -1,7 +1,7 @@
 import { FC, memo, useEffect, useState } from 'react';
 import Link from 'next/link';
 
-import { useNetwork, useStorage } from '@/src/model/hooks';
+import { useStorage } from '@/src/model/hooks';
 
 import cn from './chats.module.scss';
 
@@ -42,6 +42,7 @@ export const Chats: FC<ChatsProps> = memo((props) => {
                         className={cn.chat}
                     >
                         {chat.title}
+                        <div className={cn['dot--' + chat.hasUnreadMessages ? 'visible' : 'hidden']} />
                     </Link>
                 ))}
             </div>

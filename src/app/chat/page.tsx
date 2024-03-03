@@ -58,8 +58,14 @@ export default function ChatPage() {
     );
 
     useEffect(() => {
-        if(!chatInfo) router.push('/')
-    })
+        if(!chatInfo) return router.push('/')
+
+        if(!chats || network.type !== "READY") return;
+
+        chats.setChatData(chatInfo.id, {
+            hasUnreadMessages: false
+        })
+    }, [chatInfo, chats, router, network])
 
     if (!chatInfo) return null;
 
