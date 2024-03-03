@@ -23,13 +23,13 @@ import {
     ServiceWorkerContext,
     WindowFocusContext,
 } from '../services/context';
+import { WindowFocusService } from '../services/window-focus.service';
+import { NotificationsService } from '../services/notifications/notifications.service';
+import { NotificationsView } from './components/notifications-view/notifications-view.component';
 
 import { env } from '../env';
 
 import './globals.scss';
-import { WindowFocusService } from '../services/window-focus.service';
-import { NotificationsService } from '../services/notifications/notifications.service';
-import { NotificationsView } from './components/notifications-view/notifications-view.component';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -59,8 +59,8 @@ export default function RootLayout({
 
     const network = useMemo(
         () =>
-            new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex),
-        [keysIndex, signsIndex],
+            new Network(env.WS_ADDRESS, env.API_ADDRESS, keysIndex, signsIndex, notifications),
+        [keysIndex, signsIndex, notifications],
     );
 
     useEffect(() => {

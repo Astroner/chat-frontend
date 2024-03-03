@@ -8,6 +8,7 @@ import { PublishedKeysManager } from '@/src/helpers/storage/published-keys-manag
 import { SignsIndex } from '../helpers/crypto/signs-index/signs-index.class';
 import { getHash } from '../helpers/crypto/hash/get-hash';
 import { CommonStorage } from '../helpers/storage/common-storage.class';
+import { NotificationsService } from '../services/notifications/notifications.service';
 
 export type NetworkState =
     | { type: 'IDLE' }
@@ -30,6 +31,7 @@ export class Network {
         private httpUrl: string,
         private keysIndex: KeysIndex,
         private signsIndex: SignsIndex,
+        private notifications: NotificationsService
     ) {}
 
     async init(
@@ -93,12 +95,16 @@ export class Network {
 
                 const newMessages = messages.slice(lastMessageIndex + 1);
 
+                // BAD: We have to disable notifications while fetching missed messages
+                this.notifications.disableNotifications();
                 for (const message of newMessages) {
                     protocol.dispatchMessage(
                         Number(message.timestamp),
                         message.data,
                     );
                 }
+                this.notifications.enableNotifications();
+
             } catch (e) {
                 throw new Error('Could not find starting message'); // TODO request from wider range
             }

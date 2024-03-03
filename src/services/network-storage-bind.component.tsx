@@ -69,7 +69,6 @@ export const NetworkStorageBind: FC = memo(() => {
                             notifications.addNotification(
                                 `${chat.title}: ${ev.message}`,
                             );
-
                             storage.chats.setChatData(chat.id, {
                                 hasUnreadMessages: true,
                             });

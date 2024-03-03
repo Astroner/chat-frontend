@@ -30,12 +30,24 @@ export class NotificationsService {
 
     private timeouts = new Set<NodeJS.Timeout>();
 
+    private notificationsDisabled = false;
+
     destroy() {
         this.listeners.clear();
         this.timeouts.forEach((t) => clearTimeout(t));
     }
 
+    enableNotifications() {
+        this.notificationsDisabled = false;
+    }
+
+    disableNotifications() {
+        this.notificationsDisabled = true;
+    }
+
     addNotification(text: string) {
+        if(this.notificationsDisabled) return;
+
         const id = '' + this.COUNTER++;
 
         this.notifications.set(id, {

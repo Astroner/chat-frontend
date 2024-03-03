@@ -12,6 +12,7 @@ import { useNetwork, useStorage } from '@/src/model/hooks';
 import { RSAEncryptionKey } from '@/src/helpers/crypto/rsa/rsa-encryption-key.class';
 import { base64ToArrayBuffer } from '@/src/helpers/arraybuffer-utils';
 import Link from 'next/link';
+import { useNotifications } from '@/src/services/hooks';
 
 export default function Invite() {
     const search = useSearchParams();
