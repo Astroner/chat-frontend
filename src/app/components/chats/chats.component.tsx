@@ -5,8 +5,6 @@ import { useStorage } from '@/src/model/hooks';
 
 import cn from './chats.module.scss';
 
-console.log(cn);
-
 export type ChatsProps = {};
 
 export const Chats: FC<ChatsProps> = memo((props) => {
@@ -31,7 +29,7 @@ export const Chats: FC<ChatsProps> = memo((props) => {
             sub.unsubscribe();
         };
     }, [storage]);
-    console.log(chats);
+
     if (!chats) return;
     return (
         <div className={cn.root}>
