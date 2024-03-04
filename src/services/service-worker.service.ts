@@ -178,6 +178,33 @@ export class ServiceWorkerService {
         });
     }
 
+    async getCalledKeys() {
+        if (this.state.type !== 'ACTIVE') return [];
+
+        const channel = new MessageChannel();
+
+        this.registration?.active?.postMessage({ type: 'get-called-keys' }, [
+            channel.port2,
+        ]);
+
+        channel.port1.onmessage = () => console.log('ASDASD');
+
+        const data = await Promise.race([
+            new Promise<string[]>((resolve) => {
+                channel.port1.onmessage = (message: MessageEvent) => {
+                    if (message.data.type === 'called-keys') {
+                        resolve(message.data.keys);
+                    }
+                };
+            }),
+            new Promise<string[]>((_, reject) => {
+                setTimeout(reject, 1000);
+            }),
+        ]);
+
+        return data;
+    }
+
     subscribe(cb: VoidFunction): Subscription {
         this.listeners.add(cb);
 

@@ -43,7 +43,23 @@ $heading-height: 70px;
 }
 
 .messages {
-    height: calc(100vh - $heading-height - 80px);
+    &--small {
+        height: calc(100vh - $heading-height - 80px - 60px);
+    }
+
+    &--big {
+        height: calc(100vh - $heading-height - 80px);
+    }
+}
+
+.reminder {
+    line-height: 60px;
+    text-align: center;
+    color: var(--light-purple);
+
+    opacity: 0.4;
+
+    margin: 0;
 }
 
 .input {

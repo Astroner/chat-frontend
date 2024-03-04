@@ -92,12 +92,26 @@ export default function ChatPage() {
                 {chatInfo.state === 'ACTIVE' && (
                     <>
                         <Messages
-                            className={cn.messages}
+                            className={
+                                cn[
+                                    'messages--' +
+                                        (network.type !== 'READY' &&
+                                        chatInfo.hasUnreadMessages
+                                            ? 'small'
+                                            : 'big')
+                                ]
+                            }
                             messages={chatInfo.messages.map((item) => ({
                                 text: item.text,
                                 origin: item.origin,
                             }))}
                         />
+                        {network.type !== 'READY' &&
+                            chatInfo.hasUnreadMessages && (
+                                <h2 className={cn.reminder}>
+                                    Go online to see new messages
+                                </h2>
+                            )}
                         <div className={cn.input}>
                             <ChatInput
                                 offline={network.type !== 'READY'}

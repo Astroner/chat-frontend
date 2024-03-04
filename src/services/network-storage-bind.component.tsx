@@ -1,13 +1,14 @@
 import { FC, memo, useEffect } from 'react';
 import { useNetwork, useStorage } from '../model/hooks';
 import { useRouter } from 'next/navigation';
-import { useNotifications } from './hooks';
+import { useNotifications, useServiceWorker } from './hooks';
 
 export const NetworkStorageBind: FC = memo(() => {
     const [networkState, network] = useNetwork();
     const [storage] = useStorage();
     const router = useRouter();
     const [, notifications] = useNotifications('NO_UPDATES');
+    const [serviceWorkerState, serviceWorker] = useServiceWorker();
 
     useEffect(() => {
         const nState = network.getState();
@@ -20,6 +21,19 @@ export const NetworkStorageBind: FC = memo(() => {
             );
         }
     }, [storage, network]);
+
+    useEffect(() => {
+        if (serviceWorkerState.type !== 'ACTIVE' || storage.type !== 'READY')
+            return;
+
+        serviceWorker.getCalledKeys().then((chats) => {
+            for (const chatID of chats) {
+                storage.chats.setChatData(chatID, {
+                    hasUnreadMessages: true,
+                });
+            }
+        });
+    }, [serviceWorkerState, storage, serviceWorker]);
 
     useEffect(() => {
         if (networkState.type !== 'READY' || storage.type !== 'READY') return;
